@@ -26,6 +26,8 @@ class Recorder:
         if 'name' in kwargs:
             self.text_actors[kwargs['name']] = actor
         return actor
+    def add_key_event(self, *args): pass
+    def render(self): pass
     def add_title(self, *args, **kwargs): pass
     def show_bounds(self, **kwargs): self.bounds_options = kwargs
     def add_axes(self): pass
@@ -34,6 +36,8 @@ class Recorder:
     def add_slider_widget(self, callback, rng, **kwargs):
         self.sliders.append((callback, rng, kwargs))
         callback(kwargs['value'])
+        return SimpleNamespace(AddObserver=lambda *args: None,
+             GetRepresentation=lambda: SimpleNamespace(SetValue=lambda value: None))
 
 
 @pytest.fixture

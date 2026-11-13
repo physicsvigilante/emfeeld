@@ -35,7 +35,11 @@ python -m emfeeld view examples/ideal_sun.json --screenshot output/sun.png
 - Midpoint line-integral contributions and spherical flux quadrature with individual contributions retained for later visualization.
 - Strict, data-only JSON authoring and explicit invalid-domain errors. No `eval`, softened singularities, or hidden conductor approximations.
 
-The preview code combines source geometry, equal-length field-direction arrows, a potential slice, trajectory curves, and a sample-time slider. Its recorded Linux offscreen captures and programmatic slider events are verified; this is **not Windows mouse-interaction qualification**. Field lines, equipotential surfaces, autoplay, and animated integral explanations are future additions, not delivered features.
+The preview combines source geometry, equal-length field-direction arrows, a potential slice, trajectory curves, a sample-time slider, and **play/pause/restart/sample-stepping controls**. Its recorded Linux rendering and native timer checks are verified; this is **not Windows mouse-interaction qualification**. Field lines, equipotential surfaces and animated integral explanations remain future work.
+
+### Motion controls
+
+Moving scenes start paused. **Space** plays/pauses, **Home** restarts paused, and **Left/Right** steps one saved sample. Dragging the time slider pauses playback. Replay stops at the final sample; Space then starts it again. The full simulated interval is replayed in about 12 wall-clock seconds by default, with physical sample time shown separately. This display speed never changes solver timesteps or particle forces. See [playback contract and evidence](docs/PLAYBACK.md).
 
 ## Examples
 
@@ -83,6 +87,6 @@ The ordinary `python -m pytest -q` remains the headless suite. `viewer_tests` ex
 
 Shell/plane fields and potentials work, but motion involving them is rejected until surface-crossing behavior has been qualified. Point/line singular encounters are not collision handling. No source reaction, radiation, induced conductor charge, relativistic motion, simultaneous electric-plus-gravity coupling, or self-consistent many-body dynamics is implemented.
 
-Next: explicit user acceptance of the captured previews. Windows desktop interaction remains a separate optional qualification before claiming Windows support. Subsequent boundary events or integral teaching views require their own bounded tasks. Do not add a general mesh solver or a large application framework merely to run another supported arrangement.
+Playback is now available for the existing moving scenes; PR #1 remains draft and unmerged. Windows desktop interaction remains a separate optional qualification before claiming Windows support. Subsequent boundary events or integral teaching views require their own bounded tasks. Do not add a general mesh solver or a large application framework merely to run another supported arrangement.
 
 No license has yet been selected by the repository owner.

@@ -1,6 +1,7 @@
 """Optional PyVista desktop preview. Physics never depends on this sampling grid."""
 import warnings
 import numpy as np
+from .playback import PlaybackState, PlaybackController
 from .fields import (DomainError, PointSource, SolidSphere, SphericalShell,
                      InfiniteLine, InfinitePlane, UniformField, iter_sources)
 
@@ -27,10 +28,11 @@ def sample_values(model, points, *, potential=False):
     return result
 
 
-def make_plotter(scene, *, resolution=41, off_screen=False):
+def make_plotter(scene, *, resolution=41, off_screen=False, replay_seconds=12.0):
     """Return a plotter with sources, field directions, potential slice and time scrubber.
 
-    This initial preview has no field lines, integral animation, or autoplay.
+    Space toggles replay; Home restarts paused; Left/Right step saved samples.
+    Replay is display-only and stops at the end. No field lines or integral UI.
     Point/particle markers have schematic screen sizes. Line/plane patches are
     explicitly finite renderings of infinite sources, not physical boundaries.
     """
@@ -40,11 +42,20 @@ def make_plotter(scene, *, resolution=41, off_screen=False):
         raise RuntimeError('3D viewer requires: python -m pip install -e ".[view]"') from exc
     if type(resolution) is not int or not 5 <= resolution <= 101:
         raise ValueError("resolution must be an integer from 5 through 101")
+    replay = PlaybackState(scene.duration_s, scene.samples, replay_seconds=replay_seconds)
+
+    class PlaybackPlotter(pv.Plotter):
+        def close(self):
+            controller = getattr(self, "_emfeeld_playback", None)
+            if controller is not None:
+                controller.close()
+            super().close()
+
     bounds = np.array(scene.bounds_m)
     lower, upper = bounds[::2], bounds[1::2]
     center = (lower + upper) / 2
     span = float(np.max(upper - lower))
-    plot = pv.Plotter(off_screen=off_screen, window_size=(1200, 850))
+    plot = PlaybackPlotter(off_screen=off_screen, window_size=(1200, 850))
     plot.add_title(scene.title, font_size=12)
     unit = "V" if scene.model.kind == "electric" else "J/kg"
     x, y = np.meshgrid(np.linspace(lower[0], upper[0], resolution),
@@ -106,24 +117,33 @@ def make_plotter(scene, *, resolution=41, off_screen=False):
                       render_points_as_spheres=True, show_scalar_bar=False)
         markers.append(marker)
 
-    time_label = None
     if trajectories:
         time_label = plot.add_text("Sample time: 0 s", position=(0.02, 0.88),
                                    viewport=True, name="time", font_size=10)
+        status_label = plot.add_text("Paused", position=(0.02, 0.83),
+                                     viewport=True, name="playback_status", font_size=10)
+        plot.add_text("Space: play / pause\nHome: restart paused\nLeft / Right: one sample\n\n"
+                      f"Full interval replay: {replay.replay_seconds:g} s\n"
+                      "Display time, not physical time",
+                      position=(0.02, 0.67), viewport=True, name="playback_help", font_size=9)
 
-    def scrub(time):
-        index = int(np.clip(round(time / scene.duration_s * (scene.samples - 1)),
-                            0, scene.samples - 1))
-        for marker, trajectory in zip(markers, trajectories):
-            marker.points = trajectory.position_m[index:index + 1].copy()
-        # Replacing a named text actor makes PyVista recompute cube-axis bounds
-        # and labels from glyph bounds. Update the existing text in place instead.
-        time_label.input = f"Sample time: {index * scene.duration_s / (scene.samples - 1):.6g} s"
-    if trajectories:
-        plot.add_slider_widget(scrub, (0, scene.duration_s), value=0,
-                               title="Time [s]", pointa=(0.35, 0.88), pointb=(0.75, 0.88),
-                               style="modern", slider_width=0.015, tube_width=0.003,
-                               title_height=0.025, fmt="%.3g")
+        def display(state):
+            for marker, trajectory in zip(markers, trajectories):
+                marker.points = trajectory.position_m[state.index:state.index + 1].copy()
+            # Update text in place: replacing actors can reset authored axes.
+            time_label.input = f"Sample time: {state.time_s:.6g} s"
+            status_label.input = ("Playing" if state.playing else
+                                  "Finished" if state.progress >= 1 else "Paused")
+
+        controller = PlaybackController(plot, replay, display)
+        plot._emfeeld_playback = controller
+        controller.slider = plot.add_slider_widget(
+            controller.seek, (0, scene.duration_s), value=0,
+            title="Time [s]", pointa=(0.35, 0.88), pointb=(0.75, 0.88),
+            style="modern", slider_width=0.015, tube_width=0.003,
+            title_height=0.025, fmt="%.3g")
+        # Pause at drag start so a running timer cannot fight the user's scrub.
+        controller.slider.AddObserver("StartInteractionEvent", controller.pause)
     geometry_note = "\nUniform fields have no source shape." if has_uniform else ""
     if missing_geometry:
         geometry_note += "\nGeometry not drawn for: " + ", ".join(sorted(missing_geometry)) + "."
