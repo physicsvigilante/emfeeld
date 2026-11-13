@@ -1,5 +1,7 @@
 # Data-only static observations v1
 
+**Additive extension:** the same packet/command now accepts saved-trajectory requests; see [trajectory observations](TRAJECTORY_OBSERVATIONS.md). The four static operations below and their Python API are unchanged. Static-only packets never integrate.
+
 ## Purpose
 
 An LLM can now author **the existing scene and what to measure** in one JSON packet. No per-question Python analysis is needed for field, potential, independent test-force probes, or endpoint potential differences. The evaluator dispatches on four reusable measurement types, never a book question number or apparatus name.
@@ -92,6 +94,6 @@ Eight packets reuse **exactly the scene objects from the earlier pilot**: SC-55,
 
 The Python API `evaluate_observations(model, list_of_request_dicts)` also works with nested `Superposition` objects and compatible custom field implementations. Python requests intentionally use JSON-compatible lists and built-in numbers; convert NumPy arrays/scalars with `.tolist()`/`float()`.
 
-This slice performs **no trajectory integration**, even if the embedded scene includes particles. Such particles are not included among the field sources. It does not relax shell/plane trajectory restrictions. Trajectory sample observations, crossings, turning points, flux requests, generalized conductors, mixed electric/gravity coupling and visual annotations remain unsupported. The original SC-158 flux assessment remains PARTIAL.
+A packet containing **only these static request types performs no trajectory integration**, even if the embedded scene includes particles. Such particles are not included among the field sources. The additive `trajectory_sample` request is described in [its own contract](TRAJECTORY_OBSERVATIONS.md). It does not relax shell/plane trajectory restrictions. Crossings, turning points, flux requests, generalized conductors, mixed electric/gravity coupling and visual annotations remain unsupported. The original SC-158 flux assessment remains PARTIAL.
 
 See [executed evidence](OBSERVATIONS_VALIDATION.md). PR #1 remains draft and unmerged; no independent review or Windows interaction qualification is claimed.

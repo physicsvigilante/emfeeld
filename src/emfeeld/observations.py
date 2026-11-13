@@ -1,8 +1,9 @@
-"""Data-only static observations over existing analytic fields.
+"""Data-only field probes and saved-trajectory sample observations.
 
 Run: python -m emfeeld.observations packet.json [--output result.json]
-This additive entry point does not modify the scene-v1 format, integrate motion,
-import the viewer, infer conductor charge, or certify an author-supplied answer.
+Static-only packets never integrate. Trajectory requests reuse one solve per
+referenced particle, with explicit saved-time selection and no interpolation.
+Scene-v1, source laws and the integrator are unchanged; no viewer is imported.
 """
 from __future__ import annotations
 
@@ -25,6 +26,7 @@ import scipy
 
 from .fields import DomainError, Field, G, epsilon_0, check_kind
 from .scene import Scene, scene_from_dict, strict_keys
+from .trajectory_samples import QUANTITIES, SampleRequest, TrajectorySamples
 
 TYPES = ("field", "potential", "force", "potential_difference")
 ID_PATTERN = r"[A-Za-z][A-Za-z0-9_.-]{0,63}"
@@ -214,7 +216,104 @@ def evaluate_observations(model: Field, observations: list[dict]) -> list[dict]:
     return _evaluate(model, parse_requests(model.kind, observations))
 
 
-def packet_from_dict(data: Any) -> tuple[Scene, tuple[Observation, ...]]:
+
+@dataclass(frozen=True)
+class TrajectoryObservation:
+    id: str
+    type: str
+    sample: SampleRequest
+    expectation: Expectation | None
+
+
+def _trajectory_request(scene: Scene, row: dict) -> TrajectoryObservation:
+    required = ("id", "type", "particle_index", "quantity")
+    allowed = (*required, "sample_index", "time_s", "time_selection", "max_time_error_s", "expectation")
+    strict_keys(row, allowed, required)
+    ident = row["id"]
+    if not isinstance(ident, str) or re.fullmatch(ID_PATTERN, ident) is None:
+        raise ValueError("observation id must match " + ID_PATTERN)
+    particle = row["particle_index"]
+    if type(particle) is not int or not 0 <= particle < len(scene.particles):
+        raise ValueError("particle_index must be a zero-based integer referring to scene.particles")
+    quantity = row["quantity"]
+    if not isinstance(quantity, str) or quantity not in QUANTITIES:
+        raise ValueError(f"unsupported saved-trajectory quantity: {quantity!r}")
+    has_index, has_time = "sample_index" in row, "time_s" in row
+    if has_index == has_time:
+        raise ValueError("specify exactly one of sample_index or time_s")
+    if has_index:
+        index = row["sample_index"]
+        if type(index) is not int or not 0 <= index < scene.samples:
+            raise ValueError("sample_index must be a zero-based integer within the saved grid")
+        if "time_selection" in row or "max_time_error_s" in row:
+            raise ValueError("index selection does not accept time_selection or max_time_error_s")
+        sample = SampleRequest(particle, quantity, sample_index=index)
+    else:
+        time = _number(row["time_s"], "time_s")
+        if not 0 <= time <= scene.duration_s:
+            raise ValueError("time_s must be inside the simulated time interval; no clamping")
+        mode = row.get("time_selection")
+        if mode not in ("exact", "nearest"):
+            raise ValueError("time_s requires explicit time_selection: exact or nearest")
+        tolerance = None
+        if mode == "nearest":
+            if "max_time_error_s" not in row:
+                raise ValueError("nearest selection requires explicit max_time_error_s")
+            tolerance = _number(row["max_time_error_s"], "max_time_error_s")
+            if tolerance < 0:
+                raise ValueError("max_time_error_s must be nonnegative")
+        elif "max_time_error_s" in row:
+            raise ValueError("exact selection cannot accept a nearest-time tolerance")
+        sample = SampleRequest(particle, quantity, time_s=time,
+                               time_selection=mode, max_time_error_s=tolerance)
+    expectation = None
+    if "expectation" in row:
+        e = row["expectation"]
+        strict_keys(e, ("value", "atol", "rtol"), ("value", "atol", "rtol"))
+        value = (_vector(e["value"], ident + ".expectation.value") if QUANTITIES[quantity][1] == (3,)
+                 else _number(e["value"], ident + ".expectation.value"))
+        atol, rtol = (_number(e[k], ident + ".expectation." + k) for k in ("atol", "rtol"))
+        if atol < 0 or rtol < 0:
+            raise ValueError("expectation tolerances must be nonnegative")
+        expectation = Expectation(value, atol, rtol)
+    return TrajectoryObservation(ident, "trajectory_sample", sample, expectation)
+
+
+def _packet_requests(scene: Scene, data: Any) -> tuple[Observation | TrajectoryObservation, ...]:
+    if not isinstance(data, list) or not data:
+        raise ValueError("observations must be a nonempty array")
+    requests, seen = [], set()
+    for row in data:
+        if isinstance(row, dict) and row.get("type") == "trajectory_sample":
+            request = _trajectory_request(scene, row)
+        else:
+            request = parse_requests(scene.model.kind, [row])[0]
+        if request.id in seen:
+            raise ValueError(f"duplicate observation id: {request.id}")
+        seen.add(request.id)
+        requests.append(request)
+    return tuple(requests)
+
+
+def _evaluate_packet(scene: Scene, requests) -> tuple[list[dict], dict | None]:
+    # Keep the static-only report shape and static public API backward compatible.
+    has_motion = any(isinstance(r, TrajectoryObservation) for r in requests)
+    samples = TrajectorySamples(scene) if has_motion else None
+    results = []
+    for request in requests:
+        if isinstance(request, TrajectoryObservation):
+            r = {"id": request.id, "type": request.type, "kind": scene.model.kind,
+                 **samples.observe(request.sample)}
+            if request.expectation is not None:
+                r["check"] = (_comparison(np.asarray(r["value"]), request.expectation)
+                              if r["status"] == "ok" else {"passed": None, "reason": "not_evaluated"})
+        else:
+            r = _evaluate(scene.model, (request,))[0]
+        results.append(r)
+    return results, samples.runs if samples is not None else None
+
+
+def packet_from_dict(data: Any) -> tuple[Scene, tuple[Observation | TrajectoryObservation, ...]]:
     strict_keys(data, ("observation_schema_version", "scene", "observations", "notes"),
                 ("observation_schema_version", "scene", "observations"))
     if type(data["observation_schema_version"]) is not int or data["observation_schema_version"] != 1:
@@ -228,7 +327,7 @@ def packet_from_dict(data: Any) -> tuple[Scene, tuple[Observation, ...]]:
         scene = scene_from_dict(data["scene"])
     except (TypeError, KeyError, AttributeError) as exc:
         raise ValueError(f"invalid scene: {exc}") from exc
-    requests = parse_requests(scene.model.kind, data["observations"])
+    requests = _packet_requests(scene, data["observations"])
     return scene, requests
 
 
@@ -238,14 +337,15 @@ def _digest(data: Any) -> str:
 
 
 def run_packet(data: dict) -> dict:
-    """Validate and observe static sources. Particles, if present, are NOT sources.
+    """Validate the complete packet, then evaluate probes and requested saved states.
 
-    No integration occurs, even when the embedded scene includes trajectories.
-    Tolerances check an authored reference; they never alter the field or solver.
+    Only trajectory_sample requests trigger integration, once per referenced
+    particle per call. Test particles never become sources. Tolerances check an
+    authored reference and cannot change solver settings or interpolation policy.
     """
     data = deepcopy(data)
     scene, requests = packet_from_dict(data)
-    results = _evaluate(scene.model, requests)
+    results, trajectory_runs = _evaluate_packet(scene, requests)
     good = [r["status"] == "ok" and r.get("check", {}).get("passed", True) is True for r in results]
     report = {
         "observation_result_version": 1, "title": scene.title, "kind": scene.model.kind,
@@ -262,6 +362,16 @@ def run_packet(data: dict) -> dict:
         "trajectories": "not evaluated; particle feedback and self-force are not included",
         "accuracy": "float64 direct evaluation; no certified global error bound; expectations are authored checks",
     }
+    if trajectory_runs is not None:
+        report["trajectory_runs"] = trajectory_runs
+        report["trajectories"] = "only requested particles integrated, at most once each per packet; no feedback"
+        report["trajectory_observation_contract"] = 1
+        report["accuracy"] = ("existing DOP853 saved samples; no observation-layer interpolation or certified "
+                              "global error bound; energy drift and authored expectations are diagnostics only")
+        for key, status in (("selection_errors", "selection_error"),
+                            ("unsupported_trajectories", "unsupported_trajectory"),
+                            ("integration_errors", "integration_error")):
+            report["counts"][key] = sum(r["status"] == status for r in results)
     json.dumps(report, allow_nan=False)  # Never export NaN/Infinity as a result.
     return report
 
@@ -286,7 +396,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("packet", type=Path)
     parser.add_argument("--output", type=Path, help="save the same JSON report printed to stdout")
-    parser.add_argument("--validate-only", action="store_true", help="check syntax/schema only; do not evaluate fields")
+    parser.add_argument("--validate-only", action="store_true", help="check syntax/schema only; do not evaluate fields or integrate")
     args = parser.parse_args(argv)
     try:
         if args.output and (args.output.resolve() == args.packet.resolve() or

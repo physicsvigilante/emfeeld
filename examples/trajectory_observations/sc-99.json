@@ -1,0 +1,28 @@
+{
+  "observation_schema_version": 1,
+  "scene": {"schema_version": 1, "title": "SC-99 | negative test charge in a downward uniform field", "kind": "electric", "sources": [{"type": "uniform", "field_N_C": [0, -100, 0], "origin_m": [0, 0, 0]}], "bounds_m": [-0.5, 2.5, -0.5, 1.5, -1.5, 1.5], "particles": [{"charge_C": -1e-06, "mass_kg": 0.001, "position_m": [0, 0, 0], "velocity_m_s": [0.5, 0, 0]}], "duration_s": 4, "samples": 2001},
+  "observations": [
+    {"id": "p0_time_0", "type": "trajectory_sample", "particle_index": 0, "quantity": "time", "sample_index": 0, "expectation": {"value": 0.0, "atol": 0, "rtol": 0}},
+    {"id": "p0_position_0", "type": "trajectory_sample", "particle_index": 0, "quantity": "position", "sample_index": 0, "expectation": {"value": [0.0, 0.0, 0.0], "atol": 1e-09, "rtol": 2e-09}},
+    {"id": "p0_velocity_0", "type": "trajectory_sample", "particle_index": 0, "quantity": "velocity", "sample_index": 0, "expectation": {"value": [0.5, 0.0, 0.0], "atol": 1e-09, "rtol": 2e-09}},
+    {"id": "p0_speed_0", "type": "trajectory_sample", "particle_index": 0, "quantity": "speed", "sample_index": 0, "expectation": {"value": 0.5, "atol": 1e-09, "rtol": 2e-09}},
+    {"id": "p0_kinetic_energy_0", "type": "trajectory_sample", "particle_index": 0, "quantity": "kinetic_energy", "sample_index": 0, "expectation": {"value": 0.000125, "atol": 1e-09, "rtol": 2e-09}},
+    {"id": "p0_potential_energy_0", "type": "trajectory_sample", "particle_index": 0, "quantity": "potential_energy", "sample_index": 0, "expectation": {"value": 0.0, "atol": 1e-09, "rtol": 2e-09}},
+    {"id": "p0_total_energy_0", "type": "trajectory_sample", "particle_index": 0, "quantity": "total_energy", "sample_index": 0, "expectation": {"value": 0.000125, "atol": 1e-09, "rtol": 2e-09}},
+    {"id": "p0_time_1000", "type": "trajectory_sample", "particle_index": 0, "quantity": "time", "sample_index": 1000, "expectation": {"value": 2.0, "atol": 0, "rtol": 0}},
+    {"id": "p0_position_1000", "type": "trajectory_sample", "particle_index": 0, "quantity": "position", "sample_index": 1000, "expectation": {"value": [1.0, 0.2, 0.0], "atol": 1e-09, "rtol": 2e-09}},
+    {"id": "p0_velocity_1000", "type": "trajectory_sample", "particle_index": 0, "quantity": "velocity", "sample_index": 1000, "expectation": {"value": [0.5, 0.2, 0.0], "atol": 1e-09, "rtol": 2e-09}},
+    {"id": "p0_speed_1000", "type": "trajectory_sample", "particle_index": 0, "quantity": "speed", "sample_index": 1000, "expectation": {"value": 0.5385164807134504, "atol": 1e-09, "rtol": 2e-09}},
+    {"id": "p0_kinetic_energy_1000", "type": "trajectory_sample", "particle_index": 0, "quantity": "kinetic_energy", "sample_index": 1000, "expectation": {"value": 0.000145, "atol": 1e-09, "rtol": 2e-09}},
+    {"id": "p0_potential_energy_1000", "type": "trajectory_sample", "particle_index": 0, "quantity": "potential_energy", "sample_index": 1000, "expectation": {"value": -1.9999999999999998e-05, "atol": 1e-09, "rtol": 2e-09}},
+    {"id": "p0_total_energy_1000", "type": "trajectory_sample", "particle_index": 0, "quantity": "total_energy", "sample_index": 1000, "expectation": {"value": 0.000125, "atol": 1e-09, "rtol": 2e-09}},
+    {"id": "p0_time_2000", "type": "trajectory_sample", "particle_index": 0, "quantity": "time", "sample_index": 2000, "expectation": {"value": 4.0, "atol": 0, "rtol": 0}},
+    {"id": "p0_position_2000", "type": "trajectory_sample", "particle_index": 0, "quantity": "position", "sample_index": 2000, "expectation": {"value": [2.0, 0.8, 0.0], "atol": 1e-09, "rtol": 2e-09}},
+    {"id": "p0_velocity_2000", "type": "trajectory_sample", "particle_index": 0, "quantity": "velocity", "sample_index": 2000, "expectation": {"value": [0.5, 0.4, 0.0], "atol": 1e-09, "rtol": 2e-09}},
+    {"id": "p0_speed_2000", "type": "trajectory_sample", "particle_index": 0, "quantity": "speed", "sample_index": 2000, "expectation": {"value": 0.6403124237432849, "atol": 1e-09, "rtol": 2e-09}},
+    {"id": "p0_kinetic_energy_2000", "type": "trajectory_sample", "particle_index": 0, "quantity": "kinetic_energy", "sample_index": 2000, "expectation": {"value": 0.00020500000000000002, "atol": 1e-09, "rtol": 2e-09}},
+    {"id": "p0_potential_energy_2000", "type": "trajectory_sample", "particle_index": 0, "quantity": "potential_energy", "sample_index": 2000, "expectation": {"value": -7.999999999999999e-05, "atol": 1e-09, "rtol": 2e-09}},
+    {"id": "p0_total_energy_2000", "type": "trajectory_sample", "particle_index": 0, "quantity": "total_energy", "sample_index": 2000, "expectation": {"value": 0.00012500000000000003, "atol": 1e-09, "rtol": 2e-09}}
+  ],
+  "notes": "Unchanged pilot instantiation. Reference: constant-acceleration equations; energies in J, not electric potential in V."
+}
