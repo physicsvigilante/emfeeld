@@ -4,6 +4,30 @@ A local, LLM-authorable explorer for **analytic electrostatic and Newtonian grav
 
 **Status: candidate with tested numerical core and real Linux/PyVista previews.** Eight scenes have passed offscreen rendering and programmatic time-slider checks; screenshots were inspected in chat. Windows desktop/mouse interaction remains untested. This is author verification, not independent review. The [approved chat workflow](docs/CHAT_WORKFLOW_DECISION.md) requires explicit user acceptance before merge. See [viewer qualification](docs/VIEWER_QUALIFICATION.md). This is not a general electromagnetic or conductor solver.
 
+## Current authoring workflow
+
+Use [the question-to-packet workflow](docs/AUTHORING_WORKFLOW.md) to author
+sources **and measurements** as data. Static probes, saved trajectory states,
+plane/radial crossings and local radial turning points are available through
+`python -m emfeeld.observations`. Event detection is numerical, not a guarantee
+that every crossing was found; local extrema are not global closest approach.
+
+```text
+python -m emfeeld.observations pilots/authorability_v6/first_attempt/MAIN19-Q5-LINE-OUTWARD.json --validate-only
+python -m emfeeld.observations pilots/authorability_v6/first_attempt/MAIN19-Q5-LINE-OUTWARD.json --output output/line-motion.json
+python tools/replay_packets.py verification/v6_published.json --output output/published-replay-001
+```
+
+The replay command requires a **new** output directory. It checks exact input
+hashes, freezes those bytes, executes the existing engine, and checks declared
+statuses, shapes, units and separate references. A successful CLI exit alone is
+not a solved-event claim. The published-v6 replay is a regression, **not a new
+blind authorability benchmark**. See [repair and verification evidence](docs/AUTHORING_REPAIR.md).
+
+The scene CLI rejects outputs that alias its input (including links). Numerical
+exports replace an existing output only after successful serialization. Scene
+JSON rejects booleans and numeric strings instead of changing their meaning.
+
 ## Install and run
 
 Use Python 3.11 or newer in a dedicated virtual environment. From the repository root:
@@ -87,6 +111,6 @@ The ordinary `python -m pytest -q` remains the headless suite. `viewer_tests` ex
 
 Shell/plane fields and potentials work, but motion involving them is rejected until surface-crossing behavior has been qualified. Point/line singular encounters are not collision handling. No source reaction, radiation, induced conductor charge, relativistic motion, simultaneous electric-plus-gravity coupling, or self-consistent many-body dynamics is implemented.
 
-Playback is now available for the existing moving scenes; PR #1 remains draft and unmerged. Windows desktop interaction remains a separate optional qualification before claiming Windows support. Subsequent boundary events or integral teaching views require their own bounded tasks. Do not add a general mesh solver or a large application framework merely to run another supported arrangement.
+Playback is now available for the existing moving scenes; PR #1 remains draft and unmerged. Windows desktop interaction remains a separate optional qualification before claiming Windows support. Plane/radial observation events and local turning points are documented in the authoring workflow; they do not add material collision handling. Integral teaching views remain separate work. Do not add a general mesh solver or a large application framework merely to run another supported arrangement.
 
 No license has yet been selected by the repository owner.

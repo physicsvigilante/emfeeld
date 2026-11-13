@@ -14,6 +14,16 @@ A new arrangement of supported sources must be a model-authoring task, not a cha
 - Work on a branch. Follow the explicit acceptance gate in docs/CHAT_WORKFLOW_DECISION.md: documented author verification plus user acceptance for this candidate, not a mandatory Codex handoff or a claim of independent review. Keep the PR unmerged until that acceptance is given. Do not install tools on the user's computer, change licenses, or introduce large dependencies without authorization.
 
 ## Current slice
-Sample-based playback is implemented and qualified in the recorded Linux environments; see docs/PLAYBACK.md. Source formulas and the solver remain unchanged. Preserve the distinction between display time and physical time. PR #1 remains draft and unmerged.
+The physics library and event interfaces support authored field/potential probes,
+saved-state measurements and bounded plane/radial/local-turning observations.
+Use docs/AUTHORING_WORKFLOW.md, not repeated same-chat pilots labelled "blind".
+Validate the exact packet bytes, record their hashes, then execute and verify
+explicit outputs. tools/replay_packets.py and verification/v6_published.json
+provide a reproducible published-byte regression without a chat attachment.
 
-See docs/VIEWER_QUALIFICATION.md. The numerical suite and real Linux/PyVista offscreen captures passed in the recorded environment. Programmatic VTK time events and image inspection are not Windows desktop/mouse qualification. The preview remains a candidate awaiting user acceptance; no independent review is claimed. Preserve historical evidence and do not broaden physics scope as part of this qualification.
+Historical all-file freeze tests belong on their pinned snapshots. Keep them
+unchanged; replay their behavioral cases separately against current code. See
+docs/AUTHORING_REPAIR.md for the current suite and exact test-accounting boundary.
+New input/path safety checks do not alter physical laws or relax tolerances.
+PR #1 stays draft and unmerged. No independent review or Windows interaction
+qualification is implied by the author-run checks.

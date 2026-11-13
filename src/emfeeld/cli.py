@@ -1,6 +1,8 @@
 """Headless scene execution and optional desktop preview."""
 import argparse
 import json
+import os
+import tempfile
 from pathlib import Path
 import platform
 import sys
@@ -28,6 +30,30 @@ def run_scene(scene):
     return trajectories, summary
 
 
+def _protect_input(scene_path, output_path):
+    """Reject aliases as well as equal names before any solve or rendering."""
+    if output_path is not None and (
+        output_path.resolve() == scene_path.resolve()
+        or (output_path.exists() and scene_path.samefile(output_path))
+    ):
+        raise ValueError("output must not overwrite the input scene")
+
+
+def _save_npz(output, arrays):
+    """Replace the destination only after a complete successful serialization."""
+    output.parent.mkdir(parents=True, exist_ok=True)
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(mode="wb", dir=output.parent,
+                prefix=".emfeeld-", suffix=".npz", delete=False) as handle:
+            temporary = Path(handle.name)
+            np.savez_compressed(handle, **arrays)
+        os.replace(temporary, output)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("command", choices=("validate", "run", "view"))
@@ -40,23 +66,23 @@ def main(argv=None):
     if args.screenshot and args.command != "view":
         parser.error("--screenshot is only valid with view")
     try:
+        _protect_input(args.scene, args.output)
+        _protect_input(args.scene, args.screenshot)
         scene = load_scene(args.scene)
         if args.command == "validate":
             print(json.dumps({"valid_schema": True, "title": scene.title,
                               "trajectory_supported": scene.model.trajectory_safe or not scene.particles}))
         elif args.command == "run":
             trajectories, summary = run_scene(scene)
+            summary_text = json.dumps(summary, indent=2, allow_nan=False)
             if args.output:
-                args.output.parent.mkdir(parents=True, exist_ok=True)
-                arrays = {"summary_json": json.dumps(summary),
+                arrays = {"summary_json": summary_text,
                           "scene_json": args.scene.read_text(encoding="utf-8")}
                 for i, trajectory in enumerate(trajectories):
                     for key in ("time_s", "position_m", "velocity_m_s", "kinetic_J", "potential_J"):
                         arrays[f"particle_{i}_{key}"] = getattr(trajectory, key)
-                # File handle prevents NumPy from silently changing the supplied filename.
-                with args.output.open("wb") as handle:
-                    np.savez_compressed(handle, **arrays)
-            print(json.dumps(summary, indent=2, allow_nan=False))
+                _save_npz(args.output, arrays)
+            print(summary_text)
         else:
             from .viewer import make_plotter
             plot = make_plotter(scene, off_screen=bool(args.screenshot))

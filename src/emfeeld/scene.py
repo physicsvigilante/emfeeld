@@ -1,6 +1,7 @@
 """Strict JSON authoring: data only, no eval/import/executable expressions."""
 from dataclasses import dataclass
 import json
+import math
 from pathlib import Path
 import numpy as np
 from .fields import (PointSource, SolidSphere, SphericalShell, InfiniteLine,
@@ -20,10 +21,36 @@ def strict_keys(data, allowed, required=()):
         raise ValueError(f"unknown keys: {sorted(unknown)}; missing keys: {sorted(missing)}")
 
 
+def _json_number(value, name):
+    """Reject coercion at the data-only boundary; Python field APIs are separate."""
+    if type(value) not in (int, float):
+        raise ValueError(f"{name} must be a finite JSON number")
+    try:
+        finite = math.isfinite(float(value))
+    except (OverflowError, ValueError) as exc:
+        raise ValueError(f"{name} must fit a finite float64 value") from exc
+    if not finite:
+        raise ValueError(f"{name} must be a finite JSON number")
+
+
+def _numeric_fields(data, *, exclude=()):
+    for name, value in data.items():
+        if name in exclude:
+            continue
+        if isinstance(value, list):
+            for index, item in enumerate(value):
+                _json_number(item, f"{name}[{index}]")
+        else:
+            _json_number(value, name)
+
+
 def source_from_dict(kind, data):
     if not isinstance(data, dict):
         raise ValueError("source must be an object")
     source_type = data.get("type")
+    if not isinstance(source_type, str):
+        raise ValueError("source type must be a string")
+    _numeric_fields(data, exclude=("type",))
     if source_type == "uniform":
         key = "field_N_C" if kind == "electric" else "field_m_s2"
         strict_keys(data, ("type", key, "origin_m"), ("type", key))
@@ -82,13 +109,18 @@ def scene_from_dict(data):
                     ("mass_kg", "position_m", "velocity_m_s"))
         if data["kind"] == "electric" and "charge_C" not in p:
             raise ValueError("electric test particles must specify charge_C")
+        _numeric_fields(p)
         particles.append(Particle(**p))
     if particles and "duration_s" not in data:
         raise ValueError("moving scenes must specify duration_s")
+    _json_number(data.get("duration_s", 1), "duration_s")
     duration = scalar(data.get("duration_s", 1), "duration_s", positive=True)
     count = data.get("samples", 401)
     if type(count) is not int or not 2 <= count <= 100000:
         raise ValueError("samples must be an integer from 2 through 100000")
+    if not isinstance(data["bounds_m"], list):
+        raise ValueError("bounds_m must be an array of six finite JSON numbers")
+    _numeric_fields({"bounds_m": data["bounds_m"]})
     bounds = np.asarray(data["bounds_m"], dtype=float)
     if bounds.shape != (6,) or not np.isfinite(bounds).all() or np.any(bounds[::2] >= bounds[1::2]):
         raise ValueError("bounds_m must be [xmin,xmax,ymin,ymax,zmin,zmax] with min < max")
