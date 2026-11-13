@@ -1,0 +1,58 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "SC17: uniformly charged sphere, author-derived half-potential candidate",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "solid_sphere",
+        "charge_C": 4e-9,
+        "radius_m": 0.4,
+        "center_m": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "bounds_m": [
+      -0.8,
+      0.8,
+      -0.8,
+      0.8,
+      -0.8,
+      0.8
+    ]
+  },
+  "observations": [
+    {
+      "id": "centre",
+      "type": "potential",
+      "position_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "P_candidate",
+      "type": "potential",
+      "position_m": [
+        0.5333333333333333,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "at_surface",
+      "type": "potential",
+      "position_m": [
+        0.4,
+        0,
+        0
+      ]
+    }
+  ],
+  "notes": "LLM-derived inverse candidate r=R/3 beyond surface; native field engine performs forward probes only. Illustrative R=.4 m, Q=4 nC."
+}

@@ -1,0 +1,54 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "JEE Advanced 2014 Q4 — infinite line source",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "line",
+        "charge_per_m_C_m": 7.853981633974484e-10,
+        "direction": [
+          0,
+          0,
+          1
+        ],
+        "center_m": [
+          0,
+          0,
+          0
+        ],
+        "reference_radius_m": 1
+      }
+    ],
+    "bounds_m": [
+      -3,
+      3,
+      -3,
+      3,
+      -3,
+      3
+    ]
+  },
+  "observations": [
+    {
+      "id": "E_r0",
+      "type": "field",
+      "position_m": [
+        2.5,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "E_half",
+      "type": "field",
+      "position_m": [
+        1.25,
+        0,
+        0
+      ]
+    }
+  ],
+  "notes": "Illustrative σ=1e-10 C/m², r0=2.5 m, lambda=πσr0. Finite potential reference radius 1m."
+}

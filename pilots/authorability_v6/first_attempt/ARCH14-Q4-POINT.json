@@ -1,0 +1,48 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "JEE Advanced 2014 Q4 — point source",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "point",
+        "charge_C": 3.926990816987242e-9,
+        "center_m": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "bounds_m": [
+      -3,
+      3,
+      -3,
+      3,
+      -3,
+      3
+    ]
+  },
+  "observations": [
+    {
+      "id": "E_r0",
+      "type": "field",
+      "position_m": [
+        2.5,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "E_half",
+      "type": "field",
+      "position_m": [
+        1.25,
+        0,
+        0
+      ]
+    }
+  ],
+  "notes": "Illustrative σ=1e-10 C/m² and r0=2.5 m. Author derived Q=2πσr0²."
+}

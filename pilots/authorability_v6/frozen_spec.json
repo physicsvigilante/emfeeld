@@ -1,0 +1,31 @@
+{
+  "id": "emfeeld-authoring-spec-v1",
+  "frozen_engine_ref": "08571d366a0499d2110de0929d91db7d5caa6c7f",
+  "task": "Author scene and requested observations in data-only JSON without embedded expected answers; explicitly reject unsupported laws",
+  "allowed_source_types": [
+    "point",
+    "solid_sphere",
+    "shell",
+    "line",
+    "plane",
+    "uniform"
+  ],
+  "allowed_observations": [
+    "field",
+    "potential",
+    "force",
+    "potential_difference",
+    "trajectory_sample",
+    "trajectory_event:plane",
+    "trajectory_event:radial",
+    "trajectory_event:radial_turning"
+  ],
+  "not_supported": [
+    "arbitrary spatial E(x) laws",
+    "time-evolving source strengths",
+    "charged plane with hole",
+    "global extrema/inverse symbolic solves"
+  ],
+  "units": "SI; electric/gravity kinds separate; test particle no backreaction",
+  "score": "grade model validity/first run, forward verification, requested native output, author-derived inverse separately, unsupported truthfully"
+}

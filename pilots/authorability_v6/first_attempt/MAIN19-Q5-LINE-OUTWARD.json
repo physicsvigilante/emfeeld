@@ -1,0 +1,103 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "JEE Main April 2019 Q5: positive charge released next to a positive infinite line",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "line",
+        "charge_per_m_C_m": 1e-8,
+        "direction": [
+          0,
+          0,
+          1
+        ],
+        "center_m": [
+          0,
+          0,
+          0
+        ],
+        "reference_radius_m": 1
+      }
+    ],
+    "bounds_m": [
+      -1,
+      4,
+      -2,
+      2,
+      -2,
+      2
+    ],
+    "particles": [
+      {
+        "charge_C": 0.000001,
+        "mass_kg": 0.001,
+        "position_m": [
+          0.5,
+          0,
+          0
+        ],
+        "velocity_m_s": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "duration_s": 6,
+    "samples": 601
+  },
+  "observations": [
+    {
+      "id": "cross_double_radius",
+      "type": "trajectory_event",
+      "particle_index": 0,
+      "condition": {
+        "type": "radial",
+        "center_m": [
+          0,
+          0,
+          0
+        ],
+        "radius_m": 1,
+        "direction": "outward"
+      },
+      "occurrence": "first",
+      "max_step_s": 0.02,
+      "min_radial_speed_m_s": 0.000001,
+      "accuracy": {
+        "time_atol_s": 0.00001,
+        "position_atol_m": 0.000001,
+        "velocity_atol_m_s": 0.000001,
+        "rtol": 0.000001
+      }
+    },
+    {
+      "id": "initial_speed",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "speed",
+      "sample_index": 0
+    },
+    {
+      "id": "initial_V",
+      "type": "potential",
+      "position_m": [
+        0.5,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "target_V",
+      "type": "potential",
+      "position_m": [
+        1,
+        0,
+        0
+      ]
+    }
+  ],
+  "notes": "Illustrative q=1 μC, m=0.001 kg, λ=1e-8 C/m, r0=0.5 m and crossing radius 1 m; original asks symbolic speed dependence."
+}

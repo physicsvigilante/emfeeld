@@ -1,0 +1,76 @@
+{
+  "source_pdf": "user-supplied 01_emfields.pdf",
+  "pdf_sha256": "1b67b3c0af8cd55a850258b655bbf5018cc3baee11016c80afa50eb86e53af58",
+  "questions": [
+    {
+      "id": "SC09-POLYGON",
+      "pdf_page": 21,
+      "printed_page": "1.161",
+      "section": "Single Correct Q9",
+      "question": "A regular n-sided polygon has vertices at radius a; n-1 carry equal charges of magnitude q. Determine the field at the centre."
+    },
+    {
+      "id": "SC17-HALF-POTENTIAL",
+      "pdf_page": 22,
+      "printed_page": "1.162",
+      "section": "Single Correct Q17",
+      "question": "A uniformly charged solid sphere has an external point where potential is half the centre potential; determine distance from its surface in terms of R."
+    },
+    {
+      "id": "NUM10-COULOMB-WEIGHT",
+      "pdf_page": 69,
+      "printed_page": "1.209",
+      "section": "Integer/Numerical Q10",
+      "question": "Two identical positive particles each of mass 1.7e-27kg and charge 1.6e-19C experience mutual repulsion equal to their weights (g=10m/s²). Find separation in cm, nearest integer."
+    },
+    {
+      "id": "NUM18-THREED-EX",
+      "pdf_page": 70,
+      "printed_page": "1.210",
+      "section": "Integer/Numerical Q18",
+      "question": "Q1=+11(11/3)^(3/2)×10^-9C at origin; unknown Q at (2,0,0)m; the x field component at (3,1,1)m vanishes. Find Q in nC."
+    },
+    {
+      "id": "ARCH14-Q4-GAUSS-FAMILIES",
+      "pdf_page": 87,
+      "printed_page": "1.227",
+      "section": "JEE Advanced 2014 Q4",
+      "question": "Separately compare field strength from point charge Q, infinite line λ and infinite plane σ when equal at r0. Find relationships and half-radius scaling."
+    },
+    {
+      "id": "ARCH13-Q6-TOUCHING-SPHERES",
+      "pdf_page": 87,
+      "printed_page": "1.227",
+      "section": "JEE Advanced 2013 Q6",
+      "question": "Two touching uniform nonconducting spheres have radii R and 2R and densities ρ1,ρ2. The field vanishes 2R from smaller centre somewhere along line of centres. Find possible density ratios."
+    },
+    {
+      "id": "MAIN19-Q5-LINE-OUTWARD",
+      "pdf_page": 73,
+      "printed_page": "1.213",
+      "section": "JEE Main April 2019 Q5",
+      "question": "A positive test charge starts from rest distance r0 from a uniformly positive infinite line. Find how speed scales with radial distance r."
+    },
+    {
+      "id": "SC15-NONUNIFORM-X-FIELD",
+      "pdf_page": 22,
+      "printed_page": "1.162",
+      "section": "Single Correct Q15",
+      "question": "E=αx xhat within a cubical region of edge a; infer enclosed charge."
+    },
+    {
+      "id": "NUM37-EMISSION-TIME",
+      "pdf_page": 72,
+      "printed_page": "1.212",
+      "section": "Integer/Numerical Q37",
+      "question": "An insulated sphere emits beta particles at a stated rate and escape fraction. Find the time for potential to increase by 2V."
+    },
+    {
+      "id": "SC10-PLANE-WITH-HOLE",
+      "pdf_page": 21,
+      "printed_page": "1.161",
+      "section": "Single Correct Q10",
+      "question": "Infinite charged sheet with a circular hole. Electron released 3R along hole axis; find crossing speed at hole centre."
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "JEE Adv 2013 Q6: touching unequal spheres (OUTER)",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "solid_sphere",
+        "charge_C": -6.702064327658226e-10,
+        "radius_m": 0.5,
+        "center_m": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "solid_sphere",
+        "charge_C": 4.188790204786391e-9,
+        "radius_m": 1,
+        "center_m": [
+          1.5,
+          0,
+          0
+        ]
+      }
+    ],
+    "bounds_m": [
+      -2,
+      3,
+      -2,
+      2,
+      -2,
+      2
+    ]
+  },
+  "observations": [
+    {
+      "id": "E_target",
+      "type": "field",
+      "position_m": [
+        -1,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "V_target",
+      "type": "potential",
+      "position_m": [
+        -1,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "E_check",
+      "type": "field",
+      "position_m": [
+        0,
+        1,
+        0
+      ]
+    }
+  ],
+  "notes": "R=.5m, rho2=1e-9 C/m³ illustrative. Author inferred rho1/rho2=-1.28; native forward E checked at -1,0,0 m."
+}

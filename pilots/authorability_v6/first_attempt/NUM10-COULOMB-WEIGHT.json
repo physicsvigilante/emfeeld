@@ -1,0 +1,49 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "NUM10: repulsive Coulomb force equals one particle weight",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "point",
+        "charge_C": 1.6e-19,
+        "center_m": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "bounds_m": [
+      -0.2,
+      0.2,
+      -0.2,
+      0.2,
+      -0.2,
+      0.2
+    ]
+  },
+  "observations": [
+    {
+      "id": "E_at_second",
+      "type": "field",
+      "position_m": [
+        0.11633656188378422,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "F_on_second",
+      "type": "force",
+      "position_m": [
+        0.11633656188378422,
+        0,
+        0
+      ],
+      "test_charge_C": 1.6e-19
+    }
+  ],
+  "notes": "Mass 1.7e-27 kg, charge 1.6e-19 C, g=10 m/s² supplied. Author-derived separation 0.11633656188378422 m; native engine only probes Coulomb force."
+}

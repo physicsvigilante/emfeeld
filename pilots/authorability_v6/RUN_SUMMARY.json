@@ -1,0 +1,32 @@
+{
+  "title": "Question-only source-withheld authorability pilot v6",
+  "frozen_engine_ref": "08571d366a0499d2110de0929d91db7d5caa6c7f",
+  "source_pdf_sha256": "1b67b3c0af8cd55a850258b655bbf5018cc3baee11016c80afa50eb86e53af58",
+  "question_level": {
+    "supported_forward_models": 7,
+    "correctly_unsupported": 3,
+    "native_fully_symbolic_or_inverse_solutions": 0
+  },
+  "first_attempt": {
+    "runnable_json_packets": 10,
+    "succeeded": 10,
+    "post_run_packet_edits": 0
+  },
+  "verification": {
+    "same_author_math_checks_passed": 35,
+    "same_author_math_checks_total": 35,
+    "first_verifier_only_failure": "Indexing .result.json as part of result ID; corrected without changing packets or threshold",
+    "step_cap_checks": 4
+  },
+  "regression": {
+    "old_core_pilot_v1": 783,
+    "live_compatibility": 10,
+    "real_viewer_regressions": 9,
+    "new_v6_benchmark": 18,
+    "total_passed": 820,
+    "skips": 0
+  },
+  "public_packet_identity": "Published JSON semantically reserialized, not byte-identical with the chat evidence ZIP frozen first-attempt files.",
+  "independence": "Same-chat, same-author; source solutions withheld but not independent blind verification.",
+  "status": "PR draft, unmerged; no engine changes"
+}
