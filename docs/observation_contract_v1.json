@@ -55,8 +55,8 @@
     "2": "invalid input, unsupported request, or file I/O failure"
   },
   "validation_only": "no field evaluation and no domain or accuracy certification",
-  "not_implemented": ["crossings", "turning_points", "flux_requests", "probe_annotations", "mixed_electric_gravity", "conductor_response"],
+  "not_implemented": ["radial_crossings", "turning_points", "flux_requests", "probe_annotations", "mixed_electric_gravity", "conductor_response"],
   "potential_references": "unchanged sum of source references; endpoint difference can suffer cancellation",
-  "packet_extensions": {"trajectory_sample": "trajectory_sample_contract_v1.json"},
+  "packet_extensions": {"trajectory_sample": "trajectory_sample_contract_v1.json", "trajectory_event": "plane_event_contract_v1.json"},
   "schema_note": "This is a descriptive machine-readable contract, not a JSON Schema document. Runtime validation is authoritative."
 }

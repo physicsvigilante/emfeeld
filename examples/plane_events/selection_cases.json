@@ -1,0 +1,158 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "Explicit event edge cases",
+    "kind": "gravity",
+    "sources": [
+      {
+        "type": "uniform",
+        "field_m_s2": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "particles": [
+      {
+        "mass_kg": 1,
+        "position_m": [
+          -1,
+          0,
+          0
+        ],
+        "velocity_m_s": [
+          1,
+          0,
+          0
+        ]
+      }
+    ],
+    "duration_s": 3,
+    "samples": 4,
+    "bounds_m": [
+      -3,
+      3,
+      -3,
+      3,
+      -3,
+      3
+    ]
+  },
+  "observations": [
+    {
+      "id": "ordinary",
+      "type": "trajectory_event",
+      "particle_index": 0,
+      "condition": {
+        "type": "plane",
+        "point_m": [
+          0,
+          0,
+          0
+        ],
+        "normal": [
+          1,
+          0,
+          0
+        ],
+        "direction": "positive"
+      },
+      "occurrence": "first",
+      "max_step_s": 0.05,
+      "min_normal_speed_m_s": 1e-07,
+      "accuracy": {
+        "time_atol_s": 1e-06,
+        "position_atol_m": 1e-06,
+        "velocity_atol_m_s": 1e-07,
+        "rtol": 1e-07
+      }
+    },
+    {
+      "id": "wrong_direction",
+      "type": "trajectory_event",
+      "particle_index": 0,
+      "condition": {
+        "type": "plane",
+        "point_m": [
+          0,
+          0,
+          0
+        ],
+        "normal": [
+          1,
+          0,
+          0
+        ],
+        "direction": "negative"
+      },
+      "occurrence": "first",
+      "max_step_s": 0.05,
+      "min_normal_speed_m_s": 1e-07,
+      "accuracy": {
+        "time_atol_s": 1e-06,
+        "position_atol_m": 1e-06,
+        "velocity_atol_m_s": 1e-07,
+        "rtol": 1e-07
+      }
+    },
+    {
+      "id": "initial_on_plane",
+      "type": "trajectory_event",
+      "particle_index": 0,
+      "condition": {
+        "type": "plane",
+        "point_m": [
+          -1,
+          0,
+          0
+        ],
+        "normal": [
+          1,
+          0,
+          0
+        ],
+        "direction": "either"
+      },
+      "occurrence": "first",
+      "max_step_s": 0.05,
+      "min_normal_speed_m_s": 1e-07,
+      "accuracy": {
+        "time_atol_s": 1e-06,
+        "position_atol_m": 1e-06,
+        "velocity_atol_m_s": 1e-07,
+        "rtol": 1e-07
+      }
+    },
+    {
+      "id": "slow_crossing",
+      "type": "trajectory_event",
+      "particle_index": 0,
+      "condition": {
+        "type": "plane",
+        "point_m": [
+          0,
+          0,
+          0
+        ],
+        "normal": [
+          1,
+          0,
+          0
+        ],
+        "direction": "positive"
+      },
+      "occurrence": "first",
+      "max_step_s": 0.05,
+      "min_normal_speed_m_s": 2,
+      "accuracy": {
+        "time_atol_s": 1e-06,
+        "position_atol_m": 1e-06,
+        "velocity_atol_m_s": 1e-07,
+        "rtol": 1e-07
+      }
+    }
+  ],
+  "notes": "Deliberate local outcomes: success, no detection, initial-plane error, and rejected slow crossing."
+}

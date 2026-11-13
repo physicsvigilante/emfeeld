@@ -1,0 +1,111 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "Explicit event edge cases",
+    "kind": "gravity",
+    "sources": [
+      {
+        "type": "point",
+        "mass_kg": 14982844642.8839
+      }
+    ],
+    "particles": [
+      {
+        "mass_kg": 1,
+        "position_m": [
+          0,
+          0,
+          0
+        ],
+        "velocity_m_s": [
+          1,
+          0,
+          0
+        ]
+      },
+      {
+        "mass_kg": 1,
+        "position_m": [
+          2,
+          0,
+          0
+        ],
+        "velocity_m_s": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "duration_s": 10,
+    "samples": 4,
+    "bounds_m": [
+      -3,
+      3,
+      -3,
+      3,
+      -3,
+      3
+    ]
+  },
+  "observations": [
+    {
+      "id": "singular_start",
+      "type": "trajectory_event",
+      "particle_index": 0,
+      "condition": {
+        "type": "plane",
+        "point_m": [
+          1,
+          0,
+          0
+        ],
+        "normal": [
+          1,
+          0,
+          0
+        ],
+        "direction": "negative"
+      },
+      "occurrence": "first",
+      "max_step_s": 0.05,
+      "min_normal_speed_m_s": 1e-07,
+      "accuracy": {
+        "time_atol_s": 1e-06,
+        "position_atol_m": 1e-06,
+        "velocity_atol_m_s": 1e-07,
+        "rtol": 1e-07
+      }
+    },
+    {
+      "id": "valid_fall",
+      "type": "trajectory_event",
+      "particle_index": 1,
+      "condition": {
+        "type": "plane",
+        "point_m": [
+          1,
+          0,
+          0
+        ],
+        "normal": [
+          1,
+          0,
+          0
+        ],
+        "direction": "negative"
+      },
+      "occurrence": "first",
+      "max_step_s": 0.05,
+      "min_normal_speed_m_s": 1e-07,
+      "accuracy": {
+        "time_atol_s": 1e-06,
+        "position_atol_m": 1e-06,
+        "velocity_atol_m_s": 1e-07,
+        "rtol": 1e-07
+      }
+    }
+  ],
+  "notes": "One singular start must not suppress the second particle. The valid terminal search stops before the later central singularity."
+}

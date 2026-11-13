@@ -1,6 +1,6 @@
 # Data-only static observations v1
 
-**Additive extension:** the same packet/command now accepts saved-trajectory requests; see [trajectory observations](TRAJECTORY_OBSERVATIONS.md). The four static operations below and their Python API are unchanged. Static-only packets never integrate.
+**Additive extensions:** the same packet/command accepts [saved-trajectory requests](TRAJECTORY_OBSERVATIONS.md) and [bounded first-plane-crossing requests](PLANE_EVENTS.md). The four static operations below and their Python API are unchanged. Static-only packets never integrate.
 
 ## Purpose
 
@@ -94,6 +94,6 @@ Eight packets reuse **exactly the scene objects from the earlier pilot**: SC-55,
 
 The Python API `evaluate_observations(model, list_of_request_dicts)` also works with nested `Superposition` objects and compatible custom field implementations. Python requests intentionally use JSON-compatible lists and built-in numbers; convert NumPy arrays/scalars with `.tolist()`/`float()`.
 
-A packet containing **only these static request types performs no trajectory integration**, even if the embedded scene includes particles. Such particles are not included among the field sources. The additive `trajectory_sample` request is described in [its own contract](TRAJECTORY_OBSERVATIONS.md). It does not relax shell/plane trajectory restrictions. Crossings, turning points, flux requests, generalized conductors, mixed electric/gravity coupling and visual annotations remain unsupported. The original SC-158 flux assessment remains PARTIAL.
+A packet containing **only these static request types performs no trajectory integration**, even if the embedded scene includes particles. Such particles are not included among the field sources. The additive `trajectory_sample` request is described in [its own contract](TRAJECTORY_OBSERVATIONS.md). It does not relax shell/plane trajectory restrictions. The separately qualified `trajectory_event` plane request is described in [PLANE_EVENTS.md](PLANE_EVENTS.md); it does not relax those source restrictions. Radial events, turning points, flux requests, generalized conductors, mixed electric/gravity coupling and visual annotations remain unsupported. The original SC-158 flux assessment remains PARTIAL.
 
 See [executed evidence](OBSERVATIONS_VALIDATION.md). PR #1 remains draft and unmerged; no independent review or Windows interaction qualification is claimed.

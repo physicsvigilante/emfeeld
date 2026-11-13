@@ -1,9 +1,9 @@
-"""Data-only field probes and saved-trajectory sample observations.
+"""Data-only static, saved-state and bounded plane-crossing observations.
 
 Run: python -m emfeeld.observations packet.json [--output result.json]
 Static-only packets never integrate. Trajectory requests reuse one solve per
 referenced particle, with explicit saved-time selection and no interpolation.
-Scene-v1, source laws and the integrator are unchanged; no viewer is imported.
+Scene-v1 and the saved-sample integrator are unchanged. Event searches are separate; no viewer is imported.
 """
 from __future__ import annotations
 
@@ -27,6 +27,7 @@ import scipy
 from .fields import DomainError, Field, G, epsilon_0, check_kind
 from .scene import Scene, scene_from_dict, strict_keys
 from .trajectory_samples import QUANTITIES, SampleRequest, TrajectorySamples
+from .plane_events import PlaneRequest, PlaneEvents, DIRECTIONS
 
 TYPES = ("field", "potential", "force", "potential_difference")
 ID_PATTERN = r"[A-Za-z][A-Za-z0-9_.-]{0,63}"
@@ -279,12 +280,48 @@ def _trajectory_request(scene: Scene, row: dict) -> TrajectoryObservation:
     return TrajectoryObservation(ident, "trajectory_sample", sample, expectation)
 
 
-def _packet_requests(scene: Scene, data: Any) -> tuple[Observation | TrajectoryObservation, ...]:
+def _plane_request(scene: Scene, row: dict) -> PlaneRequest:
+    required = ("id", "type", "particle_index", "condition", "occurrence", "max_step_s",
+                "min_normal_speed_m_s", "accuracy")
+    strict_keys(row, required, required)
+    ident = row["id"]
+    if not isinstance(ident, str) or re.fullmatch(ID_PATTERN, ident) is None:
+        raise ValueError("observation id must match " + ID_PATTERN)
+    particle = row["particle_index"]
+    if type(particle) is not int or not 0 <= particle < len(scene.particles):
+        raise ValueError("particle_index must refer to scene.particles")
+    if row["occurrence"] != "first":
+        raise ValueError("only first occurrence is supported")
+    c = row["condition"]
+    strict_keys(c, ("type", "point_m", "normal", "direction"), ("type", "point_m", "normal", "direction"))
+    if c["type"] != "plane" or not isinstance(c["direction"], str) or c["direction"] not in DIRECTIONS:
+        raise ValueError("condition must be a plane with positive, negative or either direction")
+    point, normal = _vector(c["point_m"], "point_m"), _vector(c["normal"], "normal")
+    length = math.hypot(*normal)
+    if not math.isfinite(length) or length == 0:
+        raise ValueError("plane normal must have finite nonzero length")
+    normal = tuple(v / length for v in normal)
+    step = _number(row["max_step_s"], "max_step_s", positive=True)
+    if not scene.duration_s / 10000 <= step <= scene.duration_s or step / 2 == 0:
+        raise ValueError("max_step_s must be between duration_s/10000 and duration_s; refined step must be representable")
+    min_speed = _number(row["min_normal_speed_m_s"], "min_normal_speed_m_s", positive=True)
+    a = row["accuracy"]
+    names = ("time_atol_s", "position_atol_m", "velocity_atol_m_s", "rtol")
+    strict_keys(a, names, names)
+    tolerances = [_number(a[k], k, positive=k != "rtol") for k in names]
+    if tolerances[-1] < 0:
+        raise ValueError("accuracy.rtol must be nonnegative")
+    return PlaneRequest(ident, particle, point, normal, c["direction"], step, min_speed, *tolerances)
+
+
+def _packet_requests(scene: Scene, data: Any) -> tuple[Observation | TrajectoryObservation | PlaneRequest, ...]:
     if not isinstance(data, list) or not data:
         raise ValueError("observations must be a nonempty array")
     requests, seen = [], set()
     for row in data:
-        if isinstance(row, dict) and row.get("type") == "trajectory_sample":
+        if isinstance(row, dict) and row.get("type") == "trajectory_event":
+            request = _plane_request(scene, row)
+        elif isinstance(row, dict) and row.get("type") == "trajectory_sample":
             request = _trajectory_request(scene, row)
         else:
             request = parse_requests(scene.model.kind, [row])[0]
@@ -299,9 +336,13 @@ def _evaluate_packet(scene: Scene, requests) -> tuple[list[dict], dict | None]:
     # Keep the static-only report shape and static public API backward compatible.
     has_motion = any(isinstance(r, TrajectoryObservation) for r in requests)
     samples = TrajectorySamples(scene) if has_motion else None
+    events = PlaneEvents(scene) if any(isinstance(r, PlaneRequest) for r in requests) else None
     results = []
     for request in requests:
-        if isinstance(request, TrajectoryObservation):
+        if isinstance(request, PlaneRequest):
+            r = {"id": request.id, "type": request.type, "kind": scene.model.kind,
+                 **events.observe(request)}
+        elif isinstance(request, TrajectoryObservation):
             r = {"id": request.id, "type": request.type, "kind": scene.model.kind,
                  **samples.observe(request.sample)}
             if request.expectation is not None:
@@ -313,7 +354,7 @@ def _evaluate_packet(scene: Scene, requests) -> tuple[list[dict], dict | None]:
     return results, samples.runs if samples is not None else None
 
 
-def packet_from_dict(data: Any) -> tuple[Scene, tuple[Observation | TrajectoryObservation, ...]]:
+def packet_from_dict(data: Any) -> tuple[Scene, tuple[Observation | TrajectoryObservation | PlaneRequest, ...]]:
     strict_keys(data, ("observation_schema_version", "scene", "observations", "notes"),
                 ("observation_schema_version", "scene", "observations"))
     if type(data["observation_schema_version"]) is not int or data["observation_schema_version"] != 1:
@@ -337,16 +378,17 @@ def _digest(data: Any) -> str:
 
 
 def run_packet(data: dict) -> dict:
-    """Validate the complete packet, then evaluate probes and requested saved states.
+    """Validate the complete packet, then evaluate static, saved-state and event requests.
 
-    Only trajectory_sample requests trigger integration, once per referenced
-    particle per call. Test particles never become sources. Tolerances check an
-    authored reference and cannot change solver settings or interpolation policy.
+    Saved samples integrate once per referenced particle. Plane events use separate
+    base/refined terminal searches, cached per exact request. Test particles never
+    become sources. Event accuracy compares two fixed-tolerance solver runs; it
+    is separate from static/sample expectation checks and from solver settings.
     """
     data = deepcopy(data)
     scene, requests = packet_from_dict(data)
     results, trajectory_runs = _evaluate_packet(scene, requests)
-    good = [r["status"] == "ok" and r.get("check", {}).get("passed", True) is True for r in results]
+    good = [r["status"] in ("ok", "no_event") and r.get("check", {}).get("passed", True) is True for r in results]
     report = {
         "observation_result_version": 1, "title": scene.title, "kind": scene.model.kind,
         "status": "ok" if all(good) else "partial" if any(good) else "failed",
@@ -371,6 +413,21 @@ def run_packet(data: dict) -> dict:
         for key, status in (("selection_errors", "selection_error"),
                             ("unsupported_trajectories", "unsupported_trajectory"),
                             ("integration_errors", "integration_error")):
+            report["counts"][key] = sum(r["status"] == status for r in results)
+    if any(isinstance(r, PlaneRequest) for r in requests):
+        report["plane_event_contract"] = 1
+        report["event_integration_policy"] = (
+            "two terminal DOP853 searches per unique event request, independently of saved-sample runs; "
+            "the second halves max_step and tightens solver tolerances tenfold; exact duplicates reuse results")
+        report["accuracy"] = ("Float64; event refinement agreement is not a certified error bound or root "
+                              "completeness guarantee. no_event means no detection in both runs, not a proof of absence.")
+        if trajectory_runs is None:
+            report["trajectories"] = "event-only terminal searches; no saved trajectory arrays; no feedback"
+        else:
+            report["trajectories"] = "saved-sample runs and terminal-event searches are separate; no feedback"
+        for key, status in (("no_events", "no_event"), ("initial_condition_errors", "initial_condition_error"),
+                            ("ambiguous_events", "ambiguous_event"), ("convergence_errors", "convergence_error"),
+                            ("unsupported_trajectories", "unsupported_trajectory"), ("integration_errors", "integration_error")):
             report["counts"][key] = sum(r["status"] == status for r in results)
     json.dumps(report, allow_nan=False)  # Never export NaN/Infinity as a result.
     return report

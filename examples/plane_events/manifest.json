@@ -1,0 +1,213 @@
+{
+  "parent_commit": "75a07505b66e4afe4ccb67ab2e180f885264ee84",
+  "scope": "Assisted examples and analytic checks, not blind authorability reliability. All old scenes and pilot outcomes remain unchanged.",
+  "packets": [
+    {
+      "file": "oblique_electric.json",
+      "cli_exit": 0,
+      "expected_results": [
+        {
+          "id": "plane",
+          "status": "ok",
+          "state": {
+            "time_s": 1.0,
+            "position_m": [
+              0,
+              0,
+              0
+            ],
+            "velocity_m_s": [
+              2,
+              4,
+              -4
+            ],
+            "speed_m_s": 6.0,
+            "total_energy_J": 36.0
+          },
+          "atol": 1e-09,
+          "rtol": 1e-09
+        },
+        {
+          "id": "saved_speed",
+          "status": "ok"
+        }
+      ],
+      "reference": "r=r0+(q/m)E t^2/2; U=q*(-E.r); t=1 s."
+    },
+    {
+      "file": "sc-28.json",
+      "cli_exit": 0,
+      "expected_results": [
+        {
+          "id": "midpoint",
+          "status": "ok",
+          "state": {
+            "time_s": 27.32013919385605,
+            "speed_m_s": 0.13407126303701922,
+            "position_m": [
+              0,
+              0,
+              0
+            ]
+          },
+          "atol": 1e-07,
+          "rtol": 1e-08
+        }
+      ],
+      "reference": "Energy along symmetry axis; time from independent 1D quadrature with y=y0-u^2 removing the release-point endpoint singularity."
+    },
+    {
+      "file": "sol-26.json",
+      "cli_exit": 0,
+      "expected_results": [
+        {
+          "id": "right_zero_locus",
+          "status": "ok",
+          "state": {
+            "time_s": 83.87132242424467,
+            "speed_m_s": 0.06703563151850961,
+            "position_m": [
+              9,
+              0,
+              0
+            ]
+          },
+          "atol": 1e-07,
+          "rtol": 1e-08
+        }
+      ],
+      "reference": "Conserved energy with V(x)=kQ*(1/(x-3)-2/(x+3)); travel time is separate 1D quadrature using x=5+u^2."
+    },
+    {
+      "file": "ideal_sun.json",
+      "cli_exit": 0,
+      "expected_results": [
+        {
+          "id": "planet_0_x_zero",
+          "status": "ok",
+          "state": {
+            "time_s": 7889429.718241413,
+            "speed_m_s": 29785.142169221024
+          },
+          "atol": 0.01,
+          "rtol": 1e-09
+        },
+        {
+          "id": "planet_1_x_zero",
+          "status": "ok",
+          "state": {
+            "time_s": 13272273.006342288,
+            "speed_m_s": 31958.805921994124
+          },
+          "atol": 0.01,
+          "rtol": 1e-09
+        }
+      ],
+      "reference": "Kepler apocentre initial conditions: a=(2/r0-v0^2/mu)^-1, e=r0/a-1, E=2pi-acos(e), t=(E-e*sin(E)-pi)*sqrt(a^3/mu)."
+    },
+    {
+      "file": "gravity_composition.json",
+      "cli_exit": 0,
+      "expected_results": [
+        {
+          "id": "mass_0",
+          "status": "ok",
+          "state": {
+            "time_s": 8.832926363946664,
+            "position_m": [
+              0.3703557312252965,
+              -0.5255860261066284,
+              0.31878842209504343
+            ],
+            "velocity_m_s": [
+              -0.11197228006063055,
+              -0.10346716650925811,
+              0.03669148160178855
+            ]
+          },
+          "atol": 1e-07,
+          "rtol": 1e-08
+        },
+        {
+          "id": "mass_1",
+          "status": "ok",
+          "state": {
+            "time_s": 8.832926363946664,
+            "position_m": [
+              0.3703557312252965,
+              -0.5255860261066284,
+              0.31878842209504343
+            ],
+            "velocity_m_s": [
+              -0.11197228006063055,
+              -0.10346716650925811,
+              0.03669148160178855
+            ]
+          },
+          "atol": 1e-07,
+          "rtol": 1e-08
+        }
+      ],
+      "reference": "Inside both spheres: r=equilibrium+(r0-equilibrium)*cos(omega*t)+v0*sin(omega*t)/omega; omega^2=sum(GM/R^3)."
+    },
+    {
+      "file": "selection_cases.json",
+      "cli_exit": 1,
+      "expected_results": [
+        {
+          "id": "ordinary",
+          "status": "ok"
+        },
+        {
+          "id": "wrong_direction",
+          "status": "no_event"
+        },
+        {
+          "id": "initial_on_plane",
+          "status": "initial_condition_error"
+        },
+        {
+          "id": "slow_crossing",
+          "status": "ambiguous_event"
+        }
+      ],
+      "reference": "Free motion x=-1+t."
+    },
+    {
+      "file": "unsupported_motion.json",
+      "cli_exit": 1,
+      "expected_results": [
+        {
+          "id": "not_admitted",
+          "status": "unsupported_trajectory"
+        },
+        {
+          "id": "valid_potential",
+          "status": "ok"
+        }
+      ],
+      "reference": "Existing shell/plane motion restriction is retained."
+    },
+    {
+      "file": "particle_failure.json",
+      "cli_exit": 1,
+      "expected_results": [
+        {
+          "id": "singular_start",
+          "status": "domain_error"
+        },
+        {
+          "id": "valid_fall",
+          "status": "ok",
+          "state": {
+            "time_s": 2.5707963267948966,
+            "speed_m_s": 1.0
+          },
+          "atol": 1e-08,
+          "rtol": 1e-09
+        }
+      ],
+      "reference": "Radial fall from rest at r=2 with GM=1 to r=1: t=1+pi/2, speed=1. This is not collision handling."
+    }
+  ]
+}
