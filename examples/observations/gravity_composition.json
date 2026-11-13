@@ -1,0 +1,119 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "Two fixed mass spheres and uniform gravity (illustrative)",
+    "kind": "gravity",
+    "sources": [
+      {
+        "type": "solid_sphere",
+        "mass_kg": 1000000000000.0,
+        "radius_m": 2,
+        "center_m": [
+          -2,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "solid_sphere",
+        "mass_kg": 500000000000.0,
+        "radius_m": 1,
+        "center_m": [
+          2,
+          1,
+          0
+        ]
+      },
+      {
+        "type": "uniform",
+        "field_m_s2": [
+          0,
+          -0.2,
+          0.1
+        ]
+      }
+    ],
+    "bounds_m": [
+      -6,
+      6,
+      -6,
+      6,
+      -6,
+      6
+    ]
+  },
+  "observations": [
+    {
+      "id": "gravity_at_P",
+      "type": "field",
+      "position_m": [
+        4,
+        3,
+        5
+      ],
+      "expectation": {
+        "value": [
+          -1.0358444944775442,
+          -0.8939595955940924,
+          -1.3499949065823547
+        ],
+        "atol": 1e-12,
+        "rtol": 1e-11
+      }
+    },
+    {
+      "id": "specific_potential_at_P",
+      "type": "potential",
+      "position_m": [
+        4,
+        3,
+        5
+      ],
+      "expectation": {
+        "value": -13.686546803006113,
+        "atol": 1e-12,
+        "rtol": 1e-11
+      }
+    },
+    {
+      "id": "force_on_test_mass",
+      "type": "force",
+      "position_m": [
+        4,
+        3,
+        5
+      ],
+      "test_mass_kg": 2.75,
+      "expectation": {
+        "value": [
+          -2.8485723598132466,
+          -2.4583888878837543,
+          -3.7124859931014753
+        ],
+        "atol": 1e-12,
+        "rtol": 1e-11
+      }
+    },
+    {
+      "id": "potential_difference",
+      "type": "potential_difference",
+      "from_m": [
+        4,
+        3,
+        5
+      ],
+      "to_m": [
+        4,
+        -2,
+        5
+      ],
+      "expectation": {
+        "value": -0.9054756429466693,
+        "atol": 1e-12,
+        "rtol": 1e-11
+      }
+    }
+  ],
+  "notes": "Illustrative gravitational authoring example, not gravitational-corpus coverage. Both probes lie outside both spheres. Independent references use exterior -GM/r potentials plus the uniform-field potential; force=2.75 kg*g."
+}

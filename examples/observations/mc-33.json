@@ -1,0 +1,281 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "MC-33 | four equal sources; inspect perpendicular z axis",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "point",
+        "charge_C": 1e-09,
+        "center_m": [
+          1.0,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": 1e-09,
+        "center_m": [
+          0,
+          1.0,
+          0
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": 1e-09,
+        "center_m": [
+          -1.0,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": 1e-09,
+        "center_m": [
+          0,
+          -1.0,
+          0
+        ]
+      }
+    ],
+    "bounds_m": [
+      -2,
+      2,
+      -2,
+      2,
+      -3,
+      3
+    ]
+  },
+  "observations": [
+    {
+      "id": "axis_0_potential",
+      "type": "potential",
+      "position_m": [
+        0,
+        0,
+        -2
+      ],
+      "expectation": {
+        "value": 16.077421396142046,
+        "atol": 1e-12,
+        "rtol": 1e-11
+      }
+    },
+    {
+      "id": "axis_0_field",
+      "type": "field",
+      "position_m": [
+        0,
+        0,
+        -2
+      ],
+      "expectation": {
+        "value": [
+          0,
+          0,
+          -6.430968558456819
+        ],
+        "atol": 1e-12,
+        "rtol": 1e-11
+      }
+    },
+    {
+      "id": "axis_1_potential",
+      "type": "potential",
+      "position_m": [
+        0,
+        0,
+        -1
+      ],
+      "expectation": {
+        "value": 25.420635257066554,
+        "atol": 1e-12,
+        "rtol": 1e-11
+      }
+    },
+    {
+      "id": "axis_1_field",
+      "type": "field",
+      "position_m": [
+        0,
+        0,
+        -1
+      ],
+      "expectation": {
+        "value": [
+          0,
+          0,
+          -12.710317628533277
+        ],
+        "atol": 1e-12,
+        "rtol": 1e-11
+      }
+    },
+    {
+      "id": "axis_2_potential",
+      "type": "potential",
+      "position_m": [
+        0,
+        0,
+        -0.3
+      ],
+      "expectation": {
+        "value": 34.43405336232279,
+        "atol": 1e-12,
+        "rtol": 1e-11
+      }
+    },
+    {
+      "id": "axis_2_field",
+      "type": "field",
+      "position_m": [
+        0,
+        0,
+        -0.3
+      ],
+      "expectation": {
+        "value": [
+          0,
+          0,
+          -9.477262393299851
+        ],
+        "atol": 1e-12,
+        "rtol": 1e-11
+      }
+    },
+    {
+      "id": "axis_3_potential",
+      "type": "potential",
+      "position_m": [
+        0,
+        0,
+        0
+      ],
+      "expectation": {
+        "value": 35.95020714468319,
+        "atol": 1e-12,
+        "rtol": 1e-11
+      }
+    },
+    {
+      "id": "axis_3_field",
+      "type": "field",
+      "position_m": [
+        0,
+        0,
+        0
+      ],
+      "expectation": {
+        "value": [
+          0,
+          0,
+          0.0
+        ],
+        "atol": 1e-12,
+        "rtol": 1e-11
+      }
+    },
+    {
+      "id": "axis_4_potential",
+      "type": "potential",
+      "position_m": [
+        0,
+        0,
+        0.3
+      ],
+      "expectation": {
+        "value": 34.43405336232279,
+        "atol": 1e-12,
+        "rtol": 1e-11
+      }
+    },
+    {
+      "id": "axis_4_field",
+      "type": "field",
+      "position_m": [
+        0,
+        0,
+        0.3
+      ],
+      "expectation": {
+        "value": [
+          0,
+          0,
+          9.477262393299851
+        ],
+        "atol": 1e-12,
+        "rtol": 1e-11
+      }
+    },
+    {
+      "id": "axis_5_potential",
+      "type": "potential",
+      "position_m": [
+        0,
+        0,
+        1
+      ],
+      "expectation": {
+        "value": 25.420635257066554,
+        "atol": 1e-12,
+        "rtol": 1e-11
+      }
+    },
+    {
+      "id": "axis_5_field",
+      "type": "field",
+      "position_m": [
+        0,
+        0,
+        1
+      ],
+      "expectation": {
+        "value": [
+          0,
+          0,
+          12.710317628533277
+        ],
+        "atol": 1e-12,
+        "rtol": 1e-11
+      }
+    },
+    {
+      "id": "axis_6_potential",
+      "type": "potential",
+      "position_m": [
+        0,
+        0,
+        2
+      ],
+      "expectation": {
+        "value": 16.077421396142046,
+        "atol": 1e-12,
+        "rtol": 1e-11
+      }
+    },
+    {
+      "id": "axis_6_field",
+      "type": "field",
+      "position_m": [
+        0,
+        0,
+        2
+      ],
+      "expectation": {
+        "value": [
+          0,
+          0,
+          6.430968558456819
+        ],
+        "atol": 1e-12,
+        "rtol": 1e-11
+      }
+    }
+  ],
+  "notes": "Reuses the immutable authorability-v1 scene for MC-33. Reference: four equal sources on the planar coordinate axes; V=4kq/sqrt(a^2+z^2), E_z=4kqz/(a^2+z^2)^(3/2). Representative a=1 m, q=1 nC; seven axis probes. Numerical choices/provenance remain in pilots/authorability_v1/cases.json. This packet evaluates static observations only, not the full question or trajectories."
+}

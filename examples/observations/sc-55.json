@@ -1,0 +1,81 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "SC-55 | prescribed source; force probe at (8,-5,0) m",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "point",
+        "charge_C": 5e-05,
+        "center_m": [
+          2,
+          3,
+          0
+        ]
+      }
+    ],
+    "bounds_m": [
+      -1,
+      11,
+      -8,
+      6,
+      -6,
+      6
+    ]
+  },
+  "observations": [
+    {
+      "id": "field_at_P",
+      "type": "field",
+      "position_m": [
+        8,
+        -5,
+        0
+      ],
+      "expectation": {
+        "value": [
+          2696.2655358512393,
+          -3595.020714468319,
+          0.0
+        ],
+        "atol": 1e-12,
+        "rtol": 1e-11
+      }
+    },
+    {
+      "id": "force_on_test_charge",
+      "type": "force",
+      "position_m": [
+        8,
+        -5,
+        0
+      ],
+      "test_charge_C": 2e-06,
+      "expectation": {
+        "value": [
+          0.005392531071702478,
+          -0.007190041428936637,
+          0.0
+        ],
+        "atol": 1e-12,
+        "rtol": 1e-11
+      }
+    },
+    {
+      "id": "potential_at_P",
+      "type": "potential",
+      "position_m": [
+        8,
+        -5,
+        0
+      ],
+      "expectation": {
+        "value": 44937.75893085399,
+        "atol": 1e-12,
+        "rtol": 1e-11
+      }
+    }
+  ],
+  "notes": "Reuses the immutable authorability-v1 scene for SC-55. Reference: displacement (6,-8,0) m has length 10 m; field=kQ*d/10^3, force=qE, potential=kQ/10. Original numerical givens retained. Numerical choices/provenance remain in pilots/authorability_v1/cases.json. This packet evaluates static observations only, not the full question or trajectories."
+}

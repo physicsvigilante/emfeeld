@@ -1,0 +1,86 @@
+{
+  "reference_constants": {
+    "G": 6.6743e-11,
+    "epsilon_0": 8.8541878188e-12
+  },
+  "tolerances": "Authored reference checks, not solver settings or certified bounds. All packet expectations use rtol=1e-11, atol=1e-12 in their result unit.",
+  "examples": [
+    {
+      "file": "sc-55.json",
+      "case_id": "SC-55",
+      "reference_note": "Reuses the immutable authorability-v1 scene for SC-55. Reference: displacement (6,-8,0) m has length 10 m; field=kQ*d/10^3, force=qE, potential=kQ/10. Original numerical givens retained. Numerical choices/provenance remain in pilots/authorability_v1/cases.json. This packet evaluates static observations only, not the full question or trajectories.",
+      "requests": 3,
+      "expected_status": "ok"
+    },
+    {
+      "file": "sc-35.json",
+      "case_id": "SC-35",
+      "reference_note": "Reuses the immutable authorability-v1 scene for SC-35. Reference: signed half-space contributions of the three sheets give E_z=-2*sigma/epsilon_0. Representative a=1 m, sigma=1 nC/m^2. Numerical choices/provenance remain in pilots/authorability_v1/cases.json. This packet evaluates static observations only, not the full question or trajectories.",
+      "requests": 1,
+      "expected_status": "ok"
+    },
+    {
+      "file": "sc-96.json",
+      "case_id": "SC-96",
+      "reference_note": "Reuses the immutable authorability-v1 scene for SC-96. Reference: equal-distance signed potentials cancel; vector field points in -y. Representative side=2 m and charge magnitude=1 nC. Numerical choices/provenance remain in pilots/authorability_v1/cases.json. This packet evaluates static observations only, not the full question or trajectories.",
+      "requests": 2,
+      "expected_status": "ok"
+    },
+    {
+      "file": "sc-122.json",
+      "case_id": "SC-122",
+      "reference_note": "Reuses the immutable authorability-v1 scene for SC-122. Reference: charge shares proportional to radii squared; central potential=kQ(a+b)/(a^2+b^2). Representative total=5 nC, radii=0.5 and 1 m. Numerical choices/provenance remain in pilots/authorability_v1/cases.json. This packet evaluates static observations only, not the full question or trajectories.",
+      "requests": 2,
+      "expected_status": "ok"
+    },
+    {
+      "file": "mc-33.json",
+      "case_id": "MC-33",
+      "reference_note": "Reuses the immutable authorability-v1 scene for MC-33. Reference: four equal sources on the planar coordinate axes; V=4kq/sqrt(a^2+z^2), E_z=4kqz/(a^2+z^2)^(3/2). Representative a=1 m, q=1 nC; seven axis probes. Numerical choices/provenance remain in pilots/authorability_v1/cases.json. This packet evaluates static observations only, not the full question or trajectories.",
+      "requests": 14,
+      "expected_status": "ok"
+    },
+    {
+      "file": "num-31.json",
+      "case_id": "NUM-31",
+      "reference_note": "Reuses the immutable authorability-v1 scene for NUM-31. Reference: full-sphere interior potential at r=0.04 m plus exterior potential of the removed sphere at distance 0.05 m. Original numerical givens retained; negative contribution is removed density, not a second physical object. Numerical choices/provenance remain in pilots/authorability_v1/cases.json. This packet evaluates static observations only, not the full question or trajectories.",
+      "requests": 1,
+      "expected_status": "ok"
+    },
+    {
+      "file": "arch-adv-mc-05.json",
+      "case_id": "ARCH-ADV-MC-05",
+      "reference_note": "Reuses the immutable authorability-v1 scene for ARCH-ADV-MC-05. Reference inside both spheres: E=rho(c2-c1)/(3*epsilon_0); V=rho[(3R1^2-r1^2)-(3R2^2-r2^2)]/(6*epsilon_0). Representative unequal radii and three genuinely 3D probes. Numerical choices/provenance remain in pilots/authorability_v1/cases.json. This packet evaluates static observations only, not the full question or trajectories.",
+      "requests": 6,
+      "expected_status": "ok"
+    },
+    {
+      "file": "sol-26.json",
+      "case_id": "SOL-26",
+      "reference_note": "Reuses the immutable authorability-v1 scene for SOL-26. Reference for representative a=1 m and Q=1 nC: V(5,0,0)=kQ/4, V(9,0,0)=0. Returned difference is V(to)-V(from), not work or crossing speed. Its embedded moving scene is NOT integrated. Numerical choices/provenance remain in pilots/authorability_v1/cases.json. This packet evaluates static observations only, not the full question or trajectories.",
+      "requests": 1,
+      "expected_status": "ok"
+    },
+    {
+      "file": "line_reference.json",
+      "case_id": null,
+      "reference_note": "Illustrative reference-choice example, not a new PDF benchmark. Distances to x-axis are 13 m and 5 m. V=-2k*lambda*ln(rho/13 m).",
+      "requests": 3,
+      "expected_status": "ok"
+    },
+    {
+      "file": "gravity_composition.json",
+      "case_id": null,
+      "reference_note": "Illustrative gravitational authoring example, not gravitational-corpus coverage. Both probes lie outside both spheres. Independent references use exterior -GM/r potentials plus the uniform-field potential; force=2.75 kg*g.",
+      "requests": 4,
+      "expected_status": "ok"
+    },
+    {
+      "file": "domain_errors.json",
+      "case_id": null,
+      "reference_note": "Intentional PARTIAL report and CLI exit 1. Shell potential is continuous; its field at the ideal surface is not assigned.",
+      "requests": 2,
+      "expected_status": "partial"
+    }
+  ]
+}

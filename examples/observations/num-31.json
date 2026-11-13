@@ -1,0 +1,55 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "NUM-31 | cavity via density subtraction (primitive shapes, not a void mesh)",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "solid_sphere",
+        "charge_C": 1.666666666666667e-10,
+        "center_m": [
+          0,
+          0,
+          0
+        ],
+        "radius_m": 0.05
+      },
+      {
+        "type": "solid_sphere",
+        "charge_C": -1.3333333333333336e-12,
+        "center_m": [
+          0,
+          0.03,
+          0
+        ],
+        "radius_m": 0.01
+      }
+    ],
+    "bounds_m": [
+      -0.065,
+      0.065,
+      -0.065,
+      0.065,
+      -0.065,
+      0.065
+    ]
+  },
+  "observations": [
+    {
+      "id": "potential_at_P",
+      "type": "potential",
+      "position_m": [
+        0.04,
+        0,
+        0
+      ],
+      "expectation": {
+        "value": 35.11136897797393,
+        "atol": 1e-12,
+        "rtol": 1e-11
+      }
+    }
+  ],
+  "notes": "Reuses the immutable authorability-v1 scene for NUM-31. Reference: full-sphere interior potential at r=0.04 m plus exterior potential of the removed sphere at distance 0.05 m. Original numerical givens retained; negative contribution is removed density, not a second physical object. Numerical choices/provenance remain in pilots/authorability_v1/cases.json. This packet evaluates static observations only, not the full question or trajectories."
+}
