@@ -75,7 +75,7 @@ def capture(name, scene, output):
             if len(candidates) != 1:
                 raise AssertionError(f'Expected one real marker dataset, found {len(candidates)}')
             markers.append(candidates[0])
-        if expected and len(plot.slider_widgets) != 1:
+        if expected and len(plot.widgets.slider_widgets) != 1:
             raise AssertionError('Moving scene needs one real VTK slider')
         plot.show(auto_close=False, interactive=False)
         result['render_window'] = plot.render_window.GetClassName()
@@ -83,7 +83,7 @@ def capture(name, scene, output):
         for fraction in ((0.0, 0.5, 1.0) if expected else (0.0,)):
             sample = int(round(fraction * (scene.samples - 1)))
             if expected:
-                widget = plot.slider_widgets[0]
+                widget = plot.widgets.slider_widgets[0]
                 widget.GetRepresentation().SetValue(fraction * scene.duration_s)
                 # PyVista's default interaction_event='end'. This is a real VTK
                 # event, but it does NOT simulate or qualify a desktop mouse drag.
@@ -125,20 +125,28 @@ def main():
                      for name in ('numpy', 'scipy', 'pyvista', 'vtk', 'pytest')},
         'scope': 'Real off-screen rendering and programmatic VTK slider events. '
                  'No independent review, mouse interaction or Windows qualification.',
-        'visual_inspection': 'PENDING: screenshots require separate inspection', 'cases': {},
+        'visual_inspection': 'PENDING: screenshots require separate inspection',
+        'status': 'RUNNING', 'cases': {},
     }
+    report_path = args.output / 'report.json'
+    def save_progress():
+        report_path.write_text(json.dumps(report, indent=2, allow_nan=False), encoding='utf-8')
+    save_progress()
     for name, scene in cases():
+        report['cases'][name] = {'status': 'RUNNING'}
+        save_progress()  # Preserve the last case even if native graphics aborts.
         try:
             report['cases'][name] = capture(name, scene, args.output)
         except Exception:
             report['cases'][name] = {'status': 'FAIL', 'traceback': traceback.format_exc()}
+        save_progress()
         print(name, report['cases'][name]['status'], flush=True)
     flat, nested = (report['cases'][n] for n in ('composition_flat', 'composition_nested'))
     report['grouping_geometry_equal'] = (flat.get('status') == nested.get('status') == 'PASS'
                                        and flat['geometry'] == nested['geometry'])
     report['status'] = ('PASS' if report['grouping_geometry_equal'] and
                         all(c['status'] == 'PASS' for c in report['cases'].values()) else 'FAIL')
-    (args.output / 'report.json').write_text(json.dumps(report, indent=2, allow_nan=False), encoding='utf-8')
+    save_progress()
     print('Runtime result:', report['status'], '| visual inspection: PENDING', flush=True)
     return 0 if report['status'] == 'PASS' else 1
 
