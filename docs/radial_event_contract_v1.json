@@ -1,0 +1,44 @@
+{
+  "contract": "emfeeld.radial_events",
+  "version": 1,
+  "entrypoint": "python -m emfeeld.observations PACKET.json --output RESULT.json",
+  "observation_schema_version": 1,
+  "request_type": "trajectory_event",
+  "required": ["id", "type", "particle_index", "condition", "occurrence", "max_step_s", "min_radial_speed_m_s", "accuracy"],
+  "condition": {
+    "required": ["type", "center_m", "radius_m", "direction"],
+    "type": "radial",
+    "center_m": "three finite JSON numbers; any fixed observation centre, not necessarily a source centre",
+    "radius_m": "strictly positive finite JSON number in metres",
+    "direction": ["inward", "outward", "either"],
+    "signed_function": "norm(position-center_m)-radius_m",
+    "physical_meaning": "imaginary observation sphere; not a charged source or collision boundary"
+  },
+  "occurrence": "first detected transverse root strictly after launch",
+  "initial_policy": "on or numerically unresolved relative to surface is rejected; defined observation-centre launches are allowed",
+  "particle_index": "zero-based integer referring to scene.particles; booleans rejected",
+  "max_step_s": "duration_s/10000 <= cap <= duration_s; halved cap must be representable",
+  "min_radial_speed_m_s": "strictly positive transversality threshold; not a force or velocity change",
+  "accuracy": {
+    "required": ["time_atol_s", "position_atol_m", "velocity_atol_m_s", "rtol"],
+    "absolute_values": "strictly positive finite SI values",
+    "rtol": "finite nonnegative number",
+    "criterion": "abs(base-refined) <= atol + rtol*max(abs(base),abs(refined)) componentwise",
+    "residual": "absolute radial residual and coordinate uncertainty each <= position_atol_m",
+    "meaning": "two-run agreement, not a certified error bound or completeness proof"
+  },
+  "execution": {
+    "method": "native DOP853 terminal events and y_events",
+    "base_solver": {"rtol": 1e-10, "position_atol_m": 1e-9, "velocity_atol_m_s": 1e-9},
+    "refinement": "halve step cap and divide all solver tolerances by ten",
+    "rhs_budget_each_pass": 500000,
+    "cache": "exact validated request, excluding id; packet-local; independent of plane and saved-sample caches",
+    "retries": 0
+  },
+  "state_units": {"time_s": "s", "position_m": "m", "velocity_m_s": "m/s", "speed_m_s": "m/s", "kinetic_J": "J", "potential_J": "J", "total_energy_J": "J"},
+  "statuses": ["ok", "no_event", "initial_condition_error", "ambiguous_event", "convergence_error", "unsupported_trajectory", "domain_error", "numerical_error", "integration_error"],
+  "no_event_meaning": "no root detected in either recorded search, not proof of no crossing or touching",
+  "error_bound": null,
+  "not_supported": ["tangencies", "turning_points", "closest_approach", "minimum_launch_speed", "zero_radius", "moving_centres", "collisions", "shell_or_plane_source_motion"],
+  "schema_note": "Descriptive machine-readable contract, not JSON Schema. Runtime packet validation is authoritative."
+}

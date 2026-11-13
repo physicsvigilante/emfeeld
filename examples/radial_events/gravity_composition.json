@@ -1,0 +1,175 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "Two overlapping massive spheres plus uniform gravity: saved samples",
+    "kind": "gravity",
+    "sources": [
+      {
+        "type": "solid_sphere",
+        "mass_kg": 14982844642.8839,
+        "radius_m": 4,
+        "center_m": [
+          -0.3,
+          0,
+          0.2
+        ]
+      },
+      {
+        "type": "solid_sphere",
+        "mass_kg": 29965689285.7678,
+        "radius_m": 5,
+        "center_m": [
+          0.4,
+          0.1,
+          -0.1
+        ]
+      },
+      {
+        "type": "uniform",
+        "field_m_s2": [
+          0.01,
+          -0.02,
+          0.005
+        ]
+      }
+    ],
+    "particles": [
+      {
+        "mass_kg": 1,
+        "position_m": [
+          1,
+          0,
+          0
+        ],
+        "velocity_m_s": [
+          0,
+          0.01,
+          0.02
+        ]
+      },
+      {
+        "mass_kg": 4,
+        "position_m": [
+          1,
+          0,
+          0
+        ],
+        "velocity_m_s": [
+          0,
+          0.01,
+          0.02
+        ]
+      }
+    ],
+    "duration_s": 35.331705455786654,
+    "samples": 65,
+    "bounds_m": [
+      -6,
+      6,
+      -6,
+      6,
+      -6,
+      6
+    ]
+  },
+  "observations": [
+    {
+      "id": "mass_0_inward",
+      "type": "trajectory_event",
+      "particle_index": 0,
+      "condition": {
+        "type": "radial",
+        "center_m": [
+          0.37035573122529647,
+          -0.5818181818181818,
+          0.20632411067193676
+        ],
+        "radius_m": 0.5,
+        "direction": "inward"
+      },
+      "occurrence": "first",
+      "max_step_s": 0.11777235151928885,
+      "min_radial_speed_m_s": 1e-07,
+      "accuracy": {
+        "time_atol_s": 1e-06,
+        "position_atol_m": 1e-06,
+        "velocity_atol_m_s": 1e-07,
+        "rtol": 1e-07
+      }
+    },
+    {
+      "id": "mass_0_outward",
+      "type": "trajectory_event",
+      "particle_index": 0,
+      "condition": {
+        "type": "radial",
+        "center_m": [
+          0.37035573122529647,
+          -0.5818181818181818,
+          0.20632411067193676
+        ],
+        "radius_m": 0.5,
+        "direction": "outward"
+      },
+      "occurrence": "first",
+      "max_step_s": 0.11777235151928885,
+      "min_radial_speed_m_s": 1e-07,
+      "accuracy": {
+        "time_atol_s": 1e-06,
+        "position_atol_m": 1e-06,
+        "velocity_atol_m_s": 1e-07,
+        "rtol": 1e-07
+      }
+    },
+    {
+      "id": "mass_1_inward",
+      "type": "trajectory_event",
+      "particle_index": 1,
+      "condition": {
+        "type": "radial",
+        "center_m": [
+          0.37035573122529647,
+          -0.5818181818181818,
+          0.20632411067193676
+        ],
+        "radius_m": 0.5,
+        "direction": "inward"
+      },
+      "occurrence": "first",
+      "max_step_s": 0.11777235151928885,
+      "min_radial_speed_m_s": 1e-07,
+      "accuracy": {
+        "time_atol_s": 1e-06,
+        "position_atol_m": 1e-06,
+        "velocity_atol_m_s": 1e-07,
+        "rtol": 1e-07
+      }
+    },
+    {
+      "id": "mass_1_outward",
+      "type": "trajectory_event",
+      "particle_index": 1,
+      "condition": {
+        "type": "radial",
+        "center_m": [
+          0.37035573122529647,
+          -0.5818181818181818,
+          0.20632411067193676
+        ],
+        "radius_m": 0.5,
+        "direction": "outward"
+      },
+      "occurrence": "first",
+      "max_step_s": 0.11777235151928885,
+      "min_radial_speed_m_s": 1e-07,
+      "accuracy": {
+        "time_atol_s": 1e-06,
+        "position_atol_m": 1e-06,
+        "velocity_atol_m_s": 1e-07,
+        "rtol": 1e-07
+      }
+    }
+  ],
+  "notes": "Exact earlier scene of two overlapping massive spheres plus a uniform gravitational field. The observation sphere is centred at the harmonic equilibrium, not at either source. Two test masses must have equal accelerations."
+}

@@ -1,0 +1,127 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "Fixed ideal Sun with two independent test planets",
+    "kind": "gravity",
+    "sources": [
+      {
+        "type": "point",
+        "mass_kg": 1.98847e+30
+      }
+    ],
+    "particles": [
+      {
+        "mass_kg": 1,
+        "position_m": [
+          149597870700.0,
+          0,
+          0
+        ],
+        "velocity_m_s": [
+          0,
+          29785.142169221024,
+          0
+        ]
+      },
+      {
+        "mass_kg": 1,
+        "position_m": [
+          224396806050.0,
+          0,
+          0
+        ],
+        "velocity_m_s": [
+          0,
+          17023.626720530643,
+          9727.786697446081
+        ]
+      }
+    ],
+    "duration_s": 31557718.872965656,
+    "samples": 1001,
+    "bounds_m": [
+      -299195741400.0,
+      299195741400.0,
+      -299195741400.0,
+      299195741400.0,
+      -299195741400.0,
+      299195741400.0
+    ]
+  },
+  "observations": [
+    {
+      "id": "planet_1_inward",
+      "type": "trajectory_event",
+      "particle_index": 1,
+      "condition": {
+        "type": "radial",
+        "center_m": [
+          0,
+          0,
+          0
+        ],
+        "radius_m": 179517444840.0,
+        "direction": "inward"
+      },
+      "occurrence": "first",
+      "max_step_s": 78894.29718241414,
+      "min_radial_speed_m_s": 1e-07,
+      "accuracy": {
+        "time_atol_s": 0.01,
+        "position_atol_m": 0.1,
+        "velocity_atol_m_s": 0.0001,
+        "rtol": 1e-07
+      }
+    },
+    {
+      "id": "planet_1_outward",
+      "type": "trajectory_event",
+      "particle_index": 1,
+      "condition": {
+        "type": "radial",
+        "center_m": [
+          0,
+          0,
+          0
+        ],
+        "radius_m": 179517444840.0,
+        "direction": "outward"
+      },
+      "occurrence": "first",
+      "max_step_s": 78894.29718241414,
+      "min_radial_speed_m_s": 1e-07,
+      "accuracy": {
+        "time_atol_s": 0.01,
+        "position_atol_m": 0.1,
+        "velocity_atol_m_s": 0.0001,
+        "rtol": 1e-07
+      }
+    },
+    {
+      "id": "circular_no_inner_crossing",
+      "type": "trajectory_event",
+      "particle_index": 0,
+      "condition": {
+        "type": "radial",
+        "center_m": [
+          0,
+          0,
+          0
+        ],
+        "radius_m": 112198403025.0,
+        "direction": "inward"
+      },
+      "occurrence": "first",
+      "max_step_s": 78894.29718241414,
+      "min_radial_speed_m_s": 1e-07,
+      "accuracy": {
+        "time_atol_s": 0.01,
+        "position_atol_m": 0.1,
+        "velocity_atol_m_s": 0.0001,
+        "rtol": 1e-07
+      }
+    }
+  ],
+  "notes": "Exact original ideal-Sun scene. Second test planet reaches a radius of 1.2 times the first planet initial radius; both directions checked. The circular planet has no inner-radius crossing. Illustrative, not ephemeris data."
+}

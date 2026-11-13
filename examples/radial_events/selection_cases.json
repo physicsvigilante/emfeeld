@@ -1,0 +1,142 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "Illustrative off-axis radial crossings",
+    "kind": "gravity",
+    "sources": [
+      {
+        "type": "uniform",
+        "field_m_s2": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "particles": [
+      {
+        "mass_kg": 2,
+        "position_m": [
+          -2,
+          0.3,
+          0.4
+        ],
+        "velocity_m_s": [
+          1,
+          0,
+          0
+        ]
+      }
+    ],
+    "duration_s": 5,
+    "samples": 2,
+    "bounds_m": [
+      -3,
+      3,
+      -3,
+      3,
+      -3,
+      3
+    ]
+  },
+  "observations": [
+    {
+      "id": "ordinary",
+      "type": "trajectory_event",
+      "particle_index": 0,
+      "condition": {
+        "type": "radial",
+        "center_m": [
+          0,
+          0,
+          0
+        ],
+        "radius_m": 1,
+        "direction": "inward"
+      },
+      "occurrence": "first",
+      "max_step_s": 0.05,
+      "min_radial_speed_m_s": 1e-07,
+      "accuracy": {
+        "time_atol_s": 1e-06,
+        "position_atol_m": 1e-06,
+        "velocity_atol_m_s": 1e-07,
+        "rtol": 1e-07
+      }
+    },
+    {
+      "id": "initial_on_sphere",
+      "type": "trajectory_event",
+      "particle_index": 0,
+      "condition": {
+        "type": "radial",
+        "center_m": [
+          -2,
+          0,
+          0
+        ],
+        "radius_m": 0.5,
+        "direction": "either"
+      },
+      "occurrence": "first",
+      "max_step_s": 0.05,
+      "min_radial_speed_m_s": 1e-07,
+      "accuracy": {
+        "time_atol_s": 1e-06,
+        "position_atol_m": 1e-06,
+        "velocity_atol_m_s": 1e-07,
+        "rtol": 1e-07
+      }
+    },
+    {
+      "id": "too_slow",
+      "type": "trajectory_event",
+      "particle_index": 0,
+      "condition": {
+        "type": "radial",
+        "center_m": [
+          0,
+          0,
+          0
+        ],
+        "radius_m": 1,
+        "direction": "inward"
+      },
+      "occurrence": "first",
+      "max_step_s": 0.05,
+      "min_radial_speed_m_s": 2,
+      "accuracy": {
+        "time_atol_s": 1e-06,
+        "position_atol_m": 1e-06,
+        "velocity_atol_m_s": 1e-07,
+        "rtol": 1e-07
+      }
+    },
+    {
+      "id": "no_hit",
+      "type": "trajectory_event",
+      "particle_index": 0,
+      "condition": {
+        "type": "radial",
+        "center_m": [
+          0,
+          4,
+          0
+        ],
+        "radius_m": 1,
+        "direction": "either"
+      },
+      "occurrence": "first",
+      "max_step_s": 0.05,
+      "min_radial_speed_m_s": 1e-07,
+      "accuracy": {
+        "time_atol_s": 1e-06,
+        "position_atol_m": 1e-06,
+        "velocity_atol_m_s": 1e-07,
+        "rtol": 1e-07
+      }
+    }
+  ],
+  "notes": "Deliberate admission outcomes. The initial position lies on the second requested sphere. No-event is no numerical detection, not proof of no touch."
+}

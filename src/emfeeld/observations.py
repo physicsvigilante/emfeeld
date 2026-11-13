@@ -1,4 +1,4 @@
-"""Data-only static, saved-state and bounded plane-crossing observations.
+"""Data-only static, saved-state and bounded plane/radial-crossing observations.
 
 Run: python -m emfeeld.observations packet.json [--output result.json]
 Static-only packets never integrate. Trajectory requests reuse one solve per
@@ -28,6 +28,7 @@ from .fields import DomainError, Field, G, epsilon_0, check_kind
 from .scene import Scene, scene_from_dict, strict_keys
 from .trajectory_samples import QUANTITIES, SampleRequest, TrajectorySamples
 from .plane_events import PlaneRequest, PlaneEvents, DIRECTIONS
+from .radial_events import RadialRequest, RadialEvents, DIRECTIONS as RADIAL_DIRECTIONS
 
 TYPES = ("field", "potential", "force", "potential_difference")
 ID_PATTERN = r"[A-Za-z][A-Za-z0-9_.-]{0,63}"
@@ -314,13 +315,48 @@ def _plane_request(scene: Scene, row: dict) -> PlaneRequest:
     return PlaneRequest(ident, particle, point, normal, c["direction"], step, min_speed, *tolerances)
 
 
-def _packet_requests(scene: Scene, data: Any) -> tuple[Observation | TrajectoryObservation | PlaneRequest, ...]:
+def _radial_request(scene: Scene, row: dict) -> RadialRequest:
+    required = ("id", "type", "particle_index", "condition", "occurrence", "max_step_s",
+                "min_radial_speed_m_s", "accuracy")
+    strict_keys(row, required, required)
+    ident = row["id"]
+    if not isinstance(ident, str) or re.fullmatch(ID_PATTERN, ident) is None:
+        raise ValueError("observation id must match " + ID_PATTERN)
+    particle = row["particle_index"]
+    if type(particle) is not int or not 0 <= particle < len(scene.particles):
+        raise ValueError("particle_index must refer to scene.particles")
+    if row["occurrence"] != "first":
+        raise ValueError("only first occurrence is supported")
+    c = row["condition"]
+    names = ("type", "center_m", "radius_m", "direction")
+    strict_keys(c, names, names)
+    if c["type"] != "radial" or not isinstance(c["direction"], str) or c["direction"] not in RADIAL_DIRECTIONS:
+        raise ValueError("condition must be radial with inward, outward or either direction")
+    center = _vector(c["center_m"], "center_m")
+    radius = _number(c["radius_m"], "radius_m", positive=True)
+    step = _number(row["max_step_s"], "max_step_s", positive=True)
+    if not scene.duration_s / 10000 <= step <= scene.duration_s or step / 2 == 0:
+        raise ValueError("max_step_s must be between duration_s/10000 and duration_s; refined step must be representable")
+    min_speed = _number(row["min_radial_speed_m_s"], "min_radial_speed_m_s", positive=True)
+    a = row["accuracy"]
+    names = ("time_atol_s", "position_atol_m", "velocity_atol_m_s", "rtol")
+    strict_keys(a, names, names)
+    tolerances = [_number(a[k], k, positive=k != "rtol") for k in names]
+    if tolerances[-1] < 0:
+        raise ValueError("accuracy.rtol must be nonnegative")
+    return RadialRequest(ident, particle, center, radius, c["direction"], step, min_speed, *tolerances)
+
+
+def _packet_requests(scene: Scene, data: Any) -> tuple[Observation | TrajectoryObservation | PlaneRequest | RadialRequest, ...]:
     if not isinstance(data, list) or not data:
         raise ValueError("observations must be a nonempty array")
     requests, seen = [], set()
     for row in data:
         if isinstance(row, dict) and row.get("type") == "trajectory_event":
-            request = _plane_request(scene, row)
+            condition = row.get("condition")
+            request = (_radial_request(scene, row)
+                       if isinstance(condition, dict) and condition.get("type") == "radial"
+                       else _plane_request(scene, row))
         elif isinstance(row, dict) and row.get("type") == "trajectory_sample":
             request = _trajectory_request(scene, row)
         else:
@@ -337,9 +373,13 @@ def _evaluate_packet(scene: Scene, requests) -> tuple[list[dict], dict | None]:
     has_motion = any(isinstance(r, TrajectoryObservation) for r in requests)
     samples = TrajectorySamples(scene) if has_motion else None
     events = PlaneEvents(scene) if any(isinstance(r, PlaneRequest) for r in requests) else None
+    radial = RadialEvents(scene) if any(isinstance(r, RadialRequest) for r in requests) else None
     results = []
     for request in requests:
-        if isinstance(request, PlaneRequest):
+        if isinstance(request, RadialRequest):
+            r = {"id": request.id, "type": request.type, "kind": scene.model.kind,
+                 **radial.observe(request)}
+        elif isinstance(request, PlaneRequest):
             r = {"id": request.id, "type": request.type, "kind": scene.model.kind,
                  **events.observe(request)}
         elif isinstance(request, TrajectoryObservation):
@@ -354,7 +394,7 @@ def _evaluate_packet(scene: Scene, requests) -> tuple[list[dict], dict | None]:
     return results, samples.runs if samples is not None else None
 
 
-def packet_from_dict(data: Any) -> tuple[Scene, tuple[Observation | TrajectoryObservation | PlaneRequest, ...]]:
+def packet_from_dict(data: Any) -> tuple[Scene, tuple[Observation | TrajectoryObservation | PlaneRequest | RadialRequest, ...]]:
     strict_keys(data, ("observation_schema_version", "scene", "observations", "notes"),
                 ("observation_schema_version", "scene", "observations"))
     if type(data["observation_schema_version"]) is not int or data["observation_schema_version"] != 1:
@@ -380,7 +420,7 @@ def _digest(data: Any) -> str:
 def run_packet(data: dict) -> dict:
     """Validate the complete packet, then evaluate static, saved-state and event requests.
 
-    Saved samples integrate once per referenced particle. Plane events use separate
+    Saved samples integrate once per referenced particle. Plane/radial events use separate
     base/refined terminal searches, cached per exact request. Test particles never
     become sources. Event accuracy compares two fixed-tolerance solver runs; it
     is separate from static/sample expectation checks and from solver settings.
@@ -414,8 +454,11 @@ def run_packet(data: dict) -> dict:
                             ("unsupported_trajectories", "unsupported_trajectory"),
                             ("integration_errors", "integration_error")):
             report["counts"][key] = sum(r["status"] == status for r in results)
-    if any(isinstance(r, PlaneRequest) for r in requests):
-        report["plane_event_contract"] = 1
+    if any(isinstance(r, (PlaneRequest, RadialRequest)) for r in requests):
+        if any(isinstance(r, PlaneRequest) for r in requests):
+            report["plane_event_contract"] = 1
+        if any(isinstance(r, RadialRequest) for r in requests):
+            report["radial_event_contract"] = 1
         report["event_integration_policy"] = (
             "two terminal DOP853 searches per unique event request, independently of saved-sample runs; "
             "the second halves max_step and tightens solver tolerances tenfold; exact duplicates reuse results")
