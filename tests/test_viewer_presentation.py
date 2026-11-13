@@ -15,9 +15,17 @@ class Grid(dict):
 class Recorder:
     def __init__(self, **kwargs):
         self.meshes, self.notes, self.sliders = [], [], []
+        self.zoom_factors = []
+        self.text_actors = {}
+        self.camera = SimpleNamespace(zoom=self.zoom_factors.append)
 
     def add_mesh(self, mesh, **kwargs): self.meshes.append((mesh, kwargs))
-    def add_text(self, text, **kwargs): self.notes.append((text, kwargs))
+    def add_text(self, text, **kwargs):
+        self.notes.append((text, kwargs))
+        actor = SimpleNamespace(input=text)
+        if 'name' in kwargs:
+            self.text_actors[kwargs['name']] = actor
+        return actor
     def add_title(self, *args, **kwargs): pass
     def show_bounds(self, **kwargs): self.bounds_options = kwargs
     def add_axes(self): pass
@@ -83,3 +91,34 @@ def test_time_controls_do_not_use_title_band(backend):
         np.testing.assert_array_equal(marker.points, positions[time:time + 1])
     time_options = [kw for _, kw in plot.notes if kw.get('name') == 'time']
     assert all(kw['viewport'] and kw['position'][1] < 0.90 for kw in time_options)
+    assert len(time_options) == 1  # Slider updates must not replace the text actor.
+    assert plot.text_actors['time'].input == 'Sample time: 2 s'
+
+
+def test_layout_reserves_camera_and_legend_space(backend):
+    scene = Scene('layout', Superposition((UniformField('gravity', (1, 0, 0)),)),
+                  (), 1, 2, (-3, 3, -3, 3, -3, 3))
+    plot = viewer.make_plotter(scene, resolution=5)
+    assert len(plot.zoom_factors) == 1
+    assert 0.65 <= plot.zoom_factors[0] <= 0.8
+    legend = plot.meshes[0][1]['scalar_bar_args']
+    assert legend['vertical'] is True
+    assert legend['position_x'] >= 0.85
+    assert legend['position_x'] + legend['width'] <= 1
+    assert 0.2 <= legend['position_y'] < 0.3
+    assert legend['position_y'] + legend['height'] <= 0.8
+    assert plot.bounds_options['use_2d'] is False
+    assert plot.bounds_options['use_3d_text'] is False
+
+
+def test_layout_does_not_modify_field_potential_or_units(backend):
+    field = UniformField('gravity', (1, 2, 3), origin=(4, 5, 6))
+    scene = Scene('display only', Superposition((field,)), (), 1, 2,
+                  (-3e11, 3e11, -3e11, 3e11, -3e11, 3e11))
+    points = np.array([[7., 8., 9.], [1e11, 2e11, -1e11]])
+    before = scene.model.field(points), scene.model.potential(points)
+    plot = viewer.make_plotter(scene, resolution=5)
+    np.testing.assert_array_equal(scene.model.field(points), before[0])
+    np.testing.assert_array_equal(scene.model.potential(points), before[1])
+    assert plot.bounds_options['bounds'] == scene.bounds_m
+    assert plot.bounds_options['xtitle'] == 'x [m]'

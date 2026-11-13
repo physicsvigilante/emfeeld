@@ -45,7 +45,7 @@ def make_plotter(scene, *, resolution=41, off_screen=False):
     center = (lower + upper) / 2
     span = float(np.max(upper - lower))
     plot = pv.Plotter(off_screen=off_screen, window_size=(1200, 850))
-    plot.add_title(scene.title, font_size=14)
+    plot.add_title(scene.title, font_size=12)
     unit = "V" if scene.model.kind == "electric" else "J/kg"
     x, y = np.meshgrid(np.linspace(lower[0], upper[0], resolution),
                        np.linspace(lower[1], upper[1], resolution), indexing="ij")
@@ -55,8 +55,8 @@ def make_plotter(scene, *, resolution=41, off_screen=False):
     if np.isfinite(plane["potential"]).any():
         plot.add_mesh(plane, scalars="potential", opacity=0.7, nan_opacity=0,
                       scalar_bar_args={"title": f"Potential [{unit}]",
-                                       "position_x": 0.40, "position_y": 0.065,
-                                       "width": 0.55, "height": 0.03,
+                                       "position_x": 0.86, "position_y": 0.25,
+                                       "width": 0.12, "height": 0.50, "vertical": True,
                                        "title_font_size": 12, "label_font_size": 10,
                                        "fmt": "%.3g"})
     axes = [np.linspace(a, b, 7) for a, b in zip(lower, upper)]
@@ -106,13 +106,19 @@ def make_plotter(scene, *, resolution=41, off_screen=False):
                       render_points_as_spheres=True, show_scalar_bar=False)
         markers.append(marker)
 
+    time_label = None
+    if trajectories:
+        time_label = plot.add_text("Sample time: 0 s", position=(0.02, 0.88),
+                                   viewport=True, name="time", font_size=10)
+
     def scrub(time):
         index = int(np.clip(round(time / scene.duration_s * (scene.samples - 1)),
                             0, scene.samples - 1))
         for marker, trajectory in zip(markers, trajectories):
             marker.points = trajectory.position_m[index:index + 1].copy()
-        plot.add_text(f"Sample time: {index * scene.duration_s / (scene.samples - 1):.6g} s",
-                      position=(0.02, 0.88), viewport=True, name="time", font_size=10)
+        # Replacing a named text actor makes PyVista recompute cube-axis bounds
+        # and labels from glyph bounds. Update the existing text in place instead.
+        time_label.input = f"Sample time: {index * scene.duration_s / (scene.samples - 1):.6g} s"
     if trajectories:
         plot.add_slider_widget(scrub, (0, scene.duration_s), value=0,
                                title="Time [s]", pointa=(0.35, 0.88), pointb=(0.75, 0.88),
@@ -127,8 +133,12 @@ def make_plotter(scene, *, resolution=41, off_screen=False):
                   + geometry_note, position="lower_left", font_size=9)
     plot.show_bounds(bounds=scene.bounds_m, xtitle="x [m]", ytitle="y [m]", ztitle="z [m]",
                      location="outer", fmt="%.2g", font_size=10,
-                     n_xlabels=3, n_ylabels=3, n_zlabels=3)
+                     n_xlabels=3, n_ylabels=3, n_zlabels=3,
+                     use_2d=False, use_3d_text=False)
     plot.add_axes()
     plot.view_isometric()
     plot.reset_camera()
+    # Reserve space for the fixed title, time controls and potential legend.
+    # Camera framing only: no source coordinates, field values or motion change.
+    plot.camera.zoom(0.74)
     return plot

@@ -2,7 +2,7 @@
 
 A local, LLM-authorable explorer for **analytic electrostatic and Newtonian gravitational fields, potentials, and test-particle motion in 3D**.
 
-**Status: initial implementation candidate.** The numerical core is tested. The optional PyVista viewer is implemented but has not been launched or visually qualified in the authoring environment. Independent review and a Windows desktop smoke test are still required. This is not a general electromagnetic or conductor solver.
+**Status: candidate with tested numerical core and real Linux/PyVista previews.** Eight scenes have passed offscreen rendering and programmatic time-slider checks; screenshots were inspected in chat. Windows desktop/mouse interaction remains untested. This is author verification, not independent review. The [approved chat workflow](docs/CHAT_WORKFLOW_DECISION.md) requires explicit user acceptance before merge. See [viewer qualification](docs/VIEWER_QUALIFICATION.md). This is not a general electromagnetic or conductor solver.
 
 ## Install and run
 
@@ -16,7 +16,7 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m emfeeld view examples/ideal_sun.json
 ```
 
-On Linux/macOS, use `.venv/bin/python` in place of `.\.venv\Scripts\python.exe`. Headless calculations need only `pip install -e .`; PyVista is optional. Dependency ranges are compatibility intentions, not proof that every combination has been tested. See [validation](docs/VALIDATION.md) for the actual environment.
+On Linux/macOS, use `.venv/bin/python` in place of `.\.venv\Scripts\python.exe`. Headless calculations need only `pip install -e .`; PyVista is optional. Dependency ranges are compatibility intentions, not proof that every combination has been tested. See the [original numerical validation](docs/VALIDATION.md) and [current viewer qualification](docs/VIEWER_QUALIFICATION.md) for executed environments.
 
 ```text
 python -m emfeeld validate examples/electric_composition.json
@@ -35,7 +35,7 @@ python -m emfeeld view examples/ideal_sun.json --screenshot output/sun.png
 - Midpoint line-integral contributions and spherical flux quadrature with individual contributions retained for later visualization.
 - Strict, data-only JSON authoring and explicit invalid-domain errors. No `eval`, softened singularities, or hidden conductor approximations.
 
-The preview code combines source geometry, equal-length field-direction arrows, a potential slice, trajectory curves, and a sample-time slider. It is **not yet visually verified**. Field lines, equipotential surfaces, autoplay, and animated integral explanations are future additions, not delivered features.
+The preview code combines source geometry, equal-length field-direction arrows, a potential slice, trajectory curves, and a sample-time slider. Its recorded Linux offscreen captures and programmatic slider events are verified; this is **not Windows mouse-interaction qualification**. Field lines, equipotential surfaces, autoplay, and animated integral explanations are future additions, not delivered features.
 
 ## Examples
 
@@ -68,10 +68,21 @@ Python sources implement `kind`, `trajectory_safe`, `field(points)`, and `potent
 
 JSON uses explicit unit-bearing keys: `charge_C`/`mass_kg`, `radius_m`, `center_m`, line densities `charge_per_m_C_m`/`mass_per_m_kg_m`, and plane densities `charge_per_m2_C_m2`/`mass_per_m2_kg_m2`. Lines require `reference_radius_m`. Uniform fields use `field_N_C` or `field_m_s2`. See the examples and [physics contract](docs/PHYSICS.md).
 
+## Viewer regression checks
+
+With the existing `[dev,view]` extras installed and a working graphics backend:
+
+```text
+python -m pytest -q -W error tests viewer_tests
+python tools/qualify_viewer.py --output output/viewer-qualification
+```
+
+The ordinary `python -m pytest -q` remains the headless suite. `viewer_tests` explicitly requires real PyVista; it is not silently skipped when dependencies are missing. The capture tool produces images and a runtime report. Inspect the images separately; successful rendering is not automatically a visual-acceptance decision.
+
 ## Deliberate boundaries and next work
 
 Shell/plane fields and potentials work, but motion involving them is rejected until surface-crossing behavior has been qualified. Point/line singular encounters are not collision handling. No source reaction, radiation, induced conductor charge, relativistic motion, simultaneous electric-plus-gravity coupling, or self-consistent many-body dynamics is implemented.
 
-Next: independent review of the source/domain contracts, a Windows viewer launch and visual inspection, then qualified boundary events and an integral teaching view. Do not add a general mesh solver or a large application framework merely to run another supported arrangement.
+Next: explicit user acceptance of the captured previews. Windows desktop interaction remains a separate optional qualification before claiming Windows support. Subsequent boundary events or integral teaching views require their own bounded tasks. Do not add a general mesh solver or a large application framework merely to run another supported arrangement.
 
 No license has yet been selected by the repository owner.

@@ -83,6 +83,7 @@ class _Grid(dict):
 class _PlotterSpy:
     def __init__(self, **kwargs):
         self.spheres = []
+        self.camera = SimpleNamespace(zoom=lambda factor: None)
 
     def add_mesh(self, mesh, **kwargs):
         if isinstance(mesh, tuple) and mesh[0] == "sphere":

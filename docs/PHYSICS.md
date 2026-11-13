@@ -48,7 +48,7 @@ Energy diagnostics include max absolute drift and a normalized drift divided by 
 
 The initial optional PyVista preview uses equal-length arrows for direction, a potential-coloured central z slice, source geometry, precomputed trajectory curves and a nearest-sample time slider. It does not yet provide field lines, equipotential surfaces, animation playback, or integral visualizations. Undefined field/potential samples become NaN holes, not zero fields. Geometry for infinite lines/planes is truncated only for display. Point and particle marker sizes are schematic.
 
-The display backend is not a physics dependency. Its runtime and appearance are unverified in the initial authoring environment.
+The display backend is not a physics dependency. Real Linux/PyVista offscreen captures and programmatic time events are now verified for the recorded scenes and environment; see `VIEWER_QUALIFICATION.md`. Camera margins and legend placement are display-only. Time-label updates preserve authored axis bounds and formatting. Windows mouse interaction remains untested; no independent review is implied.
 
 ## Implementation references
 

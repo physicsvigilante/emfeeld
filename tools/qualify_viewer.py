@@ -68,9 +68,12 @@ def capture(name, scene, output):
     try:
         datasets = meshes(plot)
         unit = 'V' if scene.model.kind == 'electric' else 'J/kg'
-        if set(plot.scalar_bars) != {f'Potential [{unit}]'}:
-            raise AssertionError(f'Unintended scalar legends: {list(plot.scalar_bars)}')
+        if set(plot.scalar_bars.keys()) != {f'Potential [{unit}]'}:
+            raise AssertionError(f'Unintended scalar legends: {list(plot.scalar_bars.keys())}')
         result = {'status': 'PASS', 'geometry': [signature(m) for m in datasets], 'frames': []}
+        axes = plot.renderer.cube_axes_actor
+        np.testing.assert_array_equal(axes.bounds, scene.bounds_m)
+        axis_labels = {axis: list(getattr(axes, f'{axis}_labels')) for axis in 'xyz'}
         markers = []
         for trajectory in expected:
             candidates = [m for m in datasets if m.n_points == 1 and
@@ -94,6 +97,12 @@ def capture(name, scene, output):
                 for marker, trajectory in zip(markers, expected):
                     np.testing.assert_array_equal(marker.points,
                                                    trajectory.position_m[sample:sample + 1])
+            np.testing.assert_array_equal(axes.bounds, scene.bounds_m)
+            for axis in 'xyz':
+                assert list(getattr(axes, f'{axis}_labels')) == axis_labels[axis]
+            if expected:
+                time_text = f"Sample time: {sample * scene.duration_s / (scene.samples - 1):.6g} s"
+                assert plot.renderer.actors['time'].input == time_text
             plot.render()
             filename = f'{name}_{int(fraction * 100):03d}.png'
             image = plot.screenshot(str(output / filename), return_img=True)
@@ -103,6 +112,7 @@ def capture(name, scene, output):
                 'file': filename, 'sample': sample,
                 'time_s': sample * scene.duration_s / (scene.samples - 1),
                 'marker_positions_m': [m.points[0].tolist() for m in markers],
+                'axis_bounds_m': list(axes.bounds), 'axis_labels': axis_labels,
                 'png_sha256': hashlib.sha256((output / filename).read_bytes()).hexdigest(),
             })
         if name == 'tilted_line_plane':

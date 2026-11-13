@@ -27,6 +27,7 @@ class Grid(dict):
 class PlotterSpy:
     def __init__(self, **kwargs):
         self.geometry, self.notes = [], []
+        self.camera = SimpleNamespace(zoom=lambda factor: None)
 
     def add_mesh(self, mesh, **kwargs):
         if isinstance(mesh, tuple):
