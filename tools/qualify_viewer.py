@@ -67,6 +67,9 @@ def capture(name, scene, output):
     plot = make_plotter(scene, off_screen=True)
     try:
         datasets = meshes(plot)
+        unit = 'V' if scene.model.kind == 'electric' else 'J/kg'
+        if set(plot.scalar_bars) != {f'Potential [{unit}]'}:
+            raise AssertionError(f'Unintended scalar legends: {list(plot.scalar_bars)}')
         result = {'status': 'PASS', 'geometry': [signature(m) for m in datasets], 'frames': []}
         markers = []
         for trajectory in expected:

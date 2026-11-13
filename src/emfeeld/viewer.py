@@ -54,7 +54,11 @@ def make_plotter(scene, *, resolution=41, off_screen=False):
     plane["potential"] = sample_values(scene.model, plane.points, potential=True)
     if np.isfinite(plane["potential"]).any():
         plot.add_mesh(plane, scalars="potential", opacity=0.7, nan_opacity=0,
-                      scalar_bar_args={"title": f"Potential [{unit}]"})
+                      scalar_bar_args={"title": f"Potential [{unit}]",
+                                       "position_x": 0.40, "position_y": 0.065,
+                                       "width": 0.55, "height": 0.03,
+                                       "title_font_size": 12, "label_font_size": 10,
+                                       "fmt": "%.3g"})
     axes = [np.linspace(a, b, 7) for a, b in zip(lower, upper)]
     points = np.stack(np.meshgrid(*axes, indexing="ij"), axis=-1).reshape(-1, 3)
     field = sample_values(scene.model, points)
@@ -64,22 +68,27 @@ def make_plotter(scene, *, resolution=41, off_screen=False):
         cloud = pv.PolyData(points[valid])
         cloud["direction"] = field[valid] / norm[valid, None]
         arrows = cloud.glyph(orient="direction", scale=False, factor=span / 35)
-        plot.add_mesh(arrows, show_scalar_bar=False)
+        # Explicit neutral coloring prevents glyph/geometry arrays from being
+        # misrepresented as physical scalar data. Only potential gets a color bar.
+        plot.add_mesh(arrows, color="dimgray", show_scalar_bar=False)
     missing_geometry = set()
     has_uniform = False
     for source in iter_sources(scene.model):
         if isinstance(source, SolidSphere):
             mesh = pv.Sphere(radius=source.radius, center=source.center)
-            plot.add_mesh(mesh, opacity=0.18,
+            plot.add_mesh(mesh, opacity=0.18, color="lightgray", show_scalar_bar=False,
                           style="wireframe" if isinstance(source, SphericalShell) else "surface")
         elif isinstance(source, PointSource):
-            plot.add_points(np.array([source.center]), point_size=14, render_points_as_spheres=True)
+            plot.add_points(np.array([source.center]), point_size=14, color="dimgray",
+                            render_points_as_spheres=True, show_scalar_bar=False)
         elif isinstance(source, InfiniteLine):
             c, a = np.array(source.center), np.array(source.direction)
-            plot.add_mesh(pv.Line(c - span * a, c + span * a), line_width=4)
+            plot.add_mesh(pv.Line(c - span * a, c + span * a), line_width=4,
+                          color="dimgray", show_scalar_bar=False)
         elif isinstance(source, InfinitePlane):
             plot.add_mesh(pv.Plane(center=source.center, direction=source.normal,
-                                   i_size=span, j_size=span), opacity=0.12)
+                                   i_size=span, j_size=span), opacity=0.12,
+                          color="lightgray", show_scalar_bar=False)
         elif isinstance(source, UniformField):
             has_uniform = True  # A uniform field intentionally has no source shape.
         else:
@@ -90,9 +99,11 @@ def make_plotter(scene, *, resolution=41, off_screen=False):
     trajectories = scene.trajectories()
     markers = []
     for trajectory in trajectories:
-        plot.add_mesh(pv.lines_from_points(trajectory.position_m), line_width=3)
+        plot.add_mesh(pv.lines_from_points(trajectory.position_m), line_width=3,
+                      color="black", show_scalar_bar=False)
         marker = pv.PolyData(trajectory.position_m[:1].copy())
-        plot.add_mesh(marker, point_size=14, render_points_as_spheres=True)
+        plot.add_mesh(marker, point_size=14, color="black",
+                      render_points_as_spheres=True, show_scalar_bar=False)
         markers.append(marker)
 
     def scrub(time):
@@ -101,10 +112,12 @@ def make_plotter(scene, *, resolution=41, off_screen=False):
         for marker, trajectory in zip(markers, trajectories):
             marker.points = trajectory.position_m[index:index + 1].copy()
         plot.add_text(f"Sample time: {index * scene.duration_s / (scene.samples - 1):.6g} s",
-                      position="upper_left", name="time", font_size=10)
+                      position=(0.02, 0.88), viewport=True, name="time", font_size=10)
     if trajectories:
         plot.add_slider_widget(scrub, (0, scene.duration_s), value=0,
-                               title="Time [s]", pointa=(0.25, 0.9), pointb=(0.75, 0.9))
+                               title="Time [s]", pointa=(0.35, 0.88), pointb=(0.75, 0.88),
+                               style="modern", slider_width=0.015, tube_width=0.003,
+                               title_height=0.025, fmt="%.3g")
     geometry_note = "\nUniform fields have no source shape." if has_uniform else ""
     if missing_geometry:
         geometry_note += "\nGeometry not drawn for: " + ", ".join(sorted(missing_geometry)) + "."
@@ -112,7 +125,9 @@ def make_plotter(scene, *, resolution=41, off_screen=False):
                   "Point/particle markers schematic; line/plane renderings truncated.\n"
                   "Potential references differ by source; no collisions or backreaction."
                   + geometry_note, position="lower_left", font_size=9)
-    plot.show_bounds(bounds=scene.bounds_m, xtitle="x [m]", ytitle="y [m]", ztitle="z [m]")
+    plot.show_bounds(bounds=scene.bounds_m, xtitle="x [m]", ytitle="y [m]", ztitle="z [m]",
+                     location="outer", fmt="%.2g", font_size=10,
+                     n_xlabels=3, n_ylabels=3, n_zlabels=3)
     plot.add_axes()
     plot.view_isometric()
     plot.reset_camera()
