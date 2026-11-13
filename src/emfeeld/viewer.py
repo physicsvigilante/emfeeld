@@ -1,7 +1,8 @@
 """Optional PyVista desktop preview. Physics never depends on this sampling grid."""
+import warnings
 import numpy as np
 from .fields import (DomainError, PointSource, SolidSphere, SphericalShell,
-                     InfiniteLine, InfinitePlane)
+                     InfiniteLine, InfinitePlane, UniformField, iter_sources)
 
 
 def sample_values(model, points, *, potential=False):
@@ -64,7 +65,9 @@ def make_plotter(scene, *, resolution=41, off_screen=False):
         cloud["direction"] = field[valid] / norm[valid, None]
         arrows = cloud.glyph(orient="direction", scale=False, factor=span / 35)
         plot.add_mesh(arrows, show_scalar_bar=False)
-    for source in scene.model.sources:
+    missing_geometry = set()
+    has_uniform = False
+    for source in iter_sources(scene.model):
         if isinstance(source, SolidSphere):
             mesh = pv.Sphere(radius=source.radius, center=source.center)
             plot.add_mesh(mesh, opacity=0.18,
@@ -77,6 +80,13 @@ def make_plotter(scene, *, resolution=41, off_screen=False):
         elif isinstance(source, InfinitePlane):
             plot.add_mesh(pv.Plane(center=source.center, direction=source.normal,
                                    i_size=span, j_size=span), opacity=0.12)
+        elif isinstance(source, UniformField):
+            has_uniform = True  # A uniform field intentionally has no source shape.
+        else:
+            name = type(source).__name__
+            missing_geometry.add(name)
+            warnings.warn(f"No geometry adapter for {name}; its field and potential are still included.",
+                          RuntimeWarning, stacklevel=2)
     trajectories = scene.trajectories()
     markers = []
     for trajectory in trajectories:
@@ -95,10 +105,13 @@ def make_plotter(scene, *, resolution=41, off_screen=False):
     if trajectories:
         plot.add_slider_widget(scrub, (0, scene.duration_s), value=0,
                                title="Time [s]", pointa=(0.25, 0.9), pointb=(0.75, 0.9))
+    geometry_note = "\nUniform fields have no source shape." if has_uniform else ""
+    if missing_geometry:
+        geometry_note += "\nGeometry not drawn for: " + ", ".join(sorted(missing_geometry)) + "."
     plot.add_text("Arrows: direction only (equal lengths). Coordinates: metres.\n"
                   "Point/particle markers schematic; line/plane renderings truncated.\n"
-                  "Potential references differ by source; no collisions or backreaction.",
-                  position="lower_left", font_size=9)
+                  "Potential references differ by source; no collisions or backreaction."
+                  + geometry_note, position="lower_left", font_size=9)
     plot.show_bounds(bounds=scene.bounds_m, xtitle="x [m]", ytitle="y [m]", ztitle="z [m]")
     plot.add_axes()
     plot.view_isometric()

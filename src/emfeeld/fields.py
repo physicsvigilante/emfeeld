@@ -9,7 +9,25 @@ KINDS = ("electric", "gravity")
 
 
 class DomainError(ValueError):
-    """A field or potential was requested where this idealization is undefined."""
+    """An evaluation is undefined or its geometric side is numerically unresolved."""
+
+
+def _gamma(operations):
+    # Deliberately use eps (twice round-to-nearest unit roundoff). No metre floor.
+    neps = operations * np.finfo(float).eps
+    return neps / (1.0 - neps)
+
+
+def _cross_magnitudes(a, b):
+    """Absolute product sums for each component of a cross product."""
+    return (a[..., [1, 2, 0]] * b[..., [2, 0, 1]]
+            + a[..., [2, 0, 1]] * b[..., [1, 2, 0]])
+
+
+def _reject_unresolved(distance, uncertainty, description):
+    if (np.any(~np.isfinite(distance)) or np.any(~np.isfinite(uncertainty))
+            or np.any(np.abs(distance) <= uncertainty)):
+        raise DomainError(description + "; on boundary or numerically unresolved")
 
 
 def scalar(value, name, *, positive=False):
@@ -74,6 +92,12 @@ class Source:
     def displacement(self, points):
         return positions(points) - self.center
 
+    def _displacement_with_error(self, points):
+        p = positions(points)
+        # Componentwise allowance for input-coordinate/subtraction roundoff.
+        error = _gamma(2) * (np.abs(p) + np.abs(self.center))
+        return p - self.center, error
+
 
 @dataclass(frozen=True)
 class PointSource(Source):
@@ -127,10 +151,12 @@ class SphericalShell(SolidSphere):
         return self.coefficient / np.maximum(r, self.radius)
 
     def field(self, points):
-        d = self.displacement(points)
+        d, error = self._displacement_with_error(points)
         r = np.linalg.norm(d, axis=-1)
-        if self.strength and np.any(r == self.radius):
-            raise DomainError("shell field has two one-sided limits at its surface")
+        if self.strength:
+            uncertainty = np.linalg.norm(error, axis=-1) + _gamma(8) * (r + self.radius)
+            _reject_unresolved(r - self.radius, uncertainty,
+                               "shell field has two one-sided limits at its surface")
         return np.where((r > self.radius)[..., None],
                         self.coefficient * d / np.maximum(r, self.radius)[..., None] ** 3,
                         0.0)
@@ -151,26 +177,36 @@ class InfiniteLine(Source):
         object.__setattr__(self, "reference_radius",
                            scalar(self.reference_radius, "reference_radius", positive=True))
 
-    def perpendicular(self, points):
-        d = self.displacement(points)
+    def _geometry(self, points):
+        d, error = self._displacement_with_error(points)
         a = np.array(self.direction)
-        return d - np.sum(d * a, axis=-1)[..., None] * a
+        cross = np.cross(d, a)
+        # Cross products avoid subtracting two nearly equal axial projections.
+        # Budget includes direction normalization and cross-product arithmetic.
+        cross_error = (_gamma(16) * _cross_magnitudes(np.abs(d), np.abs(a))
+                       + _cross_magnitudes(error, np.abs(a)))
+        a2 = np.dot(a, a)
+        rho = np.linalg.norm(cross, axis=-1) / np.sqrt(a2)
+        uncertainty = (np.linalg.norm(cross_error, axis=-1) / np.sqrt(a2)
+                       + _gamma(4) * rho)
+        perpendicular = np.cross(a, cross) / a2
+        return perpendicular, rho, uncertainty
+
+    def perpendicular(self, points):
+        return self._geometry(points)[0]
 
     def potential(self, points):
-        rho = np.linalg.norm(self.perpendicular(points), axis=-1)
         if not self.strength:
-            return np.zeros_like(rho)
-        if np.any(rho == 0):
-            raise DomainError("line-source potential is singular on its axis")
+            return np.zeros(positions(points).shape[:-1])
+        _, rho, uncertainty = self._geometry(points)
+        _reject_unresolved(rho, uncertainty, "line-source potential is singular on its axis")
         return -2 * self.coefficient * np.log(rho / self.reference_radius)
 
     def field(self, points):
-        d = self.perpendicular(points)
-        rho = np.linalg.norm(d, axis=-1)
         if not self.strength:
-            return np.zeros_like(d)
-        if np.any(rho == 0):
-            raise DomainError("line-source field is singular on its axis")
+            return np.zeros_like(positions(points))
+        d, rho, uncertainty = self._geometry(points)
+        _reject_unresolved(rho, uncertainty, "line-source field is singular on its axis")
         return 2 * self.coefficient * d / rho[..., None] ** 2
 
 
@@ -194,10 +230,15 @@ class InfinitePlane(Source):
         return -2 * np.pi * self.coefficient * np.abs(self.distance(points))
 
     def field(self, points):
-        d = self.distance(points)
-        if self.strength and np.any(d == 0):
-            raise DomainError("plane field has two one-sided limits on its surface")
-        return 2 * np.pi * self.coefficient * np.sign(d)[..., None] * np.array(self.normal)
+        delta, error = self._displacement_with_error(points)
+        n = np.array(self.normal)
+        d = np.sum(delta * n, axis=-1)
+        if self.strength:
+            uncertainty = (_gamma(16) * np.sum(np.abs(delta * n), axis=-1)
+                           + np.sum(error * np.abs(n), axis=-1))
+            _reject_unresolved(d, uncertainty,
+                               "plane field has two one-sided limits on its surface")
+        return 2 * np.pi * self.coefficient * np.sign(d)[..., None] * n
 
 
 @dataclass(frozen=True)
@@ -248,3 +289,12 @@ class Superposition:
     def potential(self, points):
         p = positions(points)
         return sum((s.potential(p) for s in self.sources), np.zeros(p.shape[:-1]))
+
+
+def iter_sources(model):
+    """Yield composition leaves in authored order, retaining repeated references."""
+    if isinstance(model, Superposition):
+        for source in model.sources:
+            yield from iter_sources(source)
+    else:
+        yield model

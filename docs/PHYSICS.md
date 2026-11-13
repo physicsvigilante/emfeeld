@@ -1,5 +1,7 @@
 # Initial physics and authoring contract
 
+**2026-11-13 correction:** line/plane boundary classification now conservatively rejects numerically unresolved locations, and shell classification uses the same policy. Resolved values retain the ideal-source formulas below; there is no physical cutoff or softening. Nested source geometry is traversed recursively, with unsupported geometry explicitly disclosed. See [the R1/R2 correction contract and validation](CORRECTION_R1_R2.md). Desktop rendering and independent review remain pending.
+
 All positions and radii are metres, time seconds, mass kilograms, and charge coulombs. Electric field is N/C and potential V. Gravitational field is acceleration in m/s^2 and potential is J/kg. Constants come from `scipy.constants`; run outputs record the installed SciPy version and actual values of G and epsilon_0.
 
 ## Shared analytic convention
