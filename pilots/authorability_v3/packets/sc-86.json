@@ -1,0 +1,102 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "SC-86 | zero-potential z-axis for four charges summing to zero",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "point",
+        "charge_C": 0.000006,
+        "center_m": [
+          -0.5,
+          0.5,
+          0
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": 0.000002,
+        "center_m": [
+          0.5,
+          0.5,
+          0
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": -0.000012,
+        "center_m": [
+          0.5,
+          -0.5,
+          0
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": 0.000004,
+        "center_m": [
+          -0.5,
+          -0.5,
+          0
+        ]
+      }
+    ],
+    "bounds_m": [
+      -2.5,
+      2.5,
+      -2.5,
+      2.5,
+      -2.5,
+      2.5
+    ]
+  },
+  "observations": [
+    {
+      "id": "V_origin",
+      "type": "potential",
+      "position_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "V_axis_1",
+      "type": "potential",
+      "position_m": [
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "id": "V_axis_neg2",
+      "type": "potential",
+      "position_m": [
+        0,
+        0,
+        -2
+      ]
+    },
+    {
+      "id": "E_origin",
+      "type": "field",
+      "position_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "V_off_axis",
+      "type": "potential",
+      "position_m": [
+        0.25,
+        -0.25,
+        0.4
+      ]
+    }
+  ],
+  "notes": "Single Correct Q86, PDF 31/book 1.171. Book gives charges but not their mapping to vertices: mapping A/B/C/D clockwise is illustrative. Total charge zero gives V=0 on the entire perpendicular axis, not E=0."
+}

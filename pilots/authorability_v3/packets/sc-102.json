@@ -1,0 +1,68 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "SC-102 | concentric metallic sphere and shell, prescribed radial field only",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "shell",
+        "charge_C": 3.0000000000000004e-9,
+        "radius_m": 1,
+        "center_m": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "shell",
+        "charge_C": -1e-9,
+        "radius_m": 3,
+        "center_m": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "bounds_m": [
+      -4,
+      4,
+      -4,
+      4,
+      -4,
+      4
+    ]
+  },
+  "observations": [
+    {
+      "id": "E_between",
+      "type": "field",
+      "position_m": [
+        2,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "E_in_central_metal",
+      "type": "field",
+      "position_m": [
+        0.5,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "E_beyond",
+      "type": "field",
+      "position_m": [
+        4,
+        0,
+        0
+      ]
+    }
+  ],
+  "notes": "Single Correct Q102, PDF 33/book 1.173. Only the static concentric gap field is represented by prescribed spherical-shell equivalence; NOT a general conductor polarization or finite-thickness induced-charge model. Q=1 nC,a=1 m,b=3 m illustrative."
+}

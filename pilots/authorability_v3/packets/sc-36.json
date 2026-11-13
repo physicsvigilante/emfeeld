@@ -1,0 +1,112 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "SC-36 | five concentric charged thin spherical shells",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "shell",
+        "charge_C": 1e-9,
+        "radius_m": 1,
+        "center_m": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "shell",
+        "charge_C": 2e-9,
+        "radius_m": 2,
+        "center_m": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "shell",
+        "charge_C": 3.0000000000000004e-9,
+        "radius_m": 3,
+        "center_m": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "shell",
+        "charge_C": 4e-9,
+        "radius_m": 4,
+        "center_m": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "shell",
+        "charge_C": 5e-9,
+        "radius_m": 5,
+        "center_m": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "bounds_m": [
+      -7,
+      7,
+      -7,
+      7,
+      -7,
+      7
+    ]
+  },
+  "observations": [
+    {
+      "id": "V_on_outer_shell",
+      "type": "potential",
+      "position_m": [
+        5,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "V_centre",
+      "type": "potential",
+      "position_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "E_outside",
+      "type": "field",
+      "position_m": [
+        6,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "delta_centre_to_outer",
+      "type": "potential_difference",
+      "from_m": [
+        0,
+        0,
+        0
+      ],
+      "to_m": [
+        5,
+        0,
+        0
+      ]
+    }
+  ],
+  "notes": "Single Correct Q36, PDF 25/book 1.165. Representative N=5, Q=1 nC, a=1 m; exact potential on ideal sheet is valid but surface-field value is deliberately not requested."
+}

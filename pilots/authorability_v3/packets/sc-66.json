@@ -1,0 +1,75 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "SC-66 | three occupied corners of a 1 m square",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "point",
+        "charge_C": 0.000004,
+        "center_m": [
+          0.5,
+          0.5,
+          0
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": 0.000004,
+        "center_m": [
+          0.5,
+          -0.5,
+          0
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": 0.000004,
+        "center_m": [
+          -0.5,
+          -0.5,
+          0
+        ]
+      }
+    ],
+    "bounds_m": [
+      -1.7,
+      1.7,
+      -1.7,
+      1.7,
+      -1.7,
+      1.7
+    ]
+  },
+  "observations": [
+    {
+      "id": "field_at_O",
+      "type": "field",
+      "position_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "potential_at_O",
+      "type": "potential",
+      "position_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "field_above",
+      "type": "field",
+      "position_m": [
+        0,
+        0,
+        1
+      ]
+    }
+  ],
+  "notes": "Single Correct Q66, PDF 28/book 1.168. Original +4 microcoulomb charges at B,C,D of a 1 m square; an off-plane field probe is additional."
+}

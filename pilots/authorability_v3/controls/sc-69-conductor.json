@@ -1,0 +1,48 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "SC-69 | conducting sphere polarizes in an imposed uniform field",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "uniform",
+        "field_N_C": [
+          1,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "conducting_sphere",
+        "radius_m": 1,
+        "charge_C": 0,
+        "center_m": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "bounds_m": [
+      -3,
+      3,
+      -3,
+      3,
+      -3,
+      3
+    ]
+  },
+  "observations": [
+    {
+      "id": "E_near_conductor",
+      "type": "field",
+      "position_m": [
+        2,
+        0,
+        0
+      ]
+    }
+  ],
+  "notes": "Single Correct Q69, PDF 29/book 1.169. Deliberately unsupported polarizing conductor: a zero-charge prescribed sphere must not replace induced-charge physics."
+}
