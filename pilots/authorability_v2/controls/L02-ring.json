@@ -1,0 +1,62 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "NUM-12 | ring capability probe, intentionally unsupported",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "ring",
+        "charge_C": 1e-05,
+        "radius_m": 1,
+        "center_m": [
+          0,
+          0,
+          0
+        ],
+        "normal": [
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "particles": [
+      {
+        "mass_kg": 0.0009,
+        "charge_C": -1e-06,
+        "position_m": [
+          0,
+          0,
+          0.01
+        ],
+        "velocity_m_s": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "duration_s": 1,
+    "samples": 101,
+    "bounds_m": [
+      -5,
+      5,
+      -5,
+      5,
+      -5,
+      5
+    ]
+  },
+  "observations": [
+    {
+      "id": "position",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "position",
+      "time_s": 0.1,
+      "time_selection": "exact"
+    }
+  ],
+  "notes": "NUM-12, PDF69/book1.209: ring source is absent. This file deliberately probes that unsupported vocabulary; it is not a successfully authored model. The original period question remains unsupported, and no point-cloud approximation or invented source law is substituted."
+}

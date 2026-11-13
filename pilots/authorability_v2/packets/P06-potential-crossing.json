@@ -1,0 +1,113 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "SOL-26 | unequal fixed charges; release from zero-locus circle centre",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "point",
+        "charge_C": -2e-09,
+        "center_m": [
+          -3,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": 1e-09,
+        "center_m": [
+          3,
+          0,
+          0
+        ]
+      }
+    ],
+    "bounds_m": [
+      -5,
+      15,
+      -5,
+      5,
+      -5,
+      5
+    ],
+    "particles": [
+      {
+        "charge_C": 1e-06,
+        "mass_kg": 0.001,
+        "position_m": [
+          5,
+          0,
+          0
+        ],
+        "velocity_m_s": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "duration_s": 120,
+    "samples": 4001
+  },
+  "observations": [
+    {
+      "id": "zero_potential_sphere",
+      "type": "trajectory_event",
+      "particle_index": 0,
+      "condition": {
+        "type": "radial",
+        "center_m": [
+          5,
+          0,
+          0
+        ],
+        "radius_m": 4,
+        "direction": "outward"
+      },
+      "occurrence": "first",
+      "max_step_s": 0.3,
+      "min_radial_speed_m_s": 1e-07,
+      "accuracy": {
+        "time_atol_s": 1e-06,
+        "position_atol_m": 1e-06,
+        "velocity_atol_m_s": 1e-07,
+        "rtol": 1e-07
+      }
+    },
+    {
+      "id": "V_start",
+      "type": "potential",
+      "position_m": [
+        5,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "V_sphere_equator",
+      "type": "potential",
+      "position_m": [
+        5,
+        0,
+        4
+      ]
+    },
+    {
+      "id": "delta_V",
+      "type": "potential_difference",
+      "from_m": [
+        5,
+        0,
+        0
+      ],
+      "to_m": [
+        9,
+        0,
+        0
+      ]
+    }
+  ],
+  "notes": "Exact SOL-26 pilot scene. Sphere centre/radius derived analytically from zero potential; parameters illustrative. Native event locates a crossing without a case-specific root solver. Equator potential is an extra 3D check, not a proof of the entire locus."
+}

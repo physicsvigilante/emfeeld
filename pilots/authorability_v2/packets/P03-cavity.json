@@ -1,0 +1,50 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "NUM-31 | cavity via density subtraction (primitive shapes, not a void mesh)",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "solid_sphere",
+        "charge_C": 1.666666666666667e-10,
+        "center_m": [
+          0,
+          0,
+          0
+        ],
+        "radius_m": 0.05
+      },
+      {
+        "type": "solid_sphere",
+        "charge_C": -1.3333333333333336e-12,
+        "center_m": [
+          0,
+          0.03,
+          0
+        ],
+        "radius_m": 0.01
+      }
+    ],
+    "bounds_m": [
+      -0.065,
+      0.065,
+      -0.065,
+      0.065,
+      -0.065,
+      0.065
+    ]
+  },
+  "observations": [
+    {
+      "id": "V_P",
+      "type": "potential",
+      "position_m": [
+        0.04,
+        0,
+        0
+      ]
+    }
+  ],
+  "notes": "NUM-31: exact earlier scene, including all supplied numerical data converted to SI. The smaller signed sphere subtracts removed density, not a physical second charge cloud. Report volts; final nearest-integer conversion is presentation only."
+}

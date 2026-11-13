@@ -1,0 +1,105 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "SC-147 | seven occupied cube vertices",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "point",
+        "charge_C": 1e-09,
+        "center_m": [
+          -1,
+          -1,
+          -1
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": 1e-09,
+        "center_m": [
+          -1,
+          -1,
+          1
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": 1e-09,
+        "center_m": [
+          -1,
+          1,
+          -1
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": 1e-09,
+        "center_m": [
+          -1,
+          1,
+          1
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": 1e-09,
+        "center_m": [
+          1,
+          -1,
+          -1
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": 1e-09,
+        "center_m": [
+          1,
+          -1,
+          1
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": 1e-09,
+        "center_m": [
+          1,
+          1,
+          -1
+        ]
+      }
+    ],
+    "particles": [],
+    "duration_s": 1,
+    "samples": 101,
+    "bounds_m": [
+      -5,
+      5,
+      -5,
+      5,
+      -5,
+      5
+    ]
+  },
+  "observations": [
+    {
+      "id": "E_center",
+      "type": "field",
+      "position_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "V_center",
+      "type": "potential",
+      "position_m": [
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "notes": "SC-147, PDF 38 / 1.178. Representative edge 2 m and q=1 nC. Missing vertex (+1,+1,+1) fixes an otherwise arbitrary orientation. Potential is an additional observation."
+}

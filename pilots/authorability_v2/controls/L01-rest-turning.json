@@ -1,0 +1,91 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "SC-28 | negative test charge released above two fixed positive charges",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "point",
+        "charge_C": 1e-09,
+        "center_m": [
+          -1.0,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": 1e-09,
+        "center_m": [
+          1.0,
+          0,
+          0
+        ]
+      }
+    ],
+    "bounds_m": [
+      -2.2,
+      2.2,
+      -2.2,
+      2.2,
+      -2.2,
+      2.2
+    ],
+    "particles": [
+      {
+        "charge_C": -1e-06,
+        "mass_kg": 0.001,
+        "position_m": [
+          0,
+          1.7320508075688772,
+          0
+        ],
+        "velocity_m_s": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "duration_s": 40,
+    "samples": 4001
+  },
+  "observations": [
+    {
+      "id": "future_maximum",
+      "type": "trajectory_event",
+      "particle_index": 0,
+      "condition": {
+        "type": "radial_turning",
+        "center_m": [
+          0,
+          0,
+          0
+        ],
+        "extremum": "maximum"
+      },
+      "occurrence": "first",
+      "max_step_s": 0.1,
+      "min_distance_m": 1e-08,
+      "min_radial_acceleration_m_s2": 1e-06,
+      "accuracy": {
+        "time_atol_s": 1e-07,
+        "position_atol_m": 1e-07,
+        "velocity_atol_m_s": 1e-07,
+        "radial_speed_atol_m_s": 1e-08,
+        "rtol": 1e-08
+      }
+    },
+    {
+      "id": "valid_V",
+      "type": "potential",
+      "position_m": [
+        0,
+        1.7320508075688772,
+        0
+      ]
+    }
+  ],
+  "notes": "Limitation probe based on SC-28, not its original requested midpoint measurement: ask for a later radial maximum from the stated rest launch. Expect initial_condition_error, while a static measurement survives. No initial velocity/time is silently altered."
+}

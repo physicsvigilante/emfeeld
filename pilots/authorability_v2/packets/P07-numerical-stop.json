@@ -1,0 +1,73 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "NUM-34 | repulsive point-charge stopping distance",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "point",
+        "charge_C": 1e-08,
+        "center_m": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "particles": [
+      {
+        "mass_kg": 2e-09,
+        "charge_C": 1e-09,
+        "position_m": [
+          0.1,
+          0,
+          0
+        ],
+        "velocity_m_s": [
+          -1.0,
+          0,
+          0
+        ]
+      }
+    ],
+    "duration_s": 0.0005,
+    "samples": 101,
+    "bounds_m": [
+      -0.01,
+      0.12,
+      -0.03,
+      0.03,
+      -0.03,
+      0.03
+    ]
+  },
+  "observations": [
+    {
+      "id": "stop",
+      "type": "trajectory_event",
+      "particle_index": 0,
+      "condition": {
+        "type": "radial_turning",
+        "center_m": [
+          0,
+          0,
+          0
+        ],
+        "extremum": "minimum"
+      },
+      "occurrence": "first",
+      "max_step_s": 1e-06,
+      "min_distance_m": 1e-08,
+      "min_radial_acceleration_m_s2": 1e-06,
+      "accuracy": {
+        "time_atol_s": 1e-10,
+        "position_atol_m": 1e-09,
+        "velocity_atol_m_s": 1e-07,
+        "radial_speed_atol_m_s": 1e-08,
+        "rtol": 1e-08
+      }
+    }
+  ],
+  "notes": "NUM-34 supplied numbers are preserved. Mass 2 micrograms = 2e-9 kg; initial radius 10 cm = 0.1 m. The observation returns metres; multiply by 1000 for the requested mm. Time is an additional measured output. The stopping radius is not supplied as an event condition."
+}

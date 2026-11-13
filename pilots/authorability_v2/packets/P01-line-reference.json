@@ -1,0 +1,71 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "SC-18 | line along x with finite reference radius",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "line",
+        "charge_per_m_C_m": 2e-09,
+        "center_m": [
+          0,
+          0,
+          0
+        ],
+        "direction": [
+          1,
+          0,
+          0
+        ],
+        "reference_radius_m": 13
+      }
+    ],
+    "particles": [],
+    "duration_s": 1,
+    "samples": 101,
+    "bounds_m": [
+      -2,
+      2,
+      -14,
+      14,
+      -14,
+      14
+    ]
+  },
+  "observations": [
+    {
+      "id": "V_reference",
+      "type": "potential",
+      "position_m": [
+        0,
+        5,
+        12
+      ]
+    },
+    {
+      "id": "V_P",
+      "type": "potential",
+      "position_m": [
+        1,
+        3,
+        -4
+      ]
+    },
+    {
+      "id": "delta_V",
+      "type": "potential_difference",
+      "from_m": [
+        0,
+        5,
+        12
+      ],
+      "to_m": [
+        1,
+        3,
+        -4
+      ]
+    }
+  ],
+  "notes": "SC-18, PDF 22 / book 1.162. Coordinates supplied; lambda=2 nC/m is illustrative. Reference radius is perpendicular distance 13 m, not distance from origin. No trajectory."
+}

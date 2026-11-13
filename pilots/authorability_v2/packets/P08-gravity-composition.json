@@ -1,0 +1,161 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "Illustrative gravity composition | tilted harmonic motion",
+    "kind": "gravity",
+    "sources": [
+      {
+        "type": "solid_sphere",
+        "mass_kg": 5993137857153.56,
+        "radius_m": 10,
+        "center_m": [
+          -2.0,
+          1.0,
+          0.0
+        ]
+      },
+      {
+        "type": "solid_sphere",
+        "mass_kg": 8989706785730.34,
+        "radius_m": 10,
+        "center_m": [
+          1.0,
+          -1.0,
+          2.0
+        ]
+      },
+      {
+        "type": "uniform",
+        "field_m_s2": [
+          0.2,
+          -0.2,
+          0.1
+        ]
+      }
+    ],
+    "particles": [
+      {
+        "mass_kg": 0.2,
+        "position_m": [
+          0.5091168824543142,
+          0.9859292911256334,
+          1.865685424949238
+        ],
+        "velocity_m_s": [
+          -1.1879393923933996,
+          -0.8768124086713189,
+          0.5656854249492381
+        ]
+      },
+      {
+        "mass_kg": 2.0,
+        "position_m": [
+          0.5091168824543142,
+          0.9859292911256334,
+          1.865685424949238
+        ],
+        "velocity_m_s": [
+          -1.1879393923933996,
+          -0.8768124086713189,
+          0.5656854249492381
+        ]
+      }
+    ],
+    "duration_s": 4,
+    "samples": 201,
+    "bounds_m": [
+      -13,
+      13,
+      -13,
+      13,
+      -13,
+      13
+    ]
+  },
+  "observations": [
+    {
+      "id": "p0_position",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "position",
+      "time_s": 1,
+      "time_selection": "exact"
+    },
+    {
+      "id": "p0_velocity",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "velocity",
+      "time_s": 1,
+      "time_selection": "exact"
+    },
+    {
+      "id": "p0_minimum",
+      "type": "trajectory_event",
+      "particle_index": 0,
+      "condition": {
+        "type": "radial_turning",
+        "center_m": [
+          -5.551115123125783e-17,
+          -0.39999999999999997,
+          1.3
+        ],
+        "extremum": "minimum"
+      },
+      "occurrence": "first",
+      "max_step_s": 0.01,
+      "min_distance_m": 1e-08,
+      "min_radial_acceleration_m_s2": 1e-06,
+      "accuracy": {
+        "time_atol_s": 1e-07,
+        "position_atol_m": 1e-07,
+        "velocity_atol_m_s": 1e-07,
+        "radial_speed_atol_m_s": 1e-08,
+        "rtol": 1e-08
+      }
+    },
+    {
+      "id": "p1_position",
+      "type": "trajectory_sample",
+      "particle_index": 1,
+      "quantity": "position",
+      "time_s": 1,
+      "time_selection": "exact"
+    },
+    {
+      "id": "p1_velocity",
+      "type": "trajectory_sample",
+      "particle_index": 1,
+      "quantity": "velocity",
+      "time_s": 1,
+      "time_selection": "exact"
+    },
+    {
+      "id": "p1_minimum",
+      "type": "trajectory_event",
+      "particle_index": 1,
+      "condition": {
+        "type": "radial_turning",
+        "center_m": [
+          -5.551115123125783e-17,
+          -0.39999999999999997,
+          1.3
+        ],
+        "extremum": "minimum"
+      },
+      "occurrence": "first",
+      "max_step_s": 0.01,
+      "min_distance_m": 1e-08,
+      "min_radial_acceleration_m_s2": 1e-06,
+      "accuracy": {
+        "time_atol_s": 1e-07,
+        "position_atol_m": 1e-07,
+        "velocity_atol_m_s": 1e-07,
+        "radial_speed_atol_m_s": 1e-08,
+        "rtol": 1e-08
+      }
+    }
+  ],
+  "notes": "Author-created gravitational composition, not a PDF problem. Two penetrable overlapping positive-mass spheres and a uniform gravitational field. Both particles remain within both spheres over t=0..4 s; net g=-(r-eq) s^-2. Independent test masses, no backreaction. Tilted initial phase is explicitly nonstationary and not changed from any source problem."
+}

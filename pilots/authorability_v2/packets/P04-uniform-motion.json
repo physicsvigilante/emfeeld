@@ -1,0 +1,131 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "SC-99 | finite-time launch and crossing",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "uniform",
+        "field_N_C": [
+          0,
+          -400,
+          0
+        ]
+      }
+    ],
+    "particles": [
+      {
+        "mass_kg": 0.002,
+        "charge_C": -3e-06,
+        "position_m": [
+          0,
+          0,
+          0
+        ],
+        "velocity_m_s": [
+          1.5,
+          0,
+          0
+        ]
+      }
+    ],
+    "duration_s": 3,
+    "samples": 31,
+    "bounds_m": [
+      -1,
+      5,
+      -1,
+      4,
+      -1,
+      1
+    ]
+  },
+  "observations": [
+    {
+      "id": "initial_K",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "kinetic_energy",
+      "time_s": 0,
+      "time_selection": "exact"
+    },
+    {
+      "id": "position_t2",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "position",
+      "time_s": 2,
+      "time_selection": "exact"
+    },
+    {
+      "id": "velocity_t2",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "velocity",
+      "time_s": 2,
+      "time_selection": "exact"
+    },
+    {
+      "id": "speed_t2",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "speed",
+      "time_s": 2,
+      "time_selection": "exact"
+    },
+    {
+      "id": "K_t2",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "kinetic_energy",
+      "time_s": 2,
+      "time_selection": "exact"
+    },
+    {
+      "id": "U_t2",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "potential_energy",
+      "time_s": 2,
+      "time_selection": "exact"
+    },
+    {
+      "id": "total_t2",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "total_energy",
+      "time_s": 2,
+      "time_selection": "exact"
+    },
+    {
+      "id": "exit_plane",
+      "type": "trajectory_event",
+      "particle_index": 0,
+      "condition": {
+        "type": "plane",
+        "point_m": [
+          2.25,
+          0,
+          0
+        ],
+        "normal": [
+          1,
+          0,
+          0
+        ],
+        "direction": "positive"
+      },
+      "occurrence": "first",
+      "max_step_s": 0.01,
+      "min_normal_speed_m_s": 1e-07,
+      "accuracy": {
+        "time_atol_s": 1e-06,
+        "position_atol_m": 1e-06,
+        "velocity_atol_m_s": 1e-07,
+        "rtol": 1e-07
+      }
+    }
+  ],
+  "notes": "SC-99 numerical instantiation, not a symbolic/all-options solution. The added x=2.25 m plane is imaginary. K includes initial kinetic energy; qE*y is the gain, not total K. Uniform field continues beyond the plane; no finite capacitor or impact is claimed."
+}

@@ -1,0 +1,325 @@
+{
+  "pilot": "authorability_v2",
+  "frozen_engine": "81b8d1c8dced61e5583c8032f32c3d3043464c55",
+  "source": {
+    "file": "01_emfields.pdf",
+    "sha256": "1b67b3c0af8cd55a850258b655bbf5018cc3baee11016c80afa50eb86e53af58",
+    "git_blob": "6870cfb3c5bd33f9800eb851ad1fe4c6b4106787"
+  },
+  "cases": [
+    {
+      "id": "P01-line-reference",
+      "file": "packets/P01-line-reference.json",
+      "role": "execution_target",
+      "source": {
+        "section": "Single Correct",
+        "question": 18,
+        "pdf_pages": [
+          22
+        ],
+        "book_pages": [
+          "1.162"
+        ]
+      },
+      "parameters": {
+        "given": "axis x, reference point (0,5,12) m, probe (1,3,-4) m",
+        "derived": "reference_radius_m=13, probe perpendicular radius=5",
+        "illustrative": {
+          "lambda_C_m": 2e-09
+        }
+      },
+      "expected_cli_exit": 0,
+      "expected_statuses": {
+        "V_reference": "ok",
+        "V_P": "ok",
+        "delta_V": "ok"
+      },
+      "source_scene_reused": null,
+      "claims": "Numerical instantiation only; not a symbolic proof, all-options grader or autonomous success-rate sample."
+    },
+    {
+      "id": "P02-cube",
+      "file": "packets/P02-cube.json",
+      "role": "execution_target",
+      "source": {
+        "section": "Single Correct",
+        "question": 147,
+        "pdf_pages": [
+          38
+        ],
+        "book_pages": [
+          "1.178"
+        ]
+      },
+      "parameters": {
+        "given": "seven equal point charges at cube vertices",
+        "illustrative": {
+          "edge_m": 2,
+          "charge_C": 1e-09,
+          "missing_vertex_m": [
+            1,
+            1,
+            1
+          ]
+        }
+      },
+      "expected_cli_exit": 0,
+      "expected_statuses": {
+        "E_center": "ok",
+        "V_center": "ok"
+      },
+      "source_scene_reused": null,
+      "claims": "Numerical instantiation only; not a symbolic proof, all-options grader or autonomous success-rate sample."
+    },
+    {
+      "id": "P03-cavity",
+      "file": "packets/P03-cavity.json",
+      "role": "execution_target",
+      "source": {
+        "section": "Integer/Numerical",
+        "question": 31,
+        "pdf_pages": [
+          71
+        ],
+        "book_pages": [
+          "1.211"
+        ]
+      },
+      "parameters": {
+        "given": "R=5 cm, cavity radius 1 cm at (0,3) cm, rho=1e-6/pi C/m3, P=(4,0) cm",
+        "derived": "SI conversion and Q=rho*volume"
+      },
+      "expected_cli_exit": 0,
+      "expected_statuses": {
+        "V_P": "ok"
+      },
+      "source_scene_reused": "pilots/authorability_v1/scenes/num-31.json",
+      "claims": "Numerical instantiation only; not a symbolic proof, all-options grader or autonomous success-rate sample."
+    },
+    {
+      "id": "P04-uniform-motion",
+      "file": "packets/P04-uniform-motion.json",
+      "role": "execution_target",
+      "source": {
+        "section": "Single Correct",
+        "question": 99,
+        "pdf_pages": [
+          32
+        ],
+        "book_pages": [
+          "1.172"
+        ]
+      },
+      "parameters": {
+        "given": "negative charge, horizontal launch, downward uniform field",
+        "illustrative": {
+          "mass_kg": 0.002,
+          "charge_C": -3e-06,
+          "field_N_C": [
+            0,
+            -400,
+            0
+          ],
+          "launch_m_s": 1.5,
+          "probe_time_s": 2,
+          "plane_x_m": 2.25
+        }
+      },
+      "expected_cli_exit": 0,
+      "expected_statuses": {
+        "initial_K": "ok",
+        "position_t2": "ok",
+        "velocity_t2": "ok",
+        "speed_t2": "ok",
+        "K_t2": "ok",
+        "U_t2": "ok",
+        "total_t2": "ok",
+        "exit_plane": "ok"
+      },
+      "source_scene_reused": null,
+      "claims": "Numerical instantiation only; not a symbolic proof, all-options grader or autonomous success-rate sample."
+    },
+    {
+      "id": "P05-two-charge-crossing",
+      "file": "packets/P05-two-charge-crossing.json",
+      "role": "execution_target",
+      "source": {
+        "section": "Single Correct",
+        "question": 28,
+        "pdf_pages": [
+          24
+        ],
+        "book_pages": [
+          "1.164"
+        ]
+      },
+      "parameters": {
+        "illustrative": "same labelled a=1 m, Q=1 nC, q=-1 microC, m=1 g as original pilot",
+        "given": "release at y=sqrt(3)*a from rest"
+      },
+      "expected_cli_exit": 0,
+      "expected_statuses": {
+        "midpoint": "ok"
+      },
+      "source_scene_reused": "pilots/authorability_v1/scenes/sc-28.json",
+      "claims": "Numerical instantiation only; not a symbolic proof, all-options grader or autonomous success-rate sample."
+    },
+    {
+      "id": "P06-potential-crossing",
+      "file": "packets/P06-potential-crossing.json",
+      "role": "execution_target",
+      "source": {
+        "section": "Solved",
+        "question": 26,
+        "pdf_pages": [
+          18,
+          19
+        ],
+        "book_pages": [
+          "1.158",
+          "1.159"
+        ]
+      },
+      "parameters": {
+        "given": "fixed charges -2Q at -3a and +Q at +3a; release at locus centre",
+        "illustrative": "a=1 m,Q=1 nC,test q=1 microC,m=1 g",
+        "derived": "sphere centre=(5,0,0), radius=4"
+      },
+      "expected_cli_exit": 0,
+      "expected_statuses": {
+        "zero_potential_sphere": "ok",
+        "V_start": "ok",
+        "V_sphere_equator": "ok",
+        "delta_V": "ok"
+      },
+      "source_scene_reused": "pilots/authorability_v1/scenes/sol-26.json",
+      "claims": "Numerical instantiation only; not a symbolic proof, all-options grader or autonomous success-rate sample."
+    },
+    {
+      "id": "P07-numerical-stop",
+      "file": "packets/P07-numerical-stop.json",
+      "role": "execution_target",
+      "source": {
+        "section": "Integer/Numerical",
+        "question": 34,
+        "pdf_pages": [
+          71
+        ],
+        "book_pages": [
+          "1.211"
+        ]
+      },
+      "parameters": {
+        "given": {
+          "mass_microgram": 2,
+          "charge_C": 1e-09,
+          "source_charge_C": 1e-08,
+          "initial_radius_cm": 10,
+          "initial_speed_m_s": 1
+        },
+        "derived": "SI units only; coordinate origin/orientation is arbitrary"
+      },
+      "expected_cli_exit": 0,
+      "expected_statuses": {
+        "stop": "ok"
+      },
+      "source_scene_reused": null,
+      "claims": "Numerical instantiation only; not a symbolic proof, all-options grader or autonomous success-rate sample."
+    },
+    {
+      "id": "P08-gravity-composition",
+      "file": "packets/P08-gravity-composition.json",
+      "role": "execution_target",
+      "source": null,
+      "parameters": {
+        "illustrative": "all numbers authored; radius 10 m, coefficients GM/R^3=0.4 and 0.6 s^-2, g=(.2,-.2,.1) m/s^2, masses .2 and 2 kg",
+        "derived": {
+          "equilibrium_m": [
+            -5.551115123125783e-17,
+            -0.39999999999999997,
+            1.3
+          ],
+          "initial_position_m": [
+            0.5091168824543142,
+            0.9859292911256334,
+            1.865685424949238
+          ],
+          "initial_velocity_m_s": [
+            -1.1879393923933996,
+            -0.8768124086713189,
+            0.5656854249492381
+          ]
+        }
+      },
+      "expected_cli_exit": 0,
+      "expected_statuses": {
+        "p0_position": "ok",
+        "p0_velocity": "ok",
+        "p0_minimum": "ok",
+        "p1_position": "ok",
+        "p1_velocity": "ok",
+        "p1_minimum": "ok"
+      },
+      "source_scene_reused": null,
+      "claims": "Numerical instantiation only; not a symbolic proof, all-options grader or autonomous success-rate sample."
+    },
+    {
+      "id": "L01-rest-turning",
+      "file": "controls/L01-rest-turning.json",
+      "role": "limitation_control",
+      "source": {
+        "section": "Single Correct",
+        "question": 28,
+        "pdf_pages": [
+          24
+        ],
+        "book_pages": [
+          "1.164"
+        ],
+        "adaptation": "new future-turning request"
+      },
+      "parameters": {
+        "given": "original rest condition retained"
+      },
+      "expected_cli_exit": 1,
+      "expected_statuses": {
+        "future_maximum": "initial_condition_error",
+        "valid_V": "ok"
+      },
+      "source_scene_reused": "pilots/authorability_v1/scenes/sc-28.json",
+      "claims": "Numerical instantiation only; not a symbolic proof, all-options grader or autonomous success-rate sample."
+    },
+    {
+      "id": "L02-ring",
+      "file": "controls/L02-ring.json",
+      "role": "limitation_control",
+      "source": {
+        "section": "Integer/Numerical",
+        "question": 12,
+        "pdf_pages": [
+          69
+        ],
+        "book_pages": [
+          "1.209"
+        ]
+      },
+      "parameters": {
+        "given": {
+          "ring_radius_m": 1,
+          "ring_charge_C": 1e-05,
+          "particle_mass_kg": 0.0009,
+          "particle_charge_C": -1e-06,
+          "initial_axis_distance_m": 0.01
+        },
+        "illustrative": "evaluation horizon only"
+      },
+      "expected_cli_exit": 2,
+      "expected_statuses": {
+        "position": "ok"
+      },
+      "source_scene_reused": null,
+      "claims": "Numerical instantiation only; not a symbolic proof, all-options grader or autonomous success-rate sample.",
+      "expected_error_contains": "unsupported source type: 'ring'"
+    }
+  ]
+}
