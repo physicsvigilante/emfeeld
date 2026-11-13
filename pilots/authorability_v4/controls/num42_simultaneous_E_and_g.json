@@ -1,0 +1,62 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "NUM42 / charged projectile in horizontal E and vertical gravity",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "uniform",
+        "field_N_C": [
+          20000000,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "uniform_gravity",
+        "field_m_s2": [
+          0,
+          -9.8,
+          0
+        ]
+      }
+    ],
+    "bounds_m": [
+      -100,
+      200,
+      -20,
+      120,
+      -1,
+      1
+    ],
+    "particles": [
+      {
+        "mass_kg": 1,
+        "charge_C": 0.000002,
+        "position_m": [
+          0,
+          0,
+          0
+        ],
+        "velocity_m_s": [
+          14.14213562373095,
+          14.14213562373095,
+          0
+        ]
+      }
+    ],
+    "duration_s": 20,
+    "samples": 501
+  },
+  "observations": [
+    {
+      "id": "final_x",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "position",
+      "sample_index": 500
+    }
+  ],
+  "notes": "NUM42 PDF p72/book 1.212: intentionally unsupported simultaneous qE and mg motion; electric-only replacement is incorrect."
+}

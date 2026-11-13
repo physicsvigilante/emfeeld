@@ -1,0 +1,67 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "NUM41 / two mutually attracting mobile insulating charged spheres",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "moving_solid_sphere",
+        "charge_C": -0.000002,
+        "mass_kg": 0.1,
+        "radius_m": 0.003,
+        "center_m": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "moving_solid_sphere",
+        "charge_C": 0.000003,
+        "mass_kg": 0.7,
+        "radius_m": 0.005,
+        "center_m": [
+          1,
+          0,
+          0
+        ]
+      }
+    ],
+    "bounds_m": [
+      -2,
+      2,
+      -1,
+      1,
+      -1,
+      1
+    ]
+  },
+  "observations": [
+    {
+      "id": "relative_collision_speed",
+      "type": "trajectory_event",
+      "particle_index": 0,
+      "condition": {
+        "type": "radial",
+        "center_m": [
+          1,
+          0,
+          0
+        ],
+        "radius_m": 0.008,
+        "direction": "inward"
+      },
+      "occurrence": "first",
+      "max_step_s": 0.01,
+      "min_radial_speed_m_s": 0.000001,
+      "accuracy": {
+        "time_atol_s": 0.000001,
+        "position_atol_m": 0.000001,
+        "velocity_atol_m_s": 0.000001,
+        "rtol": 1e-7
+      }
+    }
+  ],
+  "notes": "NUM41 PDF p72/book 1.212: intentionally unsupported coupled mobile charged spheres and collision. Reject instead of fixing one charge."
+}

@@ -1,0 +1,28 @@
+{
+  "engine_commit": "08571d366a0499d2110de0929d91db7d5caa6c7f",
+  "source_pdf_git_blob": "6870cfb3c5bd33f9800eb851ad1fe4c6b4106787",
+  "target_problem_count": 7,
+  "packet_paths": [
+    "packets/sc31_choice_A.json",
+    "packets/sc31_choice_B.json",
+    "packets/sc31_choice_C.json",
+    "packets/sc31_choice_D.json",
+    "packets/sc31_single.json",
+    "packets/sc106_five_hexagon.json",
+    "packets/sc121_uniform_45deg.json",
+    "packets/sc53_hollow_shell.json",
+    "packets/num35_copper_charges.json",
+    "packets/num30_electron_gap.json",
+    "packets/grav_tetra_4sources.json"
+  ],
+  "unsupported_controls": [
+    "controls/num41_two_moving_spheres.json",
+    "controls/num42_simultaneous_E_and_g.json"
+  ],
+  "unqualified_conditions": [
+    "full dynamic shell collision beyond first vacuum-gap crossing",
+    "general conductor redistribution",
+    "moving charged source interactions",
+    "mixed electric and gravity forces on one body"
+  ]
+}
