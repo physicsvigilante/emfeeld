@@ -1,0 +1,19 @@
+{
+  "static_rtol": 1e-11,
+  "static_atol": 1e-10,
+  "gradient_scaled_tolerance": 2e-05,
+  "trajectory_position_atol_m": 1e-07,
+  "trajectory_velocity_atol_m_s": 1e-08,
+  "energy_normalized_tolerance": 1e-08,
+  "crossing_speed_rtol": 1e-06,
+  "crossing_time_refinement_atol_s": 1e-05,
+  "flux_relative_tolerance": 1e-05,
+  "flux_refinement_orders": [
+    24,
+    48,
+    96,
+    192,
+    384
+  ],
+  "freeze": "Never alter criteria to turn a failure into a pass. Record errors. No core edits."
+}

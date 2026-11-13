@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "title": "SC-122 | equal-density concentric shells (static)",
+  "kind": "electric",
+  "sources": [
+    {
+      "type": "shell",
+      "charge_C": 1e-09,
+      "radius_m": 0.5,
+      "center_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "shell",
+      "charge_C": 4e-09,
+      "radius_m": 1.0,
+      "center_m": [
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "bounds_m": [
+    -1.6,
+    1.6,
+    -1.6,
+    1.6,
+    -1.6,
+    1.6
+  ]
+}

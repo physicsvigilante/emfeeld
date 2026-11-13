@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "title": "MC-33 | four equal sources; inspect perpendicular z axis",
+  "kind": "electric",
+  "sources": [
+    {
+      "type": "point",
+      "charge_C": 1e-09,
+      "center_m": [
+        1.0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "point",
+      "charge_C": 1e-09,
+      "center_m": [
+        0,
+        1.0,
+        0
+      ]
+    },
+    {
+      "type": "point",
+      "charge_C": 1e-09,
+      "center_m": [
+        -1.0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "point",
+      "charge_C": 1e-09,
+      "center_m": [
+        0,
+        -1.0,
+        0
+      ]
+    }
+  ],
+  "bounds_m": [
+    -2,
+    2,
+    -2,
+    2,
+    -3,
+    3
+  ]
+}
