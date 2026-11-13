@@ -1,0 +1,31 @@
+{
+  "first_executions": {
+    "runnable_model_packets": 8,
+    "runnable_model_packets_successful": 8,
+    "unsupported_controls": 3,
+    "unsupported_controls_correctly_rejected": 3,
+    "post_run_packet_corrections": 0
+  },
+  "task_level": {
+    "full_native": 5,
+    "partial": 2,
+    "unsupported": 2
+  },
+  "references": {
+    "checks_total": 39,
+    "passed_after_roundoff_adjustment": 39,
+    "initial_passed": 38,
+    "initial_total": 39
+  },
+  "regressions": {
+    "engine_core": 764,
+    "historical_pilot1": 19,
+    "live_compatibility": 10,
+    "pyvista_viewer": 9,
+    "new_pilot_evidence_tests": 63,
+    "total": 865
+  },
+  "engine_code_changes": 0,
+  "publication_note": "GitHub packets preserve authored numerical source/observation settings but are reserialized from the tested chat-local JSON. Original byte-accurate frozen packets, hashes, and logs are in accompanying chat evidence ZIP.",
+  "not_independent_or_fully_blind": true
+}

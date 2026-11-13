@@ -1,0 +1,87 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "SC60 charged particle released from rest in constant E",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "uniform",
+        "field_N_C": [
+          1000,
+          0,
+          0
+        ],
+        "origin_m": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "bounds_m": [
+      -1,
+      12,
+      -1,
+      1,
+      -1,
+      1
+    ],
+    "particles": [
+      {
+        "charge_C": 0.000002,
+        "mass_kg": 0.000004,
+        "position_m": [
+          0,
+          0,
+          0
+        ],
+        "velocity_m_s": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "duration_s": 0.2,
+    "samples": 201
+  },
+  "observations": [
+    {
+      "id": "K_initial",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "kinetic_energy",
+      "sample_index": 0
+    },
+    {
+      "id": "K_final",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "kinetic_energy",
+      "sample_index": 200
+    },
+    {
+      "id": "position_final",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "position",
+      "sample_index": 200
+    },
+    {
+      "id": "velocity_final",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "velocity",
+      "sample_index": 200
+    },
+    {
+      "id": "total_energy_final",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "total_energy",
+      "sample_index": 200
+    }
+  ],
+  "notes": "Single Correct Q60 PDF p28/book 1.168. Symbolic textbook question; illustrative q=2e-6C,m=4e-6kg,E=1000N/C,t=.2s."
+}

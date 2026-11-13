@@ -1,0 +1,66 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "SC43 two positive charges, authored zero-field candidate",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "point",
+        "charge_C": 0.000004,
+        "center_m": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": 0.000009,
+        "center_m": [
+          0.2,
+          0,
+          0
+        ]
+      }
+    ],
+    "bounds_m": [
+      -0.15,
+      0.35,
+      -0.1,
+      0.1,
+      -0.1,
+      0.1
+    ]
+  },
+  "observations": [
+    {
+      "id": "E_at_authored_candidate",
+      "type": "field",
+      "position_m": [
+        0.08,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "E_left_neighbour",
+      "type": "field",
+      "position_m": [
+        0.06,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "E_right_neighbour",
+      "type": "field",
+      "position_m": [
+        0.1,
+        0,
+        0
+      ]
+    }
+  ],
+  "notes": "Single Correct Q43 PDF p26/book 1.166. x=.08 m was solved by LLM author *before* submitting a forward probe. Not native inverse solving."
+}

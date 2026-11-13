@@ -1,0 +1,195 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "MC25 two positive charges, signed displacement stability",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "point",
+        "charge_C": 0.000001,
+        "center_m": [
+          -1,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": 0.000001,
+        "center_m": [
+          1,
+          0,
+          0
+        ]
+      }
+    ],
+    "bounds_m": [
+      -1.5,
+      1.5,
+      -0.5,
+      0.5,
+      -0.5,
+      0.5
+    ],
+    "particles": [
+      {
+        "mass_kg": 0.001,
+        "charge_C": 0.000001,
+        "position_m": [
+          0.03,
+          0,
+          0
+        ],
+        "velocity_m_s": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "mass_kg": 0.001,
+        "charge_C": -0.000001,
+        "position_m": [
+          0,
+          0.03,
+          0
+        ],
+        "velocity_m_s": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "duration_s": 1.55,
+    "samples": 621
+  },
+  "observations": [
+    {
+      "id": "force_positive_axial",
+      "type": "force",
+      "position_m": [
+        0.03,
+        0,
+        0
+      ],
+      "test_charge_C": 0.000001
+    },
+    {
+      "id": "force_positive_perp",
+      "type": "force",
+      "position_m": [
+        0,
+        0.03,
+        0
+      ],
+      "test_charge_C": 0.000001
+    },
+    {
+      "id": "force_negative_axial",
+      "type": "force",
+      "position_m": [
+        0.03,
+        0,
+        0
+      ],
+      "test_charge_C": -0.000001
+    },
+    {
+      "id": "force_negative_perp",
+      "type": "force",
+      "position_m": [
+        0,
+        0.03,
+        0
+      ],
+      "test_charge_C": -0.000001
+    },
+    {
+      "id": "p0_pos_s0",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "position",
+      "sample_index": 0
+    },
+    {
+      "id": "p0_K_s0",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "kinetic_energy",
+      "sample_index": 0
+    },
+    {
+      "id": "p0_pos_s420",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "position",
+      "sample_index": 420
+    },
+    {
+      "id": "p0_K_s420",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "kinetic_energy",
+      "sample_index": 420
+    },
+    {
+      "id": "p0_pos_s593",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "position",
+      "sample_index": 593
+    },
+    {
+      "id": "p0_K_s593",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "kinetic_energy",
+      "sample_index": 593
+    },
+    {
+      "id": "p1_pos_s0",
+      "type": "trajectory_sample",
+      "particle_index": 1,
+      "quantity": "position",
+      "sample_index": 0
+    },
+    {
+      "id": "p1_K_s0",
+      "type": "trajectory_sample",
+      "particle_index": 1,
+      "quantity": "kinetic_energy",
+      "sample_index": 0
+    },
+    {
+      "id": "p1_pos_s420",
+      "type": "trajectory_sample",
+      "particle_index": 1,
+      "quantity": "position",
+      "sample_index": 420
+    },
+    {
+      "id": "p1_K_s420",
+      "type": "trajectory_sample",
+      "particle_index": 1,
+      "quantity": "kinetic_energy",
+      "sample_index": 420
+    },
+    {
+      "id": "p1_pos_s593",
+      "type": "trajectory_sample",
+      "particle_index": 1,
+      "quantity": "position",
+      "sample_index": 593
+    },
+    {
+      "id": "p1_K_s593",
+      "type": "trajectory_sample",
+      "particle_index": 1,
+      "quantity": "kinetic_energy",
+      "sample_index": 593
+    }
+  ],
+  "notes": "Multiple Correct Q25 PDF p47/book 1.187. Symbolic Q,q,a and small displacement; illustrative Q=1 microC,a=1m,q magnitudes 1microC,m=.001kg,delta=.03m. Four force probes and two stable trajectories; engine does not automatically prove/grade SHM."
+}
