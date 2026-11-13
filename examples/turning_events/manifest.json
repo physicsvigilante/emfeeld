@@ -1,0 +1,318 @@
+{
+  "scope": "Illustrative M2C authoring examples; not new textbook coverage or independent review. Analytic references do not replace event searches.",
+  "packets": [
+    {
+      "file": "free_flyby.json",
+      "cli_exit": 0,
+      "expected_results": [
+        {
+          "id": "turn",
+          "status": "ok",
+          "state": {
+            "time_s": 2.0,
+            "distance_m": 1.0,
+            "speed_m_s": 1.0,
+            "radial_acceleration_m_s2": 1.0
+          },
+          "atol": 1e-07,
+          "rtol": 1e-08,
+          "extremum": "minimum"
+        },
+        {
+          "id": "duplicate",
+          "status": "ok",
+          "state": {
+            "time_s": 2.0,
+            "distance_m": 1.0,
+            "speed_m_s": 1.0,
+            "radial_acceleration_m_s2": 1.0
+          },
+          "atol": 1e-07,
+          "rtol": 1e-08,
+          "extremum": "minimum"
+        },
+        {
+          "id": "speed_start",
+          "status": "ok"
+        },
+        {
+          "id": "potential",
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "file": "point_repulsion.json",
+      "cli_exit": 0,
+      "expected_results": [
+        {
+          "id": "turn",
+          "status": "ok",
+          "state": {
+            "time_s": 1.6232252401402305,
+            "distance_m": 1,
+            "speed_m_s": 0,
+            "total_energy_J": 1
+          },
+          "atol": 1e-07,
+          "rtol": 1e-08,
+          "extremum": "minimum"
+        },
+        {
+          "id": "maximum",
+          "status": "no_event"
+        }
+      ]
+    },
+    {
+      "file": "sphere_penetration.json",
+      "cli_exit": 0,
+      "expected_results": [
+        {
+          "id": "turn",
+          "status": "ok",
+          "state": {
+            "time_s": 2.1890767120422856,
+            "distance_m": 0.5,
+            "speed_m_s": 0,
+            "total_energy_J": 1.375
+          },
+          "atol": 1e-07,
+          "rtol": 1e-08,
+          "extremum": "minimum"
+        }
+      ]
+    },
+    {
+      "file": "inclined_electric_orbit.json",
+      "cli_exit": 0,
+      "expected_results": [
+        {
+          "id": "turn",
+          "status": "ok",
+          "state": {
+            "time_s": 3.028669375785271,
+            "distance_m": 1,
+            "position_m": [
+              0.3333333333333333,
+              -0.6666666666666666,
+              -0.6666666666666666
+            ],
+            "velocity_m_s": [
+              0.8164965809277259,
+              0.8164965809277259,
+              -0.40824829046386296
+            ],
+            "total_energy_J": -0.25
+          },
+          "atol": 1e-07,
+          "rtol": 1e-08,
+          "extremum": "minimum"
+        },
+        {
+          "id": "maximum",
+          "status": "ok",
+          "state": {
+            "time_s": 11.914435252102004,
+            "distance_m": 3,
+            "position_m": [
+              -1.0,
+              2.0,
+              2.0
+            ],
+            "velocity_m_s": [
+              -0.2721655269759087,
+              -0.2721655269759087,
+              0.13608276348795434
+            ],
+            "total_energy_J": -0.25
+          },
+          "atol": 1e-07,
+          "rtol": 1e-08,
+          "extremum": "maximum"
+        }
+      ]
+    },
+    {
+      "file": "inclined_gravity_orbit.json",
+      "cli_exit": 0,
+      "expected_results": [
+        {
+          "id": "turn",
+          "status": "ok",
+          "state": {
+            "time_s": 3.028669375785271,
+            "distance_m": 1,
+            "position_m": [
+              0.3333333333333333,
+              -0.6666666666666666,
+              -0.6666666666666666
+            ],
+            "velocity_m_s": [
+              0.8164965809277259,
+              0.8164965809277259,
+              -0.40824829046386296
+            ],
+            "total_energy_J": -0.25
+          },
+          "atol": 1e-07,
+          "rtol": 1e-08,
+          "extremum": "minimum"
+        },
+        {
+          "id": "maximum",
+          "status": "ok",
+          "state": {
+            "time_s": 11.914435252102004,
+            "distance_m": 3,
+            "position_m": [
+              -1.0,
+              2.0,
+              2.0
+            ],
+            "velocity_m_s": [
+              -0.2721655269759087,
+              -0.2721655269759087,
+              0.13608276348795434
+            ],
+            "total_energy_J": -0.25
+          },
+          "atol": 1e-07,
+          "rtol": 1e-08,
+          "extremum": "maximum"
+        }
+      ]
+    },
+    {
+      "file": "gravity_composition.json",
+      "cli_exit": 0,
+      "expected_results": [
+        {
+          "id": "particle_0_minimum",
+          "status": "ok",
+          "state": {
+            "time_s": 0.7853981633974483,
+            "distance_m": 1,
+            "speed_m_s": 2
+          },
+          "atol": 1e-07,
+          "rtol": 1e-08,
+          "extremum": "minimum"
+        },
+        {
+          "id": "particle_0_maximum",
+          "status": "ok",
+          "state": {
+            "time_s": 2.356194490192345,
+            "distance_m": 2,
+            "speed_m_s": 1
+          },
+          "atol": 1e-07,
+          "rtol": 1e-08,
+          "extremum": "maximum"
+        },
+        {
+          "id": "particle_1_minimum",
+          "status": "ok",
+          "state": {
+            "time_s": 0.7853981633974483,
+            "distance_m": 1,
+            "speed_m_s": 2
+          },
+          "atol": 1e-07,
+          "rtol": 1e-08,
+          "extremum": "minimum"
+        },
+        {
+          "id": "particle_1_maximum",
+          "status": "ok",
+          "state": {
+            "time_s": 2.356194490192345,
+            "distance_m": 2,
+            "speed_m_s": 1
+          },
+          "atol": 1e-07,
+          "rtol": 1e-08,
+          "extremum": "maximum"
+        }
+      ]
+    },
+    {
+      "file": "local_not_global.json",
+      "cli_exit": 0,
+      "expected_results": [
+        {
+          "id": "turn",
+          "status": "ok",
+          "state": {
+            "time_s": 1.6415138041150903,
+            "distance_m": 1.4701691877741603
+          },
+          "atol": 1e-07,
+          "rtol": 1e-08,
+          "extremum": "minimum"
+        }
+      ]
+    },
+    {
+      "file": "selection_cases.json",
+      "cli_exit": 1,
+      "expected_results": [
+        {
+          "id": "turn",
+          "status": "ok",
+          "extremum": "minimum"
+        },
+        {
+          "id": "too_close",
+          "status": "ambiguous_event"
+        },
+        {
+          "id": "too_flat",
+          "status": "ambiguous_event"
+        },
+        {
+          "id": "already_stationary",
+          "status": "initial_condition_error"
+        },
+        {
+          "id": "at_center",
+          "status": "initial_condition_error"
+        }
+      ]
+    },
+    {
+      "file": "particle_failure.json",
+      "cli_exit": 1,
+      "expected_results": [
+        {
+          "id": "turn",
+          "status": "domain_error"
+        },
+        {
+          "id": "valid",
+          "status": "ok",
+          "extremum": "minimum"
+        },
+        {
+          "id": "probe",
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "file": "unsupported_motion.json",
+      "cli_exit": 1,
+      "expected_results": [
+        {
+          "id": "turn",
+          "status": "unsupported_trajectory"
+        },
+        {
+          "id": "probe",
+          "status": "ok"
+        }
+      ]
+    }
+  ]
+}

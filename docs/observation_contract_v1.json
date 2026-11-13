@@ -112,7 +112,8 @@
   },
   "validation_only": "no field evaluation and no domain or accuracy certification",
   "not_implemented": [
-    "turning_points",
+    "global_closest_approach",
+    "minimum_launch_speed",
     "flux_requests",
     "probe_annotations",
     "mixed_electric_gravity",
@@ -125,6 +126,7 @@
   },
   "schema_note": "This is a descriptive machine-readable contract, not a JSON Schema document. Runtime validation is authoritative.",
   "additional_event_conditions": {
-    "radial": "radial_event_contract_v1.json"
+    "radial": "radial_event_contract_v1.json",
+    "radial_turning": "turning_event_contract_v1.json"
   }
 }

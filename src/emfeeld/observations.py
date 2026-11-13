@@ -29,6 +29,7 @@ from .scene import Scene, scene_from_dict, strict_keys
 from .trajectory_samples import QUANTITIES, SampleRequest, TrajectorySamples
 from .plane_events import PlaneRequest, PlaneEvents, DIRECTIONS
 from .radial_events import RadialRequest, RadialEvents, DIRECTIONS as RADIAL_DIRECTIONS
+from .turning_events import TurningRequest, TurningEvents, EXTREMA
 
 TYPES = ("field", "potential", "force", "potential_difference")
 ID_PATTERN = r"[A-Za-z][A-Za-z0-9_.-]{0,63}"
@@ -347,14 +348,48 @@ def _radial_request(scene: Scene, row: dict) -> RadialRequest:
     return RadialRequest(ident, particle, center, radius, c["direction"], step, min_speed, *tolerances)
 
 
-def _packet_requests(scene: Scene, data: Any) -> tuple[Observation | TrajectoryObservation | PlaneRequest | RadialRequest, ...]:
+def _turning_request(scene: Scene, row: dict) -> TurningRequest:
+    required = ("id", "type", "particle_index", "condition", "occurrence", "max_step_s",
+                "min_distance_m", "min_radial_acceleration_m_s2", "accuracy")
+    strict_keys(row, required, required)
+    ident = row["id"]
+    if not isinstance(ident, str) or re.fullmatch(ID_PATTERN, ident) is None:
+        raise ValueError("observation id must match " + ID_PATTERN)
+    particle = row["particle_index"]
+    if type(particle) is not int or not 0 <= particle < len(scene.particles):
+        raise ValueError("particle_index must refer to scene.particles")
+    if row["occurrence"] != "first":
+        raise ValueError("only first occurrence is supported")
+    c = row["condition"]
+    names = ("type", "center_m", "extremum")
+    strict_keys(c, names, names)
+    if c["type"] != "radial_turning" or not isinstance(c["extremum"], str) or c["extremum"] not in EXTREMA:
+        raise ValueError("radial_turning requires minimum, maximum or either extremum")
+    center = _vector(c["center_m"], "center_m")
+    step = _number(row["max_step_s"], "max_step_s", positive=True)
+    if not scene.duration_s / 10000 <= step <= scene.duration_s or step / 2 == 0:
+        raise ValueError("max_step_s must be between duration_s/10000 and duration_s; refined step must be representable")
+    distance = _number(row["min_distance_m"], "min_distance_m", positive=True)
+    acceleration = _number(row["min_radial_acceleration_m_s2"], "min_radial_acceleration_m_s2", positive=True)
+    a = row["accuracy"]
+    names = ("time_atol_s", "position_atol_m", "velocity_atol_m_s", "radial_speed_atol_m_s", "rtol")
+    strict_keys(a, names, names)
+    tolerances = [_number(a[k], k, positive=k != "rtol") for k in names]
+    if tolerances[-1] < 0:
+        raise ValueError("accuracy.rtol must be nonnegative")
+    return TurningRequest(ident, particle, center, c["extremum"], step, distance, acceleration, *tolerances)
+
+
+def _packet_requests(scene: Scene, data: Any) -> tuple[Observation | TrajectoryObservation | PlaneRequest | RadialRequest | TurningRequest, ...]:
     if not isinstance(data, list) or not data:
         raise ValueError("observations must be a nonempty array")
     requests, seen = [], set()
     for row in data:
         if isinstance(row, dict) and row.get("type") == "trajectory_event":
             condition = row.get("condition")
-            request = (_radial_request(scene, row)
+            request = (_turning_request(scene, row)
+                       if isinstance(condition, dict) and condition.get("type") == "radial_turning"
+                       else _radial_request(scene, row)
                        if isinstance(condition, dict) and condition.get("type") == "radial"
                        else _plane_request(scene, row))
         elif isinstance(row, dict) and row.get("type") == "trajectory_sample":
@@ -374,9 +409,13 @@ def _evaluate_packet(scene: Scene, requests) -> tuple[list[dict], dict | None]:
     samples = TrajectorySamples(scene) if has_motion else None
     events = PlaneEvents(scene) if any(isinstance(r, PlaneRequest) for r in requests) else None
     radial = RadialEvents(scene) if any(isinstance(r, RadialRequest) for r in requests) else None
+    turning = TurningEvents(scene) if any(isinstance(r, TurningRequest) for r in requests) else None
     results = []
     for request in requests:
-        if isinstance(request, RadialRequest):
+        if isinstance(request, TurningRequest):
+            r = {"id": request.id, "type": request.type, "kind": scene.model.kind,
+                 **turning.observe(request)}
+        elif isinstance(request, RadialRequest):
             r = {"id": request.id, "type": request.type, "kind": scene.model.kind,
                  **radial.observe(request)}
         elif isinstance(request, PlaneRequest):
@@ -394,7 +433,7 @@ def _evaluate_packet(scene: Scene, requests) -> tuple[list[dict], dict | None]:
     return results, samples.runs if samples is not None else None
 
 
-def packet_from_dict(data: Any) -> tuple[Scene, tuple[Observation | TrajectoryObservation | PlaneRequest | RadialRequest, ...]]:
+def packet_from_dict(data: Any) -> tuple[Scene, tuple[Observation | TrajectoryObservation | PlaneRequest | RadialRequest | TurningRequest, ...]]:
     strict_keys(data, ("observation_schema_version", "scene", "observations", "notes"),
                 ("observation_schema_version", "scene", "observations"))
     if type(data["observation_schema_version"]) is not int or data["observation_schema_version"] != 1:
@@ -454,11 +493,13 @@ def run_packet(data: dict) -> dict:
                             ("unsupported_trajectories", "unsupported_trajectory"),
                             ("integration_errors", "integration_error")):
             report["counts"][key] = sum(r["status"] == status for r in results)
-    if any(isinstance(r, (PlaneRequest, RadialRequest)) for r in requests):
+    if any(isinstance(r, (PlaneRequest, RadialRequest, TurningRequest)) for r in requests):
         if any(isinstance(r, PlaneRequest) for r in requests):
             report["plane_event_contract"] = 1
         if any(isinstance(r, RadialRequest) for r in requests):
             report["radial_event_contract"] = 1
+        if any(isinstance(r, TurningRequest) for r in requests):
+            report["radial_turning_contract"] = 1
         report["event_integration_policy"] = (
             "two terminal DOP853 searches per unique event request, independently of saved-sample runs; "
             "the second halves max_step and tightens solver tolerances tenfold; exact duplicates reuse results")

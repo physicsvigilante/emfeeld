@@ -1,6 +1,6 @@
 """Shared native terminal-search, refinement, diagnostics and caching machinery.
 
-Condition adapters supply geometry only. No apparatus/source-specific dispatch,
+Condition adapters supply measurement geometry and state-dependent predicates. No apparatus/source-specific dispatch,
 physical forces, saved-frame search, or inference of mathematical completeness.
 Plane and radial entry points retain their own solver/search bindings for testing.
 """
@@ -63,8 +63,10 @@ def search(scene, request, refined, surface, solve):
             raise FloatingPointError('invalid field during event integration')
         return np.concatenate((state[3:], factor * field))
 
+    state_dependent = getattr(surface, 'state_dependent', False)
+
     def event(_t, state):
-        return surface.separation(state[:3])[0]
+        return surface.event_value(state) if state_dependent else surface.separation(state[:3])[0]
     event.terminal = True
     event.direction = surface.direction
     try:
@@ -95,17 +97,23 @@ def search(scene, request, refined, surface, solve):
             raise EventIssue('ambiguous_event', 'event_at_time_boundary',
                              'Event is not strictly after launch within the declared interval.')
         record['state'] = _state(model, particle, t, states[0])
-        distance, uncertainty = surface.separation(states[0][:3])
-        speed = surface.normal_speed(states[0])
-        if not math.isfinite(speed):
-            raise FloatingPointError(f'nonfinite {surface.speed_label} speed')
-        record.update({surface.residual_key: distance, 'coordinate_uncertainty_m': uncertainty,
-                       surface.speed_key: speed})
+        if state_dependent:
+            record.update(surface.measurement(states[0], model, particle))
+        else:
+            distance, uncertainty = surface.separation(states[0][:3])
+            speed = surface.normal_speed(states[0])
+            if not math.isfinite(speed):
+                raise FloatingPointError(f'nonfinite {surface.speed_label} speed')
+            record.update({surface.residual_key: distance, 'coordinate_uncertainty_m': uncertainty,
+                           surface.speed_key: speed})
     else:
         if solution.status != 0 or solution.t[-1] != scene.duration_s:
             raise FloatingPointError('search ended without an event or completed horizon')
-        distance, uncertainty = surface.separation(solution.y[:3, -1])
-        record.update(endpoint_separation_m=distance, coordinate_uncertainty_m=uncertainty)
+        if state_dependent:
+            record.update(surface.measurement(solution.y[:, -1], model, particle))
+        else:
+            distance, uncertainty = surface.separation(solution.y[:3, -1])
+            record.update(endpoint_separation_m=distance, coordinate_uncertainty_m=uncertainty)
     return record
 
 
@@ -136,6 +144,9 @@ class SurfaceEvents:
             condition=surface.condition(),
             occurrence='first', search_interval_s=[0., self.scene.duration_s],
             diagnostics={'passes': [], 'integration_attempts': 0, 'detection_limits': surface.limits})
+        state_dependent = getattr(surface, 'state_dependent', False)
+        if state_dependent:
+            result['units'].update(surface.extra_units)
         diag = result['diagnostics']
         particle, model = self.scene.particles[request.particle_index], self.scene.model
         try:
@@ -145,10 +156,13 @@ class SurfaceEvents:
                                      f'Shell/plane source dynamics remain unqualified. An observation {surface.label} is not a source.')
                 initial = np.array((*particle.position_m, *particle.velocity_m_s))
                 initial_energy = _state(model, particle, 0., initial)
-                s, uncertainty = surface.separation(initial[:3])
-                if abs(s) <= uncertainty:
-                    raise EventIssue('initial_condition_error', f'initial_on_or_unresolved_{surface.label}',
-                        f'Launch is on the {surface.label} or its side is numerically unresolved; no later first crossing is defined here.')
+                if state_dependent:
+                    surface.validate_initial(initial)
+                else:
+                    s, uncertainty = surface.separation(initial[:3])
+                    if abs(s) <= uncertainty:
+                        raise EventIssue('initial_condition_error', f'initial_on_or_unresolved_{surface.label}',
+                            f'Launch is on the {surface.label} or its side is numerically unresolved; no later first crossing is defined here.')
                 for refined in (False, True):
                     diag['integration_attempts'] += 1
                     diag['passes'].append(self.search(request, refined))
@@ -156,15 +170,17 @@ class SurfaceEvents:
                 if a['status'] != b['status']:
                     raise EventIssue('convergence_error', 'event_presence_disagrees',
                                      'Base and refined searches disagree on whether an event was detected.')
+                if state_dependent:
+                    surface.validate_passes(a, b)
                 if a['status'] == 'no_event':
-                    if any(abs(p['endpoint_separation_m']) <= request.position_atol_m
+                    if not state_dependent and any(abs(p['endpoint_separation_m']) <= request.position_atol_m
                            + p['coordinate_uncertainty_m'] for p in (a, b)):
                         raise EventIssue('ambiguous_event', f'endpoint_near_{surface.label}',
                                          f'No detected root, but the horizon ends near the {surface.label} within the requested tolerance.')
                     result['status'] = 'no_event'
                     diag['refinement'] = dict(passed=True, meaning='No root detected at either step cap; not an absence proof.')
                     return result
-                for p in (a, b):
+                for p in (() if state_dependent else (a, b)):
                     if p['coordinate_uncertainty_m'] > request.position_atol_m:
                         raise EventIssue('ambiguous_event', f'{surface.label}_resolution_insufficient',
                                          f'Coordinate roundoff alone exceeds the requested absolute {surface.label} resolution.')
@@ -198,11 +214,14 @@ class SurfaceEvents:
                             abs(initial_energy['potential_J']),np.finfo(float).tiny)
                 if not math.isfinite(drift/scale):
                     raise FloatingPointError('nonfinite energy diagnostic')
-                diag.update({surface.speed_key: b[surface.speed_key],
-                             surface.residual_key: b[surface.residual_key],
-                             'energy_change_J': drift, 'normalized_energy_change': abs(drift)/scale,
-                             'energy_diagnostic_meaning': 'Initial-to-event difference only; potential-reference dependent, not an error bound.'})
-                result['state'] = dict(final)
+                if state_dependent:
+                    surface.finish(result, final, b)
+                else:
+                    diag.update({surface.speed_key: b[surface.speed_key],
+                                 surface.residual_key: b[surface.residual_key]})
+                    result['state'] = dict(final)
+                diag.update(energy_change_J=drift, normalized_energy_change=abs(drift)/scale,
+                            energy_diagnostic_meaning='Initial-to-event difference only; potential-reference dependent, not an error bound.')
         except EventIssue as exc:
             result.update(status=exc.status, state=None, error=dict(code=exc.code,message=str(exc)))
         except DomainError as exc:

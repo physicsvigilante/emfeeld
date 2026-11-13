@@ -94,10 +94,14 @@ Eight packets reuse **exactly the scene objects from the earlier pilot**: SC-55,
 
 The Python API `evaluate_observations(model, list_of_request_dicts)` also works with nested `Superposition` objects and compatible custom field implementations. Python requests intentionally use JSON-compatible lists and built-in numbers; convert NumPy arrays/scalars with `.tolist()`/`float()`.
 
-A packet containing **only these static request types performs no trajectory integration**, even if the embedded scene includes particles. Such particles are not included among the field sources. The additive `trajectory_sample` request is described in [its own contract](TRAJECTORY_OBSERVATIONS.md). It does not relax shell/plane trajectory restrictions. The separately qualified `trajectory_event` plane request is described in [PLANE_EVENTS.md](PLANE_EVENTS.md); it does not relax those source restrictions. Turning points, flux requests, generalized conductors, mixed electric/gravity coupling and visual annotations remain unsupported. The original SC-158 flux assessment remains PARTIAL.
+A packet containing **only these static request types performs no trajectory integration**, even if the embedded scene includes particles. Such particles are not included among the field sources. The additive `trajectory_sample` request is described in [its own contract](TRAJECTORY_OBSERVATIONS.md). It does not relax shell/plane trajectory restrictions. The separately qualified `trajectory_event` plane request is described in [PLANE_EVENTS.md](PLANE_EVENTS.md); it does not relax those source restrictions. Global closest approach, minimum launch speed, flux requests, generalized conductors, mixed electric/gravity coupling and visual annotations remain unsupported. The original SC-158 flux assessment remains PARTIAL.
 
 See [executed evidence](OBSERVATIONS_VALIDATION.md). PR #1 remains draft and unmerged; no independent review or Windows interaction qualification is claimed.
 
 ## Radial event extension (M2B)
 
 The same packet command now accepts `trajectory_event` with `condition.type="radial"`, a fixed centre and positive radius, and inward/outward/either direction. It shares native search/refinement machinery with plane observations; earlier packet reports retain their meanings. See [the radial guide](RADIAL_EVENTS.md), [descriptive contract](radial_event_contract_v1.json), and [qualification](RADIAL_EVENTS_VALIDATION.md). This does not implement turning points, minimum launch speed, collisions or singular-surface flux.
+
+## Radial turning extension (M2C)
+
+`trajectory_event` now also accepts `condition.type="radial_turning"`, a fixed centre and `extremum` minimum/maximum/either. It measures the first detected nondegenerate local distance extremum from radial velocity and acceleration. It is not global closest approach or an inverse launch-speed solve. Launch stationarity and centre passage are explicitly rejected. See [the guide](TURNING_EVENTS.md), [descriptive contract](turning_event_contract_v1.json) and [qualification](TURNING_EVENTS_VALIDATION.md). Earlier result objects and source restrictions remain intact.
