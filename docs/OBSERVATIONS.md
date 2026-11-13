@@ -105,3 +105,7 @@ The same packet command now accepts `trajectory_event` with `condition.type="rad
 ## Radial turning extension (M2C)
 
 `trajectory_event` now also accepts `condition.type="radial_turning"`, a fixed centre and `extremum` minimum/maximum/either. It measures the first detected nondegenerate local distance extremum from radial velocity and acceleration. It is not global closest approach or an inverse launch-speed solve. Launch stationarity and centre passage are explicitly rejected. See [the guide](TURNING_EVENTS.md), [descriptive contract](turning_event_contract_v1.json) and [qualification](TURNING_EVENTS_VALIDATION.md). Earlier result objects and source restrictions remain intact.
+
+## Optional rest-launch turning policy
+
+For later local radial extrema from exactly zero initial velocity, see [rest-launch turning](REST_LAUNCH_TURNING.md). The explicit `initial_policy: "exclude_rest_launch"` removes only the launch root without changing the state or skipping time. Omitted policy retains all prior behaviour. Historical pilot-v2 hash-freeze checks remain pinned; live compatibility is tested separately.

@@ -30,6 +30,7 @@ from .trajectory_samples import QUANTITIES, SampleRequest, TrajectorySamples
 from .plane_events import PlaneRequest, PlaneEvents, DIRECTIONS
 from .radial_events import RadialRequest, RadialEvents, DIRECTIONS as RADIAL_DIRECTIONS
 from .turning_events import TurningRequest, TurningEvents, EXTREMA
+from .rest_turning_events import RestTurningRequest, RestTurningEvents, POLICY as REST_POLICY
 
 TYPES = ("field", "potential", "force", "potential_difference")
 ID_PATTERN = r"[A-Za-z][A-Za-z0-9_.-]{0,63}"
@@ -351,7 +352,9 @@ def _radial_request(scene: Scene, row: dict) -> RadialRequest:
 def _turning_request(scene: Scene, row: dict) -> TurningRequest:
     required = ("id", "type", "particle_index", "condition", "occurrence", "max_step_s",
                 "min_distance_m", "min_radial_acceleration_m_s2", "accuracy")
-    strict_keys(row, required, required)
+    strict_keys(row, (*required, "initial_policy"), required)
+    if "initial_policy" in row and (not isinstance(row["initial_policy"], str) or row["initial_policy"] != REST_POLICY):
+        raise ValueError("initial_policy must be exclude_rest_launch, or omitted for the original policy")
     ident = row["id"]
     if not isinstance(ident, str) or re.fullmatch(ID_PATTERN, ident) is None:
         raise ValueError("observation id must match " + ID_PATTERN)
@@ -377,7 +380,8 @@ def _turning_request(scene: Scene, row: dict) -> TurningRequest:
     tolerances = [_number(a[k], k, positive=k != "rtol") for k in names]
     if tolerances[-1] < 0:
         raise ValueError("accuracy.rtol must be nonnegative")
-    return TurningRequest(ident, particle, center, c["extremum"], step, distance, acceleration, *tolerances)
+    request_type = RestTurningRequest if "initial_policy" in row else TurningRequest
+    return request_type(ident, particle, center, c["extremum"], step, distance, acceleration, *tolerances)
 
 
 def _packet_requests(scene: Scene, data: Any) -> tuple[Observation | TrajectoryObservation | PlaneRequest | RadialRequest | TurningRequest, ...]:
@@ -410,9 +414,13 @@ def _evaluate_packet(scene: Scene, requests) -> tuple[list[dict], dict | None]:
     events = PlaneEvents(scene) if any(isinstance(r, PlaneRequest) for r in requests) else None
     radial = RadialEvents(scene) if any(isinstance(r, RadialRequest) for r in requests) else None
     turning = TurningEvents(scene) if any(isinstance(r, TurningRequest) for r in requests) else None
+    rest_turning = RestTurningEvents(scene) if any(isinstance(r, RestTurningRequest) for r in requests) else None
     results = []
     for request in requests:
-        if isinstance(request, TurningRequest):
+        if isinstance(request, RestTurningRequest):
+            r = {"id": request.id, "type": request.type, "kind": scene.model.kind,
+                 **rest_turning.observe(request)}
+        elif isinstance(request, TurningRequest):
             r = {"id": request.id, "type": request.type, "kind": scene.model.kind,
                  **turning.observe(request)}
         elif isinstance(request, RadialRequest):
@@ -500,6 +508,8 @@ def run_packet(data: dict) -> dict:
             report["radial_event_contract"] = 1
         if any(isinstance(r, TurningRequest) for r in requests):
             report["radial_turning_contract"] = 1
+        if any(isinstance(r, RestTurningRequest) for r in requests):
+            report["rest_launch_turning_contract"] = 1
         report["event_integration_policy"] = (
             "two terminal DOP853 searches per unique event request, independently of saved-sample runs; "
             "the second halves max_step and tightens solver tolerances tenfold; exact duplicates reuse results")

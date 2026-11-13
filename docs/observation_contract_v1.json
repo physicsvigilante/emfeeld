@@ -128,5 +128,6 @@
   "additional_event_conditions": {
     "radial": "radial_event_contract_v1.json",
     "radial_turning": "turning_event_contract_v1.json"
-  }
+  },
+  "rest_launch_turning_extension": "rest_launch_turning_contract_v1.json"
 }

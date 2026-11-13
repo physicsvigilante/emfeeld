@@ -66,6 +66,8 @@ def search(scene, request, refined, surface, solve):
     state_dependent = getattr(surface, 'state_dependent', False)
 
     def event(_t, state):
+        if hasattr(surface, 'event_value_at_time'):
+            return surface.event_value_at_time(_t, state)
         return surface.event_value(state) if state_dependent else surface.separation(state[:3])[0]
     event.terminal = True
     event.direction = surface.direction
