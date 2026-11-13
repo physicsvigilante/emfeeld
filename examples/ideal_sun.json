@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "title": "Fixed ideal Sun with two independent test planets",
+  "kind": "gravity",
+  "sources": [
+    {
+      "type": "point",
+      "mass_kg": 1.98847e+30
+    }
+  ],
+  "particles": [
+    {
+      "mass_kg": 1,
+      "position_m": [
+        149597870700.0,
+        0,
+        0
+      ],
+      "velocity_m_s": [
+        0,
+        29785.142169221024,
+        0
+      ]
+    },
+    {
+      "mass_kg": 1,
+      "position_m": [
+        224396806050.0,
+        0,
+        0
+      ],
+      "velocity_m_s": [
+        0,
+        17023.626720530643,
+        9727.786697446081
+      ]
+    }
+  ],
+  "duration_s": 31557718.872965656,
+  "samples": 1001,
+  "bounds_m": [
+    -299195741400.0,
+    299195741400.0,
+    -299195741400.0,
+    299195741400.0,
+    -299195741400.0,
+    299195741400.0
+  ]
+}

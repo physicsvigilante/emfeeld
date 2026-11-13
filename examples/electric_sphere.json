@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "title": "Uniform insulating sphere: test charge through its interior",
+  "kind": "electric",
+  "sources": [
+    {
+      "type": "solid_sphere",
+      "charge_C": -1e-09,
+      "radius_m": 1
+    }
+  ],
+  "particles": [
+    {
+      "mass_kg": 0.001,
+      "charge_C": 1e-06,
+      "position_m": [
+        2,
+        0,
+        0
+      ],
+      "velocity_m_s": [
+        0,
+        0.025,
+        0.008
+      ]
+    }
+  ],
+  "duration_s": 90,
+  "samples": 901,
+  "bounds_m": [
+    -2.5,
+    2.5,
+    -2.5,
+    2.5,
+    -2.5,
+    2.5
+  ]
+}

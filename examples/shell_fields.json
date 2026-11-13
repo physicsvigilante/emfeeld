@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "title": "Thin charged shell: zero interior field, nonzero interior potential",
+  "kind": "electric",
+  "sources": [
+    {
+      "type": "shell",
+      "charge_C": 1e-09,
+      "radius_m": 1
+    }
+  ],
+  "bounds_m": [
+    -2,
+    2,
+    -2,
+    2,
+    -2,
+    2
+  ]
+}
