@@ -1,0 +1,31 @@
+{
+  "import_version": 1,
+  "model_id": "electric-exploration",
+  "revision_id": "root",
+  "source_sha256": "0ca3d65cfcf8435384efa0009e71c27df7ae9cf0e560a9dbfea0ed23aee34f44",
+  "source_ids": [
+    "source_left",
+    "source_right",
+    "background"
+  ],
+  "particle_ids": [
+    "test_charge"
+  ],
+  "default_origin": {
+    "origin": "illustrative_choice",
+    "reason": "Reuse the existing illustrative model unchanged",
+    "evidence": "examples/authoring/discovery_electric.json; not a source-given textbook instance"
+  },
+  "interpretation": {
+    "statement": "Reuse one physical model for a source-property hypothesis and a launch-condition hypothesis.",
+    "assumptions": [
+      "Sources fixed and prescribed; independent nonrelativistic test particles; no collision or source feedback."
+    ],
+    "requirements": [
+      "fixed_prescribed_sources",
+      "independent_nonrelativistic_test_particles"
+    ],
+    "unresolved": [],
+    "scenario_intent": "illustrative_exploration"
+  }
+}

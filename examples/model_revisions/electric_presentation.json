@@ -1,0 +1,19 @@
+{
+  "presentation_version": 1,
+  "id": "electric-overview",
+  "bounds_m": [
+    -4,
+    4,
+    -4,
+    4,
+    -4,
+    4
+  ],
+  "replay_seconds": 12.0,
+  "entity_order": [
+    "source_left",
+    "source_right",
+    "background",
+    "test_charge"
+  ]
+}

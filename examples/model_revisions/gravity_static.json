@@ -1,0 +1,25 @@
+{
+  "investigation_version": 1,
+  "id": "field-and-potential",
+  "model_id": "gravity-exploration",
+  "observations": [
+    {
+      "id": "field_probe",
+      "type": "field",
+      "position_m": [
+        149597870700.0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "potential_probe",
+      "type": "potential",
+      "position_m": [
+        149597870700.0,
+        0,
+        0
+      ]
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "parent_policy": "both are siblings of the explicitly pinned root; runner fills exact parent reference",
+  "changes": [
+    {
+      "proposal_version": 1,
+      "proposal_id": "source-hypothesis",
+      "revision_id": "source-hypothesis",
+      "category": "component_property",
+      "target_id": "source_left",
+      "expected_role": "source",
+      "property": "charge_C",
+      "expected_value": -3.560480179845929e-10,
+      "value": -7.120960359691858e-10,
+      "scenario_intent": "teacher_hypothesis",
+      "provenance": {
+        "origin": "illustrative_choice",
+        "reason": "Change only this fixed source strength; do not enforce an orbit or alter launch.",
+        "evidence": "Explicit hypothetical teaching comparison"
+      }
+    },
+    {
+      "proposal_version": 1,
+      "proposal_id": "launch-hypothesis",
+      "revision_id": "launch-hypothesis",
+      "category": "initial_condition",
+      "target_id": "test_charge",
+      "expected_role": "particle",
+      "property": "velocity_m_s",
+      "expected_value": [
+        -0.1,
+        0.2,
+        0.15
+      ],
+      "value": [
+        -0.020000000000000004,
+        0.2,
+        0.15
+      ],
+      "scenario_intent": "teacher_hypothesis",
+      "provenance": {
+        "origin": "illustrative_choice",
+        "reason": "Change the full physical launch vector, not a numerical initial guess.",
+        "evidence": "Explicit hypothetical teaching comparison"
+      }
+    }
+  ]
+}

@@ -14,7 +14,7 @@ on:
       - 'pilots/**'
       - 'pyproject.toml'
   pull_request:
-    branches: [main]
+    branches: [main, feature/teaching-study-v1]
     paths:
       - '.github/workflows/release-candidate.yml'
       - '.gitattributes'
@@ -110,6 +110,11 @@ jobs:
           else
             test "$?" -eq 1
           fi
+      - name: Immutable named model revisions and independent-expression checks
+        run: |
+          set -euo pipefail
+          python tools/qualify_model_revisions.py --output output/release-candidate/model-revisions --render 2>&1 | tee output/release-candidate/model-revisions.log
+          python verification/check_model_revision_runs.py output/release-candidate/model-revisions --output output/release-candidate/model-revisions-analytic.json
       - name: Preserve both success and failure evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

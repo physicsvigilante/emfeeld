@@ -1,0 +1,53 @@
+{
+  "investigation_version": 1,
+  "id": "motion-inspection",
+  "model_id": "gravity-exploration",
+  "observations": [
+    {
+      "id": "field_probe",
+      "type": "field",
+      "position_m": [
+        149597870700.0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "potential_probe",
+      "type": "potential",
+      "position_m": [
+        149597870700.0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "planet_circular_position",
+      "type": "trajectory_sample",
+      "particle_id": "planet_circular",
+      "quantity": "position",
+      "sample_index": 500
+    },
+    {
+      "id": "planet_circular_speed",
+      "type": "trajectory_sample",
+      "particle_id": "planet_circular",
+      "quantity": "speed",
+      "sample_index": 500
+    },
+    {
+      "id": "planet_inclined_position",
+      "type": "trajectory_sample",
+      "particle_id": "planet_inclined",
+      "quantity": "position",
+      "sample_index": 500
+    },
+    {
+      "id": "planet_inclined_speed",
+      "type": "trajectory_sample",
+      "particle_id": "planet_inclined",
+      "quantity": "speed",
+      "sample_index": 500
+    }
+  ]
+}
