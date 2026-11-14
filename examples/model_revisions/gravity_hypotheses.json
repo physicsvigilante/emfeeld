@@ -1,0 +1,47 @@
+{
+  "parent_policy": "both are siblings of the explicitly pinned root; runner fills exact parent reference",
+  "changes": [
+    {
+      "proposal_version": 1,
+      "proposal_id": "source-hypothesis",
+      "revision_id": "source-hypothesis",
+      "category": "component_property",
+      "target_id": "sun",
+      "expected_role": "source",
+      "property": "mass_kg",
+      "expected_value": 1.98847e+30,
+      "value": 2.386164e+30,
+      "scenario_intent": "teacher_hypothesis",
+      "provenance": {
+        "origin": "illustrative_choice",
+        "reason": "Change only this fixed source strength; do not enforce an orbit or alter launch.",
+        "evidence": "Explicit hypothetical teaching comparison"
+      }
+    },
+    {
+      "proposal_version": 1,
+      "proposal_id": "launch-hypothesis",
+      "revision_id": "launch-hypothesis",
+      "category": "initial_condition",
+      "target_id": "planet_circular",
+      "expected_role": "particle",
+      "property": "velocity_m_s",
+      "expected_value": [
+        0,
+        29785.142169221024,
+        0
+      ],
+      "value": [
+        0.0,
+        23828.11373537682,
+        0.0
+      ],
+      "scenario_intent": "teacher_hypothesis",
+      "provenance": {
+        "origin": "illustrative_choice",
+        "reason": "Change the full physical launch vector, not a numerical initial guess.",
+        "evidence": "Explicit hypothetical teaching comparison"
+      }
+    }
+  ]
+}

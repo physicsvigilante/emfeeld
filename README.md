@@ -151,3 +151,24 @@ Shell/plane fields and potentials work, but motion involving them is rejected un
 Playback is available for existing moving scenes; foundation PR #1 is merged. New features require separate acceptance. Windows desktop interaction remains a separate optional qualification before claiming Windows support. Plane/radial observation events and local turning points are documented in the authoring workflow; they do not add material collision handling. Integral teaching views remain separate work. Do not add a general mesh solver or a large application framework merely to run another supported arrangement.
 
 No license has yet been selected by the repository owner.
+
+## Reusable named physical models (candidate)
+
+`python -m emfeeld.model_runs --help` exposes an explicit import/revision/run
+adapter over the existing physics. A source property or physical launch change
+creates an immutable descendant addressed by physical ID. New probes or numerical
+settings reuse the same model revision. Original source bytes and rejected edits
+are retained. No structural, boundary, inverse or sweep service is added.
+
+See [the model-revision guide](docs/MODEL_REVISIONS_IMPLEMENTATION.md). Execute the
+two illustrative models and named hypotheses without copying their physical
+systems or modifying production code:
+
+```text
+python tools/qualify_model_revisions.py --output output/model-revisions-001 --render
+python verification/check_model_revision_runs.py output/model-revisions-001 --output output/model-revisions-checks-001.json
+```
+
+This is a separately reviewed candidate stacked on Teaching Study V1. Neither
+candidate is merged by publication. Teacher usefulness and textbook-answer
+completeness remain separate from numerical execution and reference agreement.

@@ -1,0 +1,13 @@
+{
+  "analysis_version": 1,
+  "id": "gravity-recorded-interval",
+  "mode": "trajectory",
+  "duration_s": 31557718.872965656,
+  "samples": 1001,
+  "checks": {
+    "position_atol_m": 100.0,
+    "velocity_atol_m_s": 0.0001,
+    "rtol": 1e-07,
+    "max_normalized_energy_drift": 1e-07
+  }
+}

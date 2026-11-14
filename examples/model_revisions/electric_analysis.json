@@ -1,0 +1,13 @@
+{
+  "analysis_version": 1,
+  "id": "electric-recorded-interval",
+  "mode": "trajectory",
+  "duration_s": 3,
+  "samples": 61,
+  "checks": {
+    "position_atol_m": 1e-06,
+    "velocity_atol_m_s": 1e-07,
+    "rtol": 1e-07,
+    "max_normalized_energy_drift": 1e-07
+  }
+}
