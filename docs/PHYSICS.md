@@ -36,7 +36,7 @@ DOP853 evaluates the analytic source directly, never the viewer grid. The API ex
 
 No collision or stop-surface event model is implemented. Nonzero shell/plane fields are discontinuous; this slice conservatively rejects *all* trajectories containing shell/plane sources, even if an intended trajectory would not cross them. Point/line sources are usable away from singularities, but fail if the integrator evaluates a singular point. Close encounters need separate convergence checks. This restriction is explicit rather than disguised as successful collision handling.
 
-Energy diagnostics include max absolute drift and a normalized drift divided by `max(|E_initial|, K_initial, |U_initial|, smallest_positive_normal_float)`. The normalization depends on the potential reference. It is an observation, not a rigorous global trajectory-error bound. Angular-momentum conservation is tested only for the central-force orbit, not asserted for arbitrary fields.
+Current sampled-trajectory diagnostics use [energy balance v2](ENERGY_BALANCE_V2.md): the residual `(K-K0)+(U-U0)` is normalized by the largest recorded kinetic energy or potential-energy change, with a separately reported float64-resolution check. Exact stationary zero exchange is handled explicitly. The original `max_energy_drift_J` definition remains available. Historical v1 reports used `max(|E_initial|, K_initial, |U_initial|, smallest_positive_normal_float)` and retain that meaning; they are not rewritten. Initial-to-event diagnostics remain separate and unchanged. These diagnostics are not rigorous global trajectory-error bounds. Angular-momentum conservation is tested only for the central-force orbit, not asserted for arbitrary fields.
 
 ## Integral computations
 

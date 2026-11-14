@@ -3,6 +3,7 @@ from dataclasses import dataclass
 import numpy as np
 from scipy.integrate import solve_ivp
 from .fields import Field, scalar, vector
+from .energy import energy_balance
 
 
 @dataclass(frozen=True)
@@ -37,11 +38,14 @@ class Trajectory:
         return float(np.max(np.abs(self.energy_J - self.energy_J[0])))
 
     @property
+    def energy_balance(self):
+        """Version 2: energy exchange scale, with explicit finite-precision limits."""
+        return energy_balance(self.kinetic_J, self.potential_J)
+
+    @property
     def normalized_energy_drift(self):
-        # Not a guaranteed global error bound; depends on the potential reference.
-        scale = max(abs(self.energy_J[0]), self.kinetic_J[0],
-                    abs(self.potential_J[0]), np.finfo(float).tiny)
-        return self.max_energy_drift_J / scale
+        # Version 2; see energy_balance for scale and resolution. Not a pass alone.
+        return self.energy_balance['normalized_residual']
 
 
 def integrate(model: Field, particle: Particle, times, *, rtol=1e-10,

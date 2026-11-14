@@ -26,7 +26,8 @@ def run_scene(scene):
             "final_position_m": trajectory.position_m[-1].tolist(),
             "final_velocity_m_s": trajectory.velocity_m_s[-1].tolist(),
             "max_energy_drift_J": trajectory.max_energy_drift_J,
-            "normalized_energy_drift": trajectory.normalized_energy_drift})
+            "normalized_energy_drift": trajectory.normalized_energy_drift,
+            "energy_balance": trajectory.energy_balance})
     return trajectories, summary
 
 
