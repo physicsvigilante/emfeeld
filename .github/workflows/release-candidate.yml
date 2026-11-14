@@ -43,6 +43,12 @@ jobs:
           sudo apt-get install -y --no-install-recommends libegl1 libgl1-mesa-dri libopengl0
           echo 'VTK_DEFAULT_OPENGL_WINDOW=vtkEGLRenderWindow' >> "$GITHUB_ENV"
           echo 'LIBGL_ALWAYS_SOFTWARE=1' >> "$GITHUB_ENV"
+      - name: Configure Windows Mesa3D offscreen rendering (CI only)
+        if: runner.os == 'Windows'
+        uses: pyvista/setup-headless-display-action@10e6efb97af3cd1523828f0e22c39f0e4567f3e4
+        with:
+          install-mesa3d-offscreen: 'true'
+          mesa3d-release: '24.3.0'
       - name: Install declared dependencies from a fresh checkout
         run: |
           set -euo pipefail
@@ -60,10 +66,6 @@ jobs:
         run: |
           set -euo pipefail
           python -m pytest -q -W error pilots/authorability_v1/test_pilot.py -k "not test_all_available_parent_files_remain_frozen" 2>&1 | tee output/release-candidate/pilot-behaviour-tests.log
-      - name: Real PyVista regression tests
-        run: |
-          set -euo pipefail
-          python -m pytest -q -W error viewer_tests 2>&1 | tee output/release-candidate/viewer-tests.log
       - name: Exact published-input verification
         run: |
           set -euo pipefail
@@ -75,6 +77,10 @@ jobs:
           python -m emfeeld run examples/ideal_sun.json --output output/release-candidate/ideal_sun.npz 2>&1 | tee output/release-candidate/sun-run.log
           python -m emfeeld.observations pilots/authorability_v6/first_attempt/NUM18-THREED-EX.json --output output/release-candidate/num18.json 2>&1 | tee output/release-candidate/observation.log
           python -m compileall -q src tests tools verification
+      - name: Real PyVista regression tests
+        run: |
+          set -euo pipefail
+          python -m pytest -q -W error viewer_tests 2>&1 | tee output/release-candidate/viewer-tests.log
       - name: Real source/field/trajectory renders and slider events
         run: |
           set -euo pipefail
