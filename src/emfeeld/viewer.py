@@ -34,7 +34,8 @@ def make_plotter(scene, *, resolution=41, off_screen=False, replay_seconds=12.0,
 
     Space toggles replay; Home restarts paused; Left/Right step saved samples.
     Replay is display-only and stops at the end. No field lines or integral UI.
-    Point/particle markers have schematic screen sizes. Line/plane patches are
+    Magenta particle markers have schematic 28-pixel screen sizes, independent
+    of charge sign, physical radius, mass, zoom and coordinate units. Line/plane patches are
     explicitly finite renderings of infinite sources, not physical boundaries.
     """
     if recorded is not None:
@@ -72,7 +73,10 @@ def make_plotter(scene, *, resolution=41, off_screen=False, replay_seconds=12.0,
     plane = pv.StructuredGrid(x, y, z)
     plane["potential"] = sample_values(scene.model, plane.points, potential=True)
     if np.isfinite(plane["potential"]).any():
-        plot.add_mesh(plane, scalars="potential", opacity=0.7, nan_opacity=0,
+        # A slice is a display aid, not a physical opaque surface. In moving
+        # scenes keep the particle legible even on the far side of this slice.
+        moving = bool(getattr(scene, "particles", ())) or bool(recorded)
+        plot.add_mesh(plane, scalars="potential", opacity=0.35 if moving else 0.7, nan_opacity=0,
                       **({"clim": potential_clim} if potential_clim is not None else {}),
                       scalar_bar_args={"title": f"Potential [{unit}]",
                                        "position_x": 0.86, "position_y": 0.25,
@@ -118,15 +122,21 @@ def make_plotter(scene, *, resolution=41, off_screen=False, replay_seconds=12.0,
                           RuntimeWarning, stacklevel=2)
     trajectories = scene.trajectories() if recorded is None else recorded
     markers = []
-    for trajectory in trajectories:
+    for index, trajectory in enumerate(trajectories):
         plot.add_mesh(pv.lines_from_points(trajectory.position_m), line_width=3,
-                      color="black", show_scalar_bar=False)
+                      color="black", show_scalar_bar=False, name=f"trajectory_{index}")
         marker = pv.PolyData(trajectory.position_m[:1].copy())
-        plot.add_mesh(marker, point_size=14, color="black",
-                      render_points_as_spheres=True, show_scalar_bar=False)
+        plot.add_mesh(marker, point_size=28, color="magenta", lighting=False,
+                      render_points_as_spheres=True, show_scalar_bar=False,
+                      name=f"particle_{index}")
         markers.append(marker)
 
     if trajectories:
+        plot.add_text("Magenta: test particles\n"
+                      "Schematic size; not charge sign.\n"
+                      "Black: calculated paths\n"
+                      "(not field lines).",
+                      position=(0.02, 0.54), viewport=True, name="particle_key", font_size=9)
         time_label = plot.add_text("Sample time: 0 s", position=(0.02, 0.88),
                                    viewport=True, name="time", font_size=10)
         status_label = plot.add_text("Paused", position=(0.02, 0.83),
