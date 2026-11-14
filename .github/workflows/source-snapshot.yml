@@ -1,0 +1,37 @@
+name: Source snapshot (not physics qualification)
+on:
+  pull_request:
+    branches: [main, feature/model-revisions-v1]
+    paths:
+      - '.github/workflows/**'
+      - 'src/**'
+      - 'tests/**'
+      - 'viewer_tests/**'
+      - 'tools/**'
+      - 'examples/**'
+      - 'docs/NATIVE_MODEL_WORKFLOW*'
+      - 'pyproject.toml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Preserve exact Git archive and identities
+        run: |
+          mkdir -p output/source
+          git archive --format=tar HEAD > output/source/tested-source.tar
+          git rev-parse HEAD HEAD^{tree} > output/source/identities.txt
+          git ls-tree -r HEAD > output/source/git-tree.txt
+          sha256sum output/source/tested-source.tar > output/source/archive-sha256.txt
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: source-${{ github.sha }}
+          path: output/source/
+          retention-days: 30
+          if-no-files-found: error
