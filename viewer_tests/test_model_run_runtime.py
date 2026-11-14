@@ -65,3 +65,29 @@ def test_static_sources_are_visible_without_invented_motion(tmp_path,monkeypatch
     assert decode((tmp_path/'static-field/presentation.json').read_bytes())['time_s'] is None
     with pytest.raises(ValueError,match='no physical sample'):
         runs.present_run(out,sample_index=1,screenshot_directory=tmp_path/'fake-motion')
+
+
+def test_complete_identity_label_has_bounded_font_and_preserves_axes(tmp_path,monkeypatch):
+    import emfeeld.viewer as viewer
+    scene=f.base_scene();scene['title']='A long source description ' * 20
+    store,ref=f.imported(tmp_path,scene);_,out=f.execute(tmp_path,store,ref)
+    original=viewer.make_plotter; observed={}
+    def checked(*args,**kwargs):
+        plot=original(*args,**kwargs)
+        capture=plot.screenshot
+        def screenshot(*a,**kw):
+            actor=plot.actors['title'];axes=plot.renderer.cube_axes_actor
+            observed['text']='\n'.join(actor.GetText(i) or '' for i in range(8))
+            observed['maximum_font']=actor.GetMaximumFontSize()
+            observed['bounds']=tuple(axes.GetBounds())
+            observed['title']=args[0].title
+            return capture(*a,**kw)
+        monkeypatch.setattr(plot,'screenshot',screenshot)
+        return plot
+    monkeypatch.setattr(viewer,'make_plotter',checked)
+    runs.present_run(out,sample_index=10,screenshot_directory=tmp_path/'label')
+    assert 'Model: model\nRevision: root\nRun: run' in observed['text']
+    assert observed['maximum_font']==16
+    assert observed['bounds']==tuple(scene['bounds_m'])
+    assert observed['title'].count('\n')==2
+    assert store.read(ref)[0]['title']==scene['title']

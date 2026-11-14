@@ -26,10 +26,10 @@ All counted commands completed with warnings as errors and no skipped/xfail test
 | Plane/radial crossing regressions | 191 |
 | Turning/rest-launch/live historical compatibility regressions | 198 |
 | Historical pilot-v1 behavioral cases | 18 |
-| Real PyVista regressions, including recorded revision/run presentation | 21 |
-| **Current behavioral total** | **1073** |
+| Real PyVista regressions, including recorded revision/run presentation | 22 |
+| **Current behavioral total** | **1074** |
 
-This retains 1002 previous behavioral cases and adds 66 headless and five real-render
+This retains 1002 previous behavioral cases and adds 66 headless and six real-render
 cases. One historical all-file freeze assertion is explicitly deselected against
 changed code; it remains unchanged for its original snapshot. No old tolerance was
 relaxed. Totals from repeated executions are not added together.
@@ -90,6 +90,16 @@ its sixth frame; its partial outputs are retained. The completed numerical examp
 run and completed per-frame captures are distinct evidence, not a relabelled full
 combined-command pass. No numerical tolerance or physics input was adjusted in
 response. The reference checker passed both initial and final numerical runs.
+
+Visual inspection after the first publication found that a single-line title
+clipped model/revision/run IDs. The adapter now constructs a three-line display-only
+title before the unchanged viewer creates its axes and caps the native title font.
+An intermediate actor-removal approach changed axis bounds and was rejected; those
+captures remain retained. The final real test preserves exact authored bounds,
+complete identities and the immutable original title. A combined 22-test viewer
+command reached 100% but timed out before an exit summary; it is not counted.
+Separate completed batches passed 16 inherited and six new viewer cases. The
+initial 1073-test publication remains historical; the corrected total is 1074.
 
 Fresh-checkout CI results must be recorded against the published candidate/merge-
 preview tree after completion. Prior Linux/Windows successes are not new-candidate

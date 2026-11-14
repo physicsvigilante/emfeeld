@@ -257,11 +257,17 @@ def present_run(output, *, presentation_path=None, sample_index=0, screenshot_di
         if dest.resolve().is_relative_to(Path(output).resolve()):
             raise ValueError('presentation output must be outside the sealed run')
         dest.mkdir(parents=True, exist_ok=False)
-    label = f'{revision["model_id"]} / {revision["revision_id"]} / {run["run_id"]}; captured run'
-    if summary.get('mode') == 'static': label += '; static field, no dynamics'
-    plot = make_plotter(scene, recorded=trajectories, study_label=label, off_screen=dest is not None,
-                        replay_seconds=presentation.get('replay_seconds', 12.))
+    # Display-only title: the complete original scene remains in the sealed run.
+    # Set the text before axes are created; actor replacement can reset their bounds.
+    label = (f'Model: {revision["model_id"]}\nRevision: {revision["revision_id"]}'
+             f'\nRun: {run["run_id"]} | ' +
+             ('static field; no dynamics' if summary.get('mode') == 'static' else 'captured trajectory'))
+    plot = make_plotter(replace(scene, title=label), recorded=trajectories,
+                        off_screen=dest is not None, replay_seconds=presentation.get('replay_seconds', 12.))
     try:
+        title_actor = plot.actors['title']
+        title_actor.SetMaximumFontSize(16)
+        title_actor.SetMinimumFontSize(16)
         if 'camera' in presentation: plot.camera_position = presentation['camera']
         if dest is None:
             plot.show()
