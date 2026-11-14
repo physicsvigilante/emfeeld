@@ -12,6 +12,39 @@ REGISTRY = {"point": PointSource, "solid_sphere": SolidSphere,
             "shell": SphericalShell, "line": InfiniteLine, "plane": InfinitePlane}
 
 
+# Shared with the generated capability catalogue. Constructor dispatch stays here.
+SOURCE_PARAMETERS = {
+    "solid_sphere": {"radius_m": "radius"},
+    "shell": {"radius_m": "radius"},
+    "line": {"direction": "direction", "reference_radius_m": "reference_radius"},
+    "plane": {"normal": "normal"},
+    "point": {},
+}
+SCENE_REQUIRED = ("schema_version", "title", "kind", "sources", "bounds_m")
+SCENE_OPTIONAL = ("particles", "duration_s", "samples")
+
+
+def source_keys(kind, source_type):
+    """Return required/optional authored keys used by parser and discovery."""
+    check_kind(kind)
+    if not isinstance(source_type, str):
+        raise ValueError("source type must be a string")
+    if source_type == "uniform":
+        field = "field_N_C" if kind == "electric" else "field_m_s2"
+        return ("type", field), ("origin_m",)
+    if source_type not in REGISTRY:
+        raise ValueError(f"unsupported source type: {source_type!r}")
+    strength = "charge_C" if kind == "electric" else "mass_kg"
+    if source_type == "line":
+        strength = "charge_per_m_C_m" if kind == "electric" else "mass_per_m_kg_m"
+    elif source_type == "plane":
+        strength = "charge_per_m2_C_m2" if kind == "electric" else "mass_per_m2_kg_m2"
+    extras = SOURCE_PARAMETERS[source_type]
+    required = ("type", strength, *(key for key in extras if key in ("radius_m", "reference_radius_m")))
+    optional = ("center_m", *(key for key in extras if key not in required))
+    return required, optional
+
+
 def strict_keys(data, allowed, required=()):
     if not isinstance(data, dict):
         raise ValueError("expected a JSON object")
@@ -53,22 +86,15 @@ def source_from_dict(kind, data):
     _numeric_fields(data, exclude=("type",))
     if source_type == "uniform":
         key = "field_N_C" if kind == "electric" else "field_m_s2"
-        strict_keys(data, ("type", key, "origin_m"), ("type", key))
+        required, optional = source_keys(kind, source_type)
+        strict_keys(data, (*required, *optional), required)
         return UniformField(kind, data[key], data.get("origin_m", (0, 0, 0)))
     if source_type not in REGISTRY:
         raise ValueError(f"unsupported source type: {source_type!r}")
-    key = "charge_C" if kind == "electric" else "mass_kg"
-    if source_type == "line":
-        key = "charge_per_m_C_m" if kind == "electric" else "mass_per_m_kg_m"
-    elif source_type == "plane":
-        key = "charge_per_m2_C_m2" if kind == "electric" else "mass_per_m2_kg_m2"
-    extras = {"solid_sphere": {"radius_m": "radius"},
-              "shell": {"radius_m": "radius"},
-              "line": {"direction": "direction", "reference_radius_m": "reference_radius"},
-              "plane": {"normal": "normal"}, "point": {}}[source_type]
-    # Radius and line reference must be explicit in authored scenes.
-    required = ["type", key] + [k for k in extras if k in ("radius_m", "reference_radius_m")]
-    strict_keys(data, ["type", key, "center_m", *extras], required)
+    required, optional = source_keys(kind, source_type)
+    key = required[1]
+    extras = SOURCE_PARAMETERS[source_type]
+    strict_keys(data, (*required, *optional), required)
     kwargs = {dst: data[src] for src, dst in extras.items() if src in data}
     return REGISTRY[source_type](kind, data[key], data.get("center_m", (0, 0, 0)), **kwargs)
 
@@ -90,8 +116,7 @@ class Scene:
 
 
 def scene_from_dict(data):
-    keys = ("schema_version", "title", "kind", "sources", "particles", "duration_s", "samples", "bounds_m")
-    strict_keys(data, keys, ("schema_version", "title", "kind", "sources", "bounds_m"))
+    strict_keys(data, (*SCENE_REQUIRED, *SCENE_OPTIONAL), SCENE_REQUIRED)
     if type(data["schema_version"]) is not int or data["schema_version"] != 1:
         raise ValueError("only schema_version 1 is supported")
     check_kind(data["kind"])
@@ -127,7 +152,8 @@ def scene_from_dict(data):
     return Scene(data["title"], model, tuple(particles), duration, count, tuple(bounds))
 
 
-def load_scene(path):
+def scene_from_json(text):
+    """Parse one captured document; callers may retain it as output provenance."""
     def no_duplicates(pairs):
         result = {}
         for key, value in pairs:
@@ -135,5 +161,8 @@ def load_scene(path):
                 raise ValueError(f"duplicate JSON key: {key}")
             result[key] = value
         return result
-    with Path(path).open(encoding="utf-8") as handle:
-        return scene_from_dict(json.load(handle, object_pairs_hook=no_duplicates))
+    return scene_from_dict(json.loads(text, object_pairs_hook=no_duplicates))
+
+
+def load_scene(path):
+    return scene_from_json(Path(path).read_text(encoding="utf-8"))

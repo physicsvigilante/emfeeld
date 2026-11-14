@@ -27,3 +27,10 @@ docs/AUTHORING_REPAIR.md for the current suite and exact test-accounting boundar
 New input/path safety checks do not alter physical laws or relax tolerances.
 PR #1 stays draft and unmerged. No independent review or Windows interaction
 qualification is implied by the author-run checks.
+
+## Capability discovery and export integrity
+Read docs/CAPABILITIES.md before authoring new packets. Generate the catalogue
+with `python -m emfeeld capabilities`; validate the resulting packet normally.
+Keep catalogue keys/enums and parser-consistency tests aligned. Never infer a
+solved event from CLI exit zero alone. Preserve single-document source provenance
+and staged screenshot exports; new capability work must not relax these guards.

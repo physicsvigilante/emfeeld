@@ -4,6 +4,21 @@ A local, LLM-authorable explorer for **analytic electrostatic and Newtonian grav
 
 **Status: candidate with tested numerical core and real Linux/PyVista previews.** Eight scenes have passed offscreen rendering and programmatic time-slider checks; screenshots were inspected in chat. Windows desktop/mouse interaction remains untested. This is author verification, not independent review. The [approved chat workflow](docs/CHAT_WORKFLOW_DECISION.md) requires explicit user acceptance before merge. See [viewer qualification](docs/VIEWER_QUALIFICATION.md). This is not a general electromagnetic or conductor solver.
 
+## Machine-readable capability discovery
+
+```text
+python -m emfeeld capabilities --output output/capabilities.json
+```
+
+The generated catalogue lists actual source fields, units, observations, saved-
+state selectors, event conditions and unsupported physics. It requires no viewer
+or external LLM service. It is descriptive discovery data, not a second validator:
+validate each authored packet with `python -m emfeeld.observations PACKET.json --validate-only`.
+See [the catalogue guide](docs/CAPABILITIES.md) and
+[export-integrity qualification](docs/CAPABILITIES_VALIDATION.md).
+Two illustrative composed electric/gravitational models and a separate reference
+manifest are in `examples/authoring/` and `verification/discovery_examples.json`.
+
 ## Current authoring workflow
 
 Use [the question-to-packet workflow](docs/AUTHORING_WORKFLOW.md) to author

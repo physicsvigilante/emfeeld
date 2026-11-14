@@ -9,7 +9,7 @@ import sys
 import numpy as np
 import scipy
 from .fields import G, epsilon_0
-from .scene import load_scene
+from .scene import scene_from_json
 
 
 def run_scene(scene):
@@ -54,21 +54,52 @@ def _save_npz(output, arrays):
             temporary.unlink(missing_ok=True)
 
 
+
+def _save_screenshot(plot, output):
+    """Stage a render in the destination directory; retain old output on failure."""
+    output.parent.mkdir(parents=True, exist_ok=True)
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(dir=output.parent, prefix=".emfeeld-",
+                                         suffix=output.suffix, delete=False) as handle:
+            temporary = Path(handle.name)
+        plot.show(screenshot=str(temporary))
+        if temporary.stat().st_size == 0:
+            raise OSError("renderer did not produce a screenshot")
+        os.replace(temporary, output)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=("validate", "run", "view"))
-    parser.add_argument("scene", type=Path)
-    parser.add_argument("--output", type=Path, help="run only: compressed NPZ numerical output")
+    parser.add_argument("command", choices=("validate", "run", "view", "capabilities"))
+    parser.add_argument("scene", type=Path, nargs="?")
+    parser.add_argument("--output", type=Path, help="run: NPZ output; capabilities: generated JSON output")
     parser.add_argument("--screenshot", type=Path, help="view only: offscreen PNG instead of desktop window")
     args = parser.parse_args(argv)
+    if args.command == "capabilities":
+        if args.scene is not None or args.screenshot is not None:
+            parser.error("capabilities takes no scene or screenshot")
+        from .capabilities import main as capabilities_main
+        return capabilities_main(["--output", str(args.output)] if args.output is not None else [])
+    if args.scene is None:
+        parser.error("a scene is required for validate, run and view")
     if args.output and args.command != "run":
         parser.error("--output is only valid with run")
     if args.screenshot and args.command != "view":
         parser.error("--screenshot is only valid with view")
     try:
+        # PyVista appends .png when the requested screenshot has no extension.
+        # Protect the effective destination as well as the spelling the user supplied.
+        _protect_input(args.scene, args.screenshot)
+        if args.screenshot is not None and not args.screenshot.suffix:
+            args.screenshot = args.screenshot.with_suffix(".png")
         _protect_input(args.scene, args.output)
         _protect_input(args.scene, args.screenshot)
-        scene = load_scene(args.scene)
+        scene_document = args.scene.read_text(encoding="utf-8")
+        scene = scene_from_json(scene_document)
         if args.command == "validate":
             print(json.dumps({"valid_schema": True, "title": scene.title,
                               "trajectory_supported": scene.model.trajectory_safe or not scene.particles}))
@@ -77,7 +108,7 @@ def main(argv=None):
             summary_text = json.dumps(summary, indent=2, allow_nan=False)
             if args.output:
                 arrays = {"summary_json": summary_text,
-                          "scene_json": args.scene.read_text(encoding="utf-8")}
+                          "scene_json": scene_document}
                 for i, trajectory in enumerate(trajectories):
                     for key in ("time_s", "position_m", "velocity_m_s", "kinetic_J", "potential_J"):
                         arrays[f"particle_{i}_{key}"] = getattr(trajectory, key)
@@ -88,8 +119,7 @@ def main(argv=None):
             plot = make_plotter(scene, off_screen=bool(args.screenshot))
             try:
                 if args.screenshot:
-                    args.screenshot.parent.mkdir(parents=True, exist_ok=True)
-                    plot.show(screenshot=str(args.screenshot))
+                    _save_screenshot(plot, args.screenshot)
                 else:
                     plot.show()
             finally:

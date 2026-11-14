@@ -1,0 +1,126 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "Discovery example: two spheres plus uniform gravity field",
+    "kind": "gravity",
+    "sources": [
+      {
+        "type": "solid_sphere",
+        "radius_m": 2.0,
+        "center_m": [
+          -0.4,
+          0.2,
+          0
+        ],
+        "mass_kg": 47945102857.22848
+      },
+      {
+        "type": "solid_sphere",
+        "radius_m": 3.0,
+        "center_m": [
+          0.3,
+          -0.1,
+          0.1
+        ],
+        "mass_kg": 242722083214.71915
+      },
+      {
+        "type": "uniform",
+        "field_m_s2": [
+          0.1,
+          -0.05,
+          0.025
+        ]
+      }
+    ],
+    "particles": [
+      {
+        "mass_kg": 2.0,
+        "position_m": [
+          0.82,
+          0.17000000000000004,
+          -0.015000000000000013
+        ],
+        "velocity_m_s": [
+          -0.1,
+          0.2,
+          0.15
+        ]
+      }
+    ],
+    "duration_s": 3,
+    "samples": 61,
+    "bounds_m": [
+      -4,
+      4,
+      -4,
+      4,
+      -4,
+      4
+    ]
+  },
+  "observations": [
+    {
+      "id": "field_initial",
+      "type": "field",
+      "position_m": [
+        0.82,
+        0.17000000000000004,
+        -0.015000000000000013
+      ]
+    },
+    {
+      "id": "potential_initial",
+      "type": "potential",
+      "position_m": [
+        0.82,
+        0.17000000000000004,
+        -0.015000000000000013
+      ]
+    },
+    {
+      "id": "position_t1",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "position",
+      "sample_index": 20
+    },
+    {
+      "id": "velocity_t1_5",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "velocity",
+      "sample_index": 30
+    },
+    {
+      "id": "cross_equilibrium_plane",
+      "type": "trajectory_event",
+      "particle_index": 0,
+      "condition": {
+        "type": "plane",
+        "point_m": [
+          0.11999999999999997,
+          -0.029999999999999985,
+          0.08499999999999999
+        ],
+        "normal": [
+          1,
+          0,
+          0
+        ],
+        "direction": "negative"
+      },
+      "occurrence": "first",
+      "max_step_s": 0.02,
+      "min_normal_speed_m_s": 1e-06,
+      "accuracy": {
+        "time_atol_s": 1e-07,
+        "position_atol_m": 1e-07,
+        "velocity_atol_m_s": 1e-07,
+        "rtol": 1e-08
+      }
+    }
+  ],
+  "notes": "Illustrative catalogue-guided authoring, not a textbook or blind benchmark. Prescribed penetrable uniform spheres and independent nonrelativistic test body. The entire trajectory remains inside both spheres; a = -(position-equilibrium) in SI. No conductor response, collisions or cross-domain coupling. Plane is an observation, not a material boundary."
+}
