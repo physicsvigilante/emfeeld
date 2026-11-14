@@ -1,0 +1,75 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "SC-157 | dipole oriented along the z axis",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "point",
+        "charge_C": 1e-9,
+        "center_m": [
+          0,
+          0,
+          1
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": -1e-9,
+        "center_m": [
+          0,
+          0,
+          -1
+        ]
+      }
+    ],
+    "bounds_m": [
+      -3.5,
+      3.5,
+      -3.5,
+      3.5,
+      -3.5,
+      3.5
+    ]
+  },
+  "observations": [
+    {
+      "id": "E_P",
+      "type": "field",
+      "position_m": [
+        2,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "V_P",
+      "type": "potential",
+      "position_m": [
+        2,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "E_offaxis",
+      "type": "field",
+      "position_m": [
+        1,
+        1,
+        2
+      ]
+    },
+    {
+      "id": "V_plane",
+      "type": "potential",
+      "position_m": [
+        -1,
+        2,
+        0
+      ]
+    }
+  ],
+  "notes": "Single Correct Q157, PDF 40/book 1.180. Symmetric dipole along z; representative q=1 nC,d=1 m,a=2 m; extra off-axis field and zero-potential-plane observations."
+}

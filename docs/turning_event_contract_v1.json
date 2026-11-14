@@ -1,0 +1,66 @@
+{
+  "contract": "emfeeld.radial_turning",
+  "version": 1,
+  "descriptive_not_json_schema": true,
+  "entrypoint": "python -m emfeeld.observations PACKET.json --output RESULT.json",
+  "packet": "existing observation_schema_version 1 with embedded scene-v1",
+  "required": [
+    "id",
+    "type",
+    "particle_index",
+    "condition",
+    "occurrence",
+    "max_step_s",
+    "min_distance_m",
+    "min_radial_acceleration_m_s2",
+    "accuracy"
+  ],
+  "condition": {
+    "type": "radial_turning",
+    "center_m": "three finite JSON numbers in metres",
+    "extremum": [
+      "minimum",
+      "maximum",
+      "either"
+    ]
+  },
+  "occurrence": "first detected nondegenerate local root only",
+  "max_step_s": "positive, duration/10000 <= value <= duration; second search halves it",
+  "min_distance_m": "positive measurement-validity threshold, not softening or collision radius",
+  "min_radial_acceleration_m_s2": "positive derivative-magnitude threshold for nondegeneracy",
+  "accuracy": {
+    "time_atol_s": "positive",
+    "position_atol_m": "positive",
+    "velocity_atol_m_s": "positive",
+    "radial_speed_atol_m_s": "positive",
+    "rtol": "nonnegative"
+  },
+  "root": "dot((position-center)/norm(position-center),velocity)",
+  "derivative": "dot(n,acceleration)+norm(velocity-radial_speed*n)^2/distance",
+  "initial_stationarity": "reject zero/unresolved radial speed; do not skip launch root",
+  "result": "state time, position, velocity, speed, energies, distance, radial speed, radial acceleration; SI units and actual extremum",
+  "failures": [
+    "no_event",
+    "initial_condition_error",
+    "ambiguous_event",
+    "convergence_error",
+    "unsupported_trajectory",
+    "domain_error",
+    "numerical_error",
+    "integration_error"
+  ],
+  "no_event": "no detection in two searches, not absence proof",
+  "error_bound": null,
+  "excluded": [
+    "global_closest_approach",
+    "minimum_launch_speed",
+    "centre_passage",
+    "degenerate_extrema",
+    "circular_motion",
+    "collision_response"
+  ],
+  "validation": "strict complete-packet validation before evaluation; local runtime errors preserve valid requests",
+  "limits": "Multiple within-step roots can be missed; refinement is not completeness or global-error certification.",
+  "guide": "TURNING_EVENTS.md",
+  "qualification": "TURNING_EVENTS_VALIDATION.md"
+}

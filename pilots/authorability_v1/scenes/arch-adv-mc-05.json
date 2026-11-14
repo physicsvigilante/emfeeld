@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "title": "Archive 2013 Q5 | overlapping equal/opposite density spheres",
+  "kind": "electric",
+  "sources": [
+    {
+      "type": "solid_sphere",
+      "charge_C": 4.188790204786391e-09,
+      "center_m": [
+        -0.4,
+        0,
+        0
+      ],
+      "radius_m": 1.0
+    },
+    {
+      "type": "solid_sphere",
+      "charge_C": -2.1446605848506326e-09,
+      "center_m": [
+        0.4,
+        0,
+        0
+      ],
+      "radius_m": 0.8
+    }
+  ],
+  "bounds_m": [
+    -1.6,
+    1.6,
+    -1.6,
+    1.6,
+    -1.6,
+    1.6
+  ]
+}

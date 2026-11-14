@@ -1,0 +1,181 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "Two massive spheres plus a uniform field: two test masses",
+    "kind": "gravity",
+    "sources": [
+      {
+        "type": "solid_sphere",
+        "mass_kg": 7491422321441.949,
+        "radius_m": 10.0,
+        "center_m": [
+          -1,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "solid_sphere",
+        "mass_kg": 7491422321441.949,
+        "radius_m": 10.0,
+        "center_m": [
+          1,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "uniform",
+        "field_m_s2": [
+          0,
+          0.25,
+          0
+        ]
+      }
+    ],
+    "particles": [
+      {
+        "mass_kg": 1,
+        "charge_C": 1,
+        "position_m": [
+          1.4142135623730951,
+          0.9571067811865475,
+          0.0
+        ],
+        "velocity_m_s": [
+          -1.414213562373095,
+          0.7071067811865476,
+          0
+        ]
+      },
+      {
+        "mass_kg": 20,
+        "charge_C": 1,
+        "position_m": [
+          1.4142135623730951,
+          0.9571067811865475,
+          0.0
+        ],
+        "velocity_m_s": [
+          -1.414213562373095,
+          0.7071067811865476,
+          0
+        ]
+      }
+    ],
+    "duration_s": 25,
+    "samples": 2,
+    "bounds_m": [
+      -4,
+      4,
+      -4,
+      4,
+      -4,
+      4
+    ]
+  },
+  "observations": [
+    {
+      "id": "particle_0_minimum",
+      "type": "trajectory_event",
+      "particle_index": 0,
+      "condition": {
+        "type": "radial_turning",
+        "center_m": [
+          0.0,
+          0.25,
+          0.0
+        ],
+        "extremum": "minimum"
+      },
+      "occurrence": "first",
+      "max_step_s": 0.05,
+      "min_distance_m": 1e-08,
+      "min_radial_acceleration_m_s2": 1e-08,
+      "accuracy": {
+        "time_atol_s": 1e-07,
+        "position_atol_m": 1e-07,
+        "velocity_atol_m_s": 1e-07,
+        "radial_speed_atol_m_s": 1e-08,
+        "rtol": 1e-08
+      }
+    },
+    {
+      "id": "particle_0_maximum",
+      "type": "trajectory_event",
+      "particle_index": 0,
+      "condition": {
+        "type": "radial_turning",
+        "center_m": [
+          0.0,
+          0.25,
+          0.0
+        ],
+        "extremum": "maximum"
+      },
+      "occurrence": "first",
+      "max_step_s": 0.05,
+      "min_distance_m": 1e-08,
+      "min_radial_acceleration_m_s2": 1e-08,
+      "accuracy": {
+        "time_atol_s": 1e-07,
+        "position_atol_m": 1e-07,
+        "velocity_atol_m_s": 1e-07,
+        "radial_speed_atol_m_s": 1e-08,
+        "rtol": 1e-08
+      }
+    },
+    {
+      "id": "particle_1_minimum",
+      "type": "trajectory_event",
+      "particle_index": 1,
+      "condition": {
+        "type": "radial_turning",
+        "center_m": [
+          0.0,
+          0.25,
+          0.0
+        ],
+        "extremum": "minimum"
+      },
+      "occurrence": "first",
+      "max_step_s": 0.05,
+      "min_distance_m": 1e-08,
+      "min_radial_acceleration_m_s2": 1e-08,
+      "accuracy": {
+        "time_atol_s": 1e-07,
+        "position_atol_m": 1e-07,
+        "velocity_atol_m_s": 1e-07,
+        "radial_speed_atol_m_s": 1e-08,
+        "rtol": 1e-08
+      }
+    },
+    {
+      "id": "particle_1_maximum",
+      "type": "trajectory_event",
+      "particle_index": 1,
+      "condition": {
+        "type": "radial_turning",
+        "center_m": [
+          0.0,
+          0.25,
+          0.0
+        ],
+        "extremum": "maximum"
+      },
+      "occurrence": "first",
+      "max_step_s": 0.05,
+      "min_distance_m": 1e-08,
+      "min_radial_acceleration_m_s2": 1e-08,
+      "accuracy": {
+        "time_atol_s": 1e-07,
+        "position_atol_m": 1e-07,
+        "velocity_atol_m_s": 1e-07,
+        "radial_speed_atol_m_s": 1e-08,
+        "rtol": 1e-08
+      }
+    }
+  ],
+  "notes": "New illustrative composition; inside both spheres rddot=-(r-c), c=(0,0.25,0) m. Relative trajectory (2cos(t+pi/4),sin(t+pi/4),0). Observation centre is neither source centre. Four periods in interval; return first qualifying extrema only."
+}

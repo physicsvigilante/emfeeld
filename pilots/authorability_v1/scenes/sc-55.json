@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "title": "SC-55 | prescribed source; force probe at (8,-5,0) m",
+  "kind": "electric",
+  "sources": [
+    {
+      "type": "point",
+      "charge_C": 5e-05,
+      "center_m": [
+        2,
+        3,
+        0
+      ]
+    }
+  ],
+  "bounds_m": [
+    -1,
+    11,
+    -8,
+    6,
+    -6,
+    6
+  ]
+}

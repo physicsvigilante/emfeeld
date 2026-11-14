@@ -1,0 +1,29 @@
+{
+  "source_withheld_solutions": true,
+  "independent_review": false,
+  "blind_benchmark": false,
+  "first_execution": {
+    "supported_packets_successful": 11,
+    "unsupported_controls_rejected": 2,
+    "packet_edits_after_first_run": 0
+  },
+  "verification": {
+    "same_author_reference_checks_passed": 43,
+    "reference_checks_total": 43,
+    "existing_core_tests": 783,
+    "historical_live_compatibility_tests": 10,
+    "viewer_regression_tests": 9,
+    "new_pilot_tests": 41,
+    "total_completed_tests": 843
+  },
+  "sc31_correct_vector_option": "D",
+  "sc31_magnitude_only_matches": [
+    "A",
+    "C",
+    "D"
+  ],
+  "same_author_verifier_correction_retained_in_chat_evidence": true,
+  "evidence_location": "accompanying ChatGPT artifact ZIP; not stored as GitHub binaries",
+  "engine_files_modified": 0,
+  "pr_merge": false
+}

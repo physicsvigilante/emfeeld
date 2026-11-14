@@ -1,0 +1,85 @@
+{
+  "protocol": "source-withheld questions, same-chat authoring (not an independent blind test)",
+  "source": "01_emfields.pdf",
+  "frozen_engine_commit": "08571d366a0499d2110de0929d91db7d5caa6c7f",
+  "tasks": [
+    {
+      "id": "SC-38",
+      "pdf_page": 25,
+      "printed_page": "1.165",
+      "status": "full_native",
+      "packet_names": [
+        "sc38_before.json",
+        "sc38_after.json"
+      ]
+    },
+    {
+      "id": "NUM-20",
+      "pdf_page": 70,
+      "printed_page": "1.210",
+      "status": "full_native",
+      "packet_names": [
+        "num20_shells.json"
+      ]
+    },
+    {
+      "id": "MAIN19-16",
+      "pdf_page": 75,
+      "printed_page": "1.215",
+      "status": "full_native",
+      "packet_names": [
+        "main19_16_vector.json"
+      ]
+    },
+    {
+      "id": "MAIN18-28",
+      "pdf_page": 77,
+      "printed_page": "1.217",
+      "status": "full_native",
+      "packet_names": [
+        "main18_28_concentric.json"
+      ]
+    },
+    {
+      "id": "SC-60",
+      "pdf_page": 28,
+      "printed_page": "1.168",
+      "status": "full_native",
+      "packet_names": [
+        "sc60_uniform_launch.json"
+      ]
+    },
+    {
+      "id": "MC-25",
+      "pdf_page": 47,
+      "printed_page": "1.187",
+      "status": "partial_needs_symbolic_stability_inference",
+      "packet_names": [
+        "mc25_stability.json"
+      ]
+    },
+    {
+      "id": "SC-43",
+      "pdf_page": 26,
+      "printed_page": "1.166",
+      "status": "partial_llm_inverse_plus_forward_probes",
+      "packet_names": [
+        "sc43_inverse_candidate.json"
+      ]
+    },
+    {
+      "id": "MAIN18-29",
+      "pdf_page": 77,
+      "printed_page": "1.217",
+      "status": "unsupported_finite_square_flux",
+      "packet_names": []
+    },
+    {
+      "id": "SC-68",
+      "pdf_page": 29,
+      "printed_page": "1.169",
+      "status": "unsupported_mixed_coupling",
+      "packet_names": []
+    }
+  ]
+}

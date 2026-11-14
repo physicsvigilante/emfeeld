@@ -1,0 +1,17 @@
+[
+  {
+    "id": "SC15-NONUNIFORM-X-FIELD",
+    "classification": "unsupported",
+    "reason": "No x-dependent field source E=αx xhat or arbitrary cube flux observation; cannot replace with uniform E."
+  },
+  {
+    "id": "NUM37-EMISSION-TIME",
+    "classification": "unsupported",
+    "reason": "No evolving charge/particle emission and time-dependent source strengths."
+  },
+  {
+    "id": "SC10-PLANE-WITH-HOLE",
+    "classification": "unsupported",
+    "reason": "Infinite plane exists, but charged disk subtraction/plane-hole density does not. No silent uniform-plane substitution."
+  }
+]

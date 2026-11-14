@@ -1,0 +1,108 @@
+{
+  "contract": "emfeeld.plane_events",
+  "version": 1,
+  "entrypoint": "python -m emfeeld.observations PACKET.json --output RESULT.json",
+  "packet": "existing observation_schema_version 1, embedded scene-v1, unique ids, strict finite JSON numbers",
+  "type": "trajectory_event",
+  "required": [
+    "id",
+    "type",
+    "particle_index",
+    "condition",
+    "occurrence",
+    "max_step_s",
+    "min_normal_speed_m_s",
+    "accuracy"
+  ],
+  "condition": {
+    "required": [
+      "type",
+      "point_m",
+      "normal",
+      "direction"
+    ],
+    "type": "plane",
+    "point_m": "3-vector, m",
+    "normal": "finite nonzero 3-vector; normalized",
+    "direction": [
+      "positive",
+      "negative",
+      "either"
+    ],
+    "signed_distance": "dot(position_m-point_m, unit_normal)"
+  },
+  "occurrence": "first",
+  "initial_policy": "reject on-plane or unresolved-side launch; no fabricated initial hit",
+  "max_step_s": "finite positive; duration/10000 <= max_step_s <= duration; halved step must be representable",
+  "min_normal_speed_m_s": "finite positive threshold; |normal velocity| must exceed it",
+  "accuracy": {
+    "required": [
+      "time_atol_s",
+      "position_atol_m",
+      "velocity_atol_m_s",
+      "rtol"
+    ],
+    "absolute": "strictly positive SI values",
+    "relative": "nonnegative",
+    "comparison": "abs(base-refined) <= atol + rtol*max(abs(base),abs(refined))",
+    "scope": "time, position and velocity; position_atol also bounds absolute plane residual and coordinate uncertainty",
+    "not": "solver accuracy input, guaranteed global error, or first-root completeness proof"
+  },
+  "method": {
+    "base": {
+      "method": "DOP853",
+      "rtol": 1e-10,
+      "position_atol_m": 1e-09,
+      "velocity_atol_m_s": 1e-09
+    },
+    "refined": "max_step / 2 and three solver tolerances / 10",
+    "terminal": true,
+    "event_state": "native y_events, not saved samples",
+    "maximum_rhs_evaluations_per_pass": 500000,
+    "retries": 0
+  },
+  "reuse": "packet-local exact validated event-request cache; separate from saved-state runs",
+  "units": {
+    "time_s": "s",
+    "position_m": "m",
+    "velocity_m_s": "m/s",
+    "speed_m_s": "m/s",
+    "kinetic_J": "J",
+    "potential_J": "J",
+    "total_energy_J": "J"
+  },
+  "statuses": [
+    "ok",
+    "no_event",
+    "initial_condition_error",
+    "ambiguous_event",
+    "convergence_error",
+    "unsupported_trajectory",
+    "domain_error",
+    "numerical_error",
+    "integration_error"
+  ],
+  "no_event": "no root detected in both successful searches; NOT proof of absence or no tangency",
+  "exit_codes": {
+    "0": "all results ok/no_event and old optional checks pass; or schema-only validation",
+    "1": "one or more local failures / failed old checks; full report retained",
+    "2": "invalid input or I/O error"
+  },
+  "detection_limits": [
+    "multiple roots per step may be missed",
+    "two refinements do not prove completeness",
+    "tangencies and zero-normal-speed crossings not qualified",
+    "terminal search is not collision protection"
+  ],
+  "not_implemented": [
+    "radial_conditions",
+    "turning_points",
+    "closest_approach",
+    "arbitrary_expressions",
+    "event_expectations",
+    "collisions",
+    "shell_or_plane_source_trajectories"
+  ],
+  "error_bound": null,
+  "schema_note": "Descriptive contract, not JSON Schema; runtime parser authoritative."
+}

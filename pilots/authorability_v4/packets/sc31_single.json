@@ -1,0 +1,39 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "SC31 / single +q at R reference",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "point",
+        "charge_C": 1e-9,
+        "center_m": [
+          1,
+          0,
+          0
+        ]
+      }
+    ],
+    "bounds_m": [
+      -1.5,
+      1.5,
+      -1.5,
+      1.5,
+      -0.5,
+      0.5
+    ]
+  },
+  "observations": [
+    {
+      "id": "field_O",
+      "type": "field",
+      "position_m": [
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "notes": "SC31 single +q at vertex R used as reference field; q=1nC, a=1m."
+}

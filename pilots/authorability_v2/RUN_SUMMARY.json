@@ -1,0 +1,208 @@
+{
+  "frozen_engine": "81b8d1c8dced61e5583c8032f32c3d3043464c55",
+  "counts": {
+    "PASS": 8,
+    "UNSUPPORTED": 2,
+    "FAIL": 0
+  },
+  "verified": true,
+  "production_edits": 0,
+  "executed_packet_corrections": 0,
+  "cumulative_tests": {
+    "passed": 744,
+    "skipped": 0,
+    "batches": [
+      697,
+      9,
+      38
+    ]
+  },
+  "request_outcomes": {
+    "accepted_schemas": 9,
+    "schema_rejected_packets": 1,
+    "returned_requests": 28,
+    "ok": 27,
+    "initial_condition_error": 1
+  },
+  "source_aware_not_blind": true,
+  "cases": [
+    {
+      "id": "P01-line-reference",
+      "role": "execution_target",
+      "status": "PASS",
+      "expected_outcome_verified": true,
+      "issues": [],
+      "native_returncode": 0,
+      "native_statuses": {
+        "V_reference": "ok",
+        "V_P": "ok",
+        "delta_V": "ok"
+      },
+      "validate_returncode": 0,
+      "packet_sha256": "761312f0e775b1c94cb0a02ffc60650c924754e61a96b854594181b33d9b5068",
+      "native_report_sha256": "957137daaa8a8b69e9c2f4d2dee913413b593c7146f75a06cee8e86b0cbdaea4",
+      "reference_checks": 3,
+      "reference_checks_passed": 3
+    },
+    {
+      "id": "P02-cube",
+      "role": "execution_target",
+      "status": "PASS",
+      "expected_outcome_verified": true,
+      "issues": [],
+      "native_returncode": 0,
+      "native_statuses": {
+        "E_center": "ok",
+        "V_center": "ok"
+      },
+      "validate_returncode": 0,
+      "packet_sha256": "4c91c6f7898f08280df1117a754322ac132113e2fa76913c7cf4e17b547d836c",
+      "native_report_sha256": "73b877d58045713365a1a1d7376ae57b1b59a3f62071f32451580a5178333e00",
+      "reference_checks": 3,
+      "reference_checks_passed": 3
+    },
+    {
+      "id": "P03-cavity",
+      "role": "execution_target",
+      "status": "PASS",
+      "expected_outcome_verified": true,
+      "issues": [],
+      "native_returncode": 0,
+      "native_statuses": {
+        "V_P": "ok"
+      },
+      "validate_returncode": 0,
+      "packet_sha256": "4a628877da1289dfe517e9ca036a73dac104c2464c8aa950fa7874a4c4689422",
+      "native_report_sha256": "58bfa775e93b710a2fcd6f8f9ddb1e536362fb2f1a88985b36576b5c8fc6122c",
+      "reference_checks": 1,
+      "reference_checks_passed": 1
+    },
+    {
+      "id": "P04-uniform-motion",
+      "role": "execution_target",
+      "status": "PASS",
+      "expected_outcome_verified": true,
+      "issues": [],
+      "native_returncode": 0,
+      "native_statuses": {
+        "initial_K": "ok",
+        "position_t2": "ok",
+        "velocity_t2": "ok",
+        "speed_t2": "ok",
+        "K_t2": "ok",
+        "U_t2": "ok",
+        "total_t2": "ok",
+        "exit_plane": "ok"
+      },
+      "validate_returncode": 0,
+      "packet_sha256": "4c721f24d61d5a60f8f6d1df45f811b80ce951ffd62b03019f791ced266567fe",
+      "native_report_sha256": "21ab1ca9199767a3a13b72666fa6d0216ef00187a8f0339d3b84c3f5dbe39990",
+      "reference_checks": 10,
+      "reference_checks_passed": 10
+    },
+    {
+      "id": "P05-two-charge-crossing",
+      "role": "execution_target",
+      "status": "PASS",
+      "expected_outcome_verified": true,
+      "issues": [],
+      "native_returncode": 0,
+      "native_statuses": {
+        "midpoint": "ok"
+      },
+      "validate_returncode": 0,
+      "packet_sha256": "a21e923f5badb2afa2b10347e625de7c52cb2a31c8c1c2db3c9a7f467a6d0b00",
+      "native_report_sha256": "0ee2b44d6e2d1aca05417b2c00de94a4c945fff46b071fa405343ecca4ed7493",
+      "reference_checks": 3,
+      "reference_checks_passed": 3
+    },
+    {
+      "id": "P06-potential-crossing",
+      "role": "execution_target",
+      "status": "PASS",
+      "expected_outcome_verified": true,
+      "issues": [],
+      "native_returncode": 0,
+      "native_statuses": {
+        "zero_potential_sphere": "ok",
+        "V_start": "ok",
+        "V_sphere_equator": "ok",
+        "delta_V": "ok"
+      },
+      "validate_returncode": 0,
+      "packet_sha256": "427fc22e1ed3703e0cb32abbacb6596632fab235b47468413402c3b2df606bb4",
+      "native_report_sha256": "9bce8b17e41948f68b251dabced3acfab8279a247a258eee003fd34c16a4a2cb",
+      "reference_checks": 6,
+      "reference_checks_passed": 6
+    },
+    {
+      "id": "P07-numerical-stop",
+      "role": "execution_target",
+      "status": "PASS",
+      "expected_outcome_verified": true,
+      "issues": [],
+      "native_returncode": 0,
+      "native_statuses": {
+        "stop": "ok"
+      },
+      "validate_returncode": 0,
+      "packet_sha256": "fa864be7224a8e5926dc36dd702a10cb59e46741878b599d00bc31b2fa45a6d7",
+      "native_report_sha256": "719a83860edeef7ca34bb583b98f2090e73297cbc90d7c081a696eaeb664621d",
+      "reference_checks": 4,
+      "reference_checks_passed": 4
+    },
+    {
+      "id": "P08-gravity-composition",
+      "role": "execution_target",
+      "status": "PASS",
+      "expected_outcome_verified": true,
+      "issues": [],
+      "native_returncode": 0,
+      "native_statuses": {
+        "p0_position": "ok",
+        "p0_velocity": "ok",
+        "p0_minimum": "ok",
+        "p1_position": "ok",
+        "p1_velocity": "ok",
+        "p1_minimum": "ok"
+      },
+      "validate_returncode": 0,
+      "packet_sha256": "f020de875b65a0037b5d830e987f09944eded442ab8070bd023e7192384f5328",
+      "native_report_sha256": "6d71ee80e65418baab2b0ef3331b0ae243235ec5f4a1071059e645fe6ad38058",
+      "reference_checks": 18,
+      "reference_checks_passed": 18
+    },
+    {
+      "id": "L01-rest-turning",
+      "role": "limitation_control",
+      "status": "UNSUPPORTED",
+      "expected_outcome_verified": true,
+      "issues": [],
+      "native_returncode": 1,
+      "native_statuses": {
+        "future_maximum": "initial_condition_error",
+        "valid_V": "ok"
+      },
+      "validate_returncode": 0,
+      "packet_sha256": "560144527b139484c21ac22b3f94b49834629e4c3b5dcb3ab8a5de43b76c75f3",
+      "native_report_sha256": "56e384df2f04d321b3f973cc867e7769da7b80a473fd6d2297b201f28702a1c8",
+      "reference_checks": 1,
+      "reference_checks_passed": 1
+    },
+    {
+      "id": "L02-ring",
+      "role": "limitation_control",
+      "status": "UNSUPPORTED",
+      "expected_outcome_verified": true,
+      "issues": [],
+      "native_returncode": 2,
+      "native_statuses": {},
+      "validate_returncode": 2,
+      "packet_sha256": "9f738e195d7bd855773a7cf4436ecccfaba626e2dd09b3f3d2270615b527bb6b",
+      "native_report_sha256": null,
+      "reference_checks": 0,
+      "reference_checks_passed": 0
+    }
+  ],
+  "full_results": "Chat evidence bundle: evidence/attempt_1/assessment.json and per-case native.json"
+}

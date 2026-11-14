@@ -1,0 +1,102 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "SC09: six occupied vertices of a heptagon",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "point",
+        "charge_C": 2e-9,
+        "center_m": [
+          0.7481877622304803,
+          0.9381977789616357,
+          0
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": 2e-9,
+        "center_m": [
+          -0.26702512074757717,
+          1.1699134946181884,
+          0
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": 2e-9,
+        "center_m": [
+          -1.0811626414829028,
+          0.5206604869410698,
+          0
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": 2e-9,
+        "center_m": [
+          -1.081162641482903,
+          -0.5206604869410696,
+          0
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": 2e-9,
+        "center_m": [
+          -0.2670251207475775,
+          -1.1699134946181884,
+          0
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": 2e-9,
+        "center_m": [
+          0.74818776223048,
+          -0.9381977789616358,
+          0
+        ]
+      }
+    ],
+    "bounds_m": [
+      -2,
+      2,
+      -2,
+      2,
+      -1,
+      1
+    ]
+  },
+  "observations": [
+    {
+      "id": "E_centre",
+      "type": "field",
+      "position_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "V_centre",
+      "type": "potential",
+      "position_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "E_above",
+      "type": "field",
+      "position_m": [
+        0,
+        0,
+        0.7
+      ]
+    }
+  ],
+  "notes": "Illustrative n=7, q=2 nC, a=1.2 m; missing vertex along positive x. Book uses symbolic n,a,q."
+}

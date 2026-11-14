@@ -1,0 +1,134 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "GRAV / tetrahedral fixed masses with off-axis launched test body",
+    "kind": "gravity",
+    "sources": [
+      {
+        "type": "point",
+        "mass_kg": 10000000000,
+        "center_m": [
+          1,
+          1,
+          1
+        ]
+      },
+      {
+        "type": "point",
+        "mass_kg": 10000000000,
+        "center_m": [
+          1,
+          -1,
+          -1
+        ]
+      },
+      {
+        "type": "point",
+        "mass_kg": 10000000000,
+        "center_m": [
+          -1,
+          1,
+          -1
+        ]
+      },
+      {
+        "type": "point",
+        "mass_kg": 10000000000,
+        "center_m": [
+          -1,
+          -1,
+          1
+        ]
+      }
+    ],
+    "bounds_m": [
+      -4,
+      4,
+      -4,
+      4,
+      -4,
+      4
+    ],
+    "particles": [
+      {
+        "mass_kg": 2.5,
+        "position_m": [
+          0.2,
+          0.1,
+          3
+        ],
+        "velocity_m_s": [
+          0,
+          0,
+          -0.5
+        ]
+      }
+    ],
+    "duration_s": 5,
+    "samples": 501
+  },
+  "observations": [
+    {
+      "id": "g_origin",
+      "type": "field",
+      "position_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "phi_origin",
+      "type": "potential",
+      "position_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "speed_t1",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "speed",
+      "sample_index": 100
+    },
+    {
+      "id": "energy_t1",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "total_energy",
+      "sample_index": 100
+    },
+    {
+      "id": "cross_z2.4",
+      "type": "trajectory_event",
+      "particle_index": 0,
+      "condition": {
+        "type": "plane",
+        "point_m": [
+          0,
+          0,
+          2.4
+        ],
+        "normal": [
+          0,
+          0,
+          1
+        ],
+        "direction": "negative"
+      },
+      "occurrence": "first",
+      "max_step_s": 0.015,
+      "min_normal_speed_m_s": 0.000001,
+      "accuracy": {
+        "time_atol_s": 0.000001,
+        "position_atol_m": 0.000001,
+        "velocity_atol_m_s": 0.000001,
+        "rtol": 1e-7
+      }
+    }
+  ],
+  "notes": "Illustrative gravitation (NOT in electrostatics book). Four fixed tetrahedral 1e10kg masses; 2.5kg independent moving test mass, no backreaction."
+}

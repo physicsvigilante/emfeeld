@@ -1,0 +1,200 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "Explicit unsupported or ambiguous turning requests",
+    "kind": "gravity",
+    "sources": [
+      {
+        "type": "uniform",
+        "field_m_s2": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "particles": [
+      {
+        "mass_kg": 1,
+        "charge_C": 1,
+        "position_m": [
+          -2,
+          1,
+          0
+        ],
+        "velocity_m_s": [
+          1,
+          0,
+          0
+        ]
+      },
+      {
+        "mass_kg": 1,
+        "charge_C": 1,
+        "position_m": [
+          0,
+          1,
+          0
+        ],
+        "velocity_m_s": [
+          1,
+          0,
+          0
+        ]
+      },
+      {
+        "mass_kg": 1,
+        "charge_C": 1,
+        "position_m": [
+          0,
+          0,
+          0
+        ],
+        "velocity_m_s": [
+          1,
+          0,
+          0
+        ]
+      }
+    ],
+    "duration_s": 5,
+    "samples": 2,
+    "bounds_m": [
+      -4,
+      4,
+      -4,
+      4,
+      -4,
+      4
+    ]
+  },
+  "observations": [
+    {
+      "id": "turn",
+      "type": "trajectory_event",
+      "particle_index": 0,
+      "condition": {
+        "type": "radial_turning",
+        "center_m": [
+          0,
+          0,
+          0
+        ],
+        "extremum": "minimum"
+      },
+      "occurrence": "first",
+      "max_step_s": 0.05,
+      "min_distance_m": 1e-08,
+      "min_radial_acceleration_m_s2": 1e-08,
+      "accuracy": {
+        "time_atol_s": 1e-07,
+        "position_atol_m": 1e-07,
+        "velocity_atol_m_s": 1e-07,
+        "radial_speed_atol_m_s": 1e-08,
+        "rtol": 1e-08
+      }
+    },
+    {
+      "id": "too_close",
+      "type": "trajectory_event",
+      "particle_index": 0,
+      "condition": {
+        "type": "radial_turning",
+        "center_m": [
+          0,
+          0,
+          0
+        ],
+        "extremum": "minimum"
+      },
+      "occurrence": "first",
+      "max_step_s": 0.05,
+      "min_distance_m": 1.1,
+      "min_radial_acceleration_m_s2": 1e-08,
+      "accuracy": {
+        "time_atol_s": 1e-07,
+        "position_atol_m": 1e-07,
+        "velocity_atol_m_s": 1e-07,
+        "radial_speed_atol_m_s": 1e-08,
+        "rtol": 1e-08
+      }
+    },
+    {
+      "id": "too_flat",
+      "type": "trajectory_event",
+      "particle_index": 0,
+      "condition": {
+        "type": "radial_turning",
+        "center_m": [
+          0,
+          0,
+          0
+        ],
+        "extremum": "minimum"
+      },
+      "occurrence": "first",
+      "max_step_s": 0.05,
+      "min_distance_m": 1e-08,
+      "min_radial_acceleration_m_s2": 2.0,
+      "accuracy": {
+        "time_atol_s": 1e-07,
+        "position_atol_m": 1e-07,
+        "velocity_atol_m_s": 1e-07,
+        "radial_speed_atol_m_s": 1e-08,
+        "rtol": 1e-08
+      }
+    },
+    {
+      "id": "already_stationary",
+      "type": "trajectory_event",
+      "particle_index": 1,
+      "condition": {
+        "type": "radial_turning",
+        "center_m": [
+          0,
+          0,
+          0
+        ],
+        "extremum": "minimum"
+      },
+      "occurrence": "first",
+      "max_step_s": 0.05,
+      "min_distance_m": 1e-08,
+      "min_radial_acceleration_m_s2": 1e-08,
+      "accuracy": {
+        "time_atol_s": 1e-07,
+        "position_atol_m": 1e-07,
+        "velocity_atol_m_s": 1e-07,
+        "radial_speed_atol_m_s": 1e-08,
+        "rtol": 1e-08
+      }
+    },
+    {
+      "id": "at_center",
+      "type": "trajectory_event",
+      "particle_index": 2,
+      "condition": {
+        "type": "radial_turning",
+        "center_m": [
+          0,
+          0,
+          0
+        ],
+        "extremum": "minimum"
+      },
+      "occurrence": "first",
+      "max_step_s": 0.05,
+      "min_distance_m": 1e-08,
+      "min_radial_acceleration_m_s2": 1e-08,
+      "accuracy": {
+        "time_atol_s": 1e-07,
+        "position_atol_m": 1e-07,
+        "velocity_atol_m_s": 1e-07,
+        "radial_speed_atol_m_s": 1e-08,
+        "rtol": 1e-08
+      }
+    }
+  ],
+  "notes": "Deliberate local failures; they must not discard the valid flyby. Distance/derivative cutoffs are measurement thresholds, not softened forces."
+}

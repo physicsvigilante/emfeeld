@@ -1,0 +1,116 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "A failed particle does not suppress other measurements",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "point",
+        "charge_C": 1.1126500562018528e-10
+      }
+    ],
+    "particles": [
+      {
+        "mass_kg": 1,
+        "charge_C": 1,
+        "position_m": [
+          0,
+          0,
+          0
+        ],
+        "velocity_m_s": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "mass_kg": 1,
+        "charge_C": 1,
+        "position_m": [
+          2,
+          0,
+          0
+        ],
+        "velocity_m_s": [
+          -1,
+          0,
+          0
+        ]
+      }
+    ],
+    "duration_s": 5,
+    "samples": 2,
+    "bounds_m": [
+      -4,
+      4,
+      -4,
+      4,
+      -4,
+      4
+    ]
+  },
+  "observations": [
+    {
+      "id": "turn",
+      "type": "trajectory_event",
+      "particle_index": 0,
+      "condition": {
+        "type": "radial_turning",
+        "center_m": [
+          0,
+          0,
+          0
+        ],
+        "extremum": "minimum"
+      },
+      "occurrence": "first",
+      "max_step_s": 0.05,
+      "min_distance_m": 1e-08,
+      "min_radial_acceleration_m_s2": 1e-08,
+      "accuracy": {
+        "time_atol_s": 1e-07,
+        "position_atol_m": 1e-07,
+        "velocity_atol_m_s": 1e-07,
+        "radial_speed_atol_m_s": 1e-08,
+        "rtol": 1e-08
+      }
+    },
+    {
+      "id": "valid",
+      "type": "trajectory_event",
+      "particle_index": 1,
+      "condition": {
+        "type": "radial_turning",
+        "center_m": [
+          0,
+          0,
+          0
+        ],
+        "extremum": "minimum"
+      },
+      "occurrence": "first",
+      "max_step_s": 0.05,
+      "min_distance_m": 1e-08,
+      "min_radial_acceleration_m_s2": 1e-08,
+      "accuracy": {
+        "time_atol_s": 1e-07,
+        "position_atol_m": 1e-07,
+        "velocity_atol_m_s": 1e-07,
+        "radial_speed_atol_m_s": 1e-08,
+        "rtol": 1e-08
+      }
+    },
+    {
+      "id": "probe",
+      "type": "potential",
+      "position_m": [
+        1,
+        0,
+        0
+      ]
+    }
+  ],
+  "notes": "Deliberate point-source singular launch. A second, valid particle and static potential remain available."
+}

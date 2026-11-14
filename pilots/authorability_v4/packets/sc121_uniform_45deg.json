@@ -1,0 +1,57 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "SC121 / uniform 400 V/m at 45 degrees",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "uniform",
+        "field_N_C": [
+          282.84271247461896,
+          282.84271247461896,
+          0
+        ],
+        "origin_m": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "bounds_m": [
+      -0.05,
+      0.05,
+      -0.05,
+      0.05,
+      -0.01,
+      0.01
+    ]
+  },
+  "observations": [
+    {
+      "id": "VA_minus_VB",
+      "type": "potential_difference",
+      "from_m": [
+        0.03,
+        0,
+        0
+      ],
+      "to_m": [
+        0,
+        0.02,
+        0
+      ]
+    },
+    {
+      "id": "field_A",
+      "type": "field",
+      "position_m": [
+        0,
+        0.02,
+        0
+      ]
+    }
+  ],
+  "notes": "SC121 PDF p35/book 1.175. Original field 400 V/m at +45deg; A=(0,2 cm),B=(3cm,0). The explicit request gives V_A minus V_B."
+}

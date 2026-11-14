@@ -1,0 +1,55 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "SC43 nonexistent inverse query",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "point",
+        "charge_C": 0.000004,
+        "center_m": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": 0.000009,
+        "center_m": [
+          0.2,
+          0,
+          0
+        ]
+      }
+    ],
+    "bounds_m": [
+      -0.2,
+      0.4,
+      -0.2,
+      0.2,
+      -0.2,
+      0.2
+    ]
+  },
+  "observations": [
+    {
+      "id": "solve_E_zero",
+      "type": "field_zero_location",
+      "search_segment": {
+        "from_m": [
+          0,
+          0,
+          0
+        ],
+        "to_m": [
+          0.2,
+          0,
+          0
+        ]
+      }
+    }
+  ],
+  "notes": "SC43 PDF p26/book 1.166. Unsupported native inverse observation, separate from supported authored candidate probe."
+}

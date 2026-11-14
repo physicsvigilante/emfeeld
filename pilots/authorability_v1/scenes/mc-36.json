@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "title": "MC-36 | inclined classical test-charge ellipse in a fixed Coulomb field",
+  "kind": "electric",
+  "sources": [
+    {
+      "type": "point",
+      "charge_C": 1e-09,
+      "center_m": [
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "bounds_m": [
+    -2,
+    2,
+    -2,
+    2,
+    -2,
+    2
+  ],
+  "particles": [
+    {
+      "charge_C": -1e-06,
+      "mass_kg": 0.001,
+      "position_m": [
+        0.5,
+        0,
+        0
+      ],
+      "velocity_m_s": [
+        0,
+        0.1422040488835824,
+        0.08210154590279098
+      ]
+    }
+  ],
+  "duration_s": 66.27643892534398,
+  "samples": 2001
+}

@@ -1,0 +1,75 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "SC68 charges balanced against gravity",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "point",
+        "charge_C": 0.000001,
+        "center_m": [
+          -0.5,
+          -0.5,
+          0
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": 0.000001,
+        "center_m": [
+          -0.5,
+          0.5,
+          0
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": 0.000001,
+        "center_m": [
+          0.5,
+          -0.5,
+          0
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": 0.000001,
+        "center_m": [
+          0.5,
+          0.5,
+          0
+        ]
+      },
+      {
+        "type": "uniform_gravity",
+        "field_m_s2": [
+          0,
+          0,
+          -9.8
+        ]
+      }
+    ],
+    "bounds_m": [
+      -1,
+      1,
+      -1,
+      1,
+      -1,
+      1
+    ]
+  },
+  "observations": [
+    {
+      "id": "net_force_on_test_charge",
+      "type": "force",
+      "position_m": [
+        0,
+        0,
+        0.5
+      ],
+      "test_charge_C": 0.000001
+    }
+  ],
+  "notes": "Single Correct Q68 PDF p29/book 1.169. Unsupported joint electric and gravitational force on one test mass; no false electric-only replacement."
+}

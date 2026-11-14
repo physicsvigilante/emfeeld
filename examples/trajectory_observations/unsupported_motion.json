@@ -1,0 +1,10 @@
+{
+  "observation_schema_version": 1,
+  "scene": {"schema_version": 1, "title": "Unqualified shell trajectory with valid static probes", "kind": "electric", "sources": [{"type": "shell", "charge_C": 1e-09, "radius_m": 1}], "particles": [{"mass_kg": 1, "charge_C": 1, "position_m": [0, 0, 0], "velocity_m_s": [0, 0, 0]}], "duration_s": 2, "samples": 9, "bounds_m": [-1, 3, -1, 1, -1, 1]},
+  "observations": [
+    {"id": "not_qualified", "type": "trajectory_sample", "particle_index": 0, "quantity": "speed", "sample_index": 0},
+    {"id": "valid_potential", "type": "potential", "position_m": [1, 0, 0]},
+    {"id": "valid_field", "type": "field", "position_m": [2, 0, 0]}
+  ],
+  "notes": "No shell crossing support added, including at initial sample. The continuous potential and valid exterior field still return."
+}

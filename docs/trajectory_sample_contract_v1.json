@@ -1,0 +1,124 @@
+{
+  "contract": "emfeeld.trajectory_samples",
+  "version": 1,
+  "observation_schema_version": 1,
+  "type": "trajectory_sample",
+  "entrypoint": "python -m emfeeld.observations PACKET.json --output RESULT.json",
+  "required": [
+    "id",
+    "type",
+    "particle_index",
+    "quantity"
+  ],
+  "optional": [
+    "expectation"
+  ],
+  "particle_index": "zero-based index in the embedded scene.particles; not a source index",
+  "quantities": {
+    "time": {
+      "shape": [],
+      "unit": "s"
+    },
+    "position": {
+      "shape": [
+        3
+      ],
+      "unit": "m"
+    },
+    "velocity": {
+      "shape": [
+        3
+      ],
+      "unit": "m/s"
+    },
+    "speed": {
+      "shape": [],
+      "unit": "m/s"
+    },
+    "kinetic_energy": {
+      "shape": [],
+      "unit": "J"
+    },
+    "potential_energy": {
+      "shape": [],
+      "unit": "J"
+    },
+    "total_energy": {
+      "shape": [],
+      "unit": "J"
+    }
+  },
+  "selectors": {
+    "index": {
+      "required": [
+        "sample_index"
+      ],
+      "range": "0 through scene.samples-1"
+    },
+    "exact": {
+      "required": [
+        "time_s",
+        "time_selection"
+      ],
+      "time_selection": "exact",
+      "matching": "exact equality to stored float64 grid time"
+    },
+    "nearest": {
+      "required": [
+        "time_s",
+        "time_selection",
+        "max_time_error_s"
+      ],
+      "time_selection": "nearest",
+      "max_time_error_s": "finite nonnegative seconds",
+      "ties": "earlier saved sample"
+    }
+  },
+  "selector_rule": "exactly one selector; time must be within simulated interval; no clamping or observation-layer interpolation",
+  "saved_grid": "numpy.linspace(0, scene.duration_s, scene.samples)",
+  "success_metadata": [
+    "particle_index",
+    "particle_reference",
+    "selection",
+    "sample_index",
+    "time_s",
+    "time_offset_s",
+    "diagnostics_key",
+    "unit",
+    "method",
+    "error_bound"
+  ],
+  "time_offset_s": "actual minus requested, or null for index selection",
+  "result_statuses": [
+    "ok",
+    "selection_error",
+    "unsupported_trajectory",
+    "domain_error",
+    "numerical_error",
+    "integration_error"
+  ],
+  "failure_value": null,
+  "error_bound": null,
+  "solver": {
+    "method": "DOP853",
+    "rtol": 1e-10,
+    "position_atol_m": 1e-09,
+    "velocity_atol_m_s": 1e-09,
+    "max_step_s": "duration_s / 200"
+  },
+  "cache": "one integration attempt per selected particle per packet; failures cached; unrequested particles never integrated",
+  "diagnostics": "trajectory_runs keyed by particle index; energy drift is not a global error bound",
+  "expectation": "same exact-shape authored-reference check as static observations; applies to actual selected sample",
+  "not_implemented": [
+    "event_detection",
+    "crossings",
+    "turning_points",
+    "closest_approach",
+    "collision_handling",
+    "NPZ_reuse",
+    "shell_plane_trajectories",
+    "mixed_electric_gravity",
+    "flux_qualification"
+  ],
+  "schema_note": "Descriptive contract, not a JSON Schema validator; runtime validation is authoritative."
+}

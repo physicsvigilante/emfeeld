@@ -1,0 +1,151 @@
+{
+  "source_pdf": "01_emfields.pdf",
+  "benchmark_name": "LLM authorability pilot v1",
+  "engine_policy": "No changes to core sources, source laws, viewer, scene validator or dynamics. Only authored model JSON and separate analysis allowed.",
+  "cases": [
+    {
+      "order": 1,
+      "id": "SC-55",
+      "section": "Single Correct Choice Q55",
+      "pdf_page_start": 27,
+      "pdf_page_end": 27,
+      "printed_page": "1.167",
+      "description": "Vector electrostatic force for two charges at distinct xy-plane coordinates (in 3D space).",
+      "required_components": "PointSource + numerical qE",
+      "reference_target": "Test coordinate-vector interpretation and SI units.",
+      "qualification": "Compute force from test charge times E; not a separate built-in force query."
+    },
+    {
+      "order": 2,
+      "id": "SC-35",
+      "section": "Single Correct Choice Q35",
+      "pdf_page_start": 25,
+      "pdf_page_end": 25,
+      "printed_page": "1.165",
+      "description": "Superpose three infinite uniformly charged sheets and evaluate the field at P.",
+      "required_components": "Three InfinitePlane sources",
+      "reference_target": "LLM authors signed densities, heights and field direction.",
+      "qualification": "Field undefined on ideal sheets; field-only scene."
+    },
+    {
+      "order": 3,
+      "id": "SC-96",
+      "section": "Single Correct Choice Q96",
+      "pdf_page_start": 32,
+      "pdf_page_end": 32,
+      "printed_page": "1.172",
+      "description": "Four positive/negative corner charges; compute both V and E at square centre.",
+      "required_components": "Four PointSource objects",
+      "reference_target": "Test simultaneous scalar cancellation and vector addition.",
+      "qualification": "—"
+    },
+    {
+      "order": 4,
+      "id": "SC-122",
+      "section": "Single Correct Choice Q122",
+      "pdf_page_start": 35,
+      "pdf_page_end": 35,
+      "printed_page": "1.175",
+      "description": "Two concentric shells carry charge with equal surface densities; potential at common centre.",
+      "required_components": "Two SphericalShell objects",
+      "reference_target": "Derive individual Q from equal sigma and total Q, then calculate centre V.",
+      "qualification": "—"
+    },
+    {
+      "order": 5,
+      "id": "MC-33",
+      "section": "Multiple Correct Choice Q33",
+      "pdf_page_start": 48,
+      "pdf_page_end": 48,
+      "printed_page": "1.188",
+      "description": "Four equal point charges on cardinal axes; V and E along the perpendicular z-axis.",
+      "required_components": "Four PointSource objects",
+      "reference_target": "Test 3D axial sampling, symmetry, zero field at centre.",
+      "qualification": "—"
+    },
+    {
+      "order": 6,
+      "id": "SC-158",
+      "section": "Single Correct Choice Q158",
+      "pdf_page_start": 40,
+      "pdf_page_end": 40,
+      "printed_page": "1.180",
+      "description": "An offset infinite line charge passes through a spherical Gaussian surface; compute net flux.",
+      "required_components": "InfiniteLine + sphere_flux",
+      "reference_target": "Compare quadrature with enclosed line length and Gauss law.",
+      "qualification": "Increase quadrature/convergence checks near off-axis line; do not sample line singularity."
+    },
+    {
+      "order": 7,
+      "id": "SC-99",
+      "section": "Single Correct Choice Q99",
+      "pdf_page_start": 32,
+      "pdf_page_end": 32,
+      "printed_page": "1.172",
+      "description": "Negatively charged particle projected across a uniform downward electric field.",
+      "required_components": "UniformField + Particle",
+      "reference_target": "Compare 3D numerical trajectory, displacement and kinetic energy with parabola.",
+      "qualification": "—"
+    },
+    {
+      "order": 8,
+      "id": "SC-28",
+      "section": "Single Correct Choice Q28",
+      "pdf_page_start": 24,
+      "pdf_page_end": 24,
+      "printed_page": "1.164",
+      "description": "Negative test charge released on perpendicular bisector of two identical positive charges.",
+      "required_components": "Two PointSource objects + Particle",
+      "reference_target": "Simulate symmetric motion and verify energy at the midpoint.",
+      "qualification": "Assume fixed source charges; compare crossing speed from potential."
+    },
+    {
+      "order": 9,
+      "id": "SOL-26",
+      "section": "Solved Problem 26",
+      "pdf_page_start": 18,
+      "pdf_page_end": 19,
+      "printed_page": "1.158",
+      "description": "Unequal fixed point charges create a zero-potential circle; examine a released test charge.",
+      "required_components": "Two fixed PointSource objects + one Particle",
+      "reference_target": "Check zero-potential locus in a plane and the crossing speed.",
+      "qualification": "3D locus is a sphere; viewer does not yet draw equipotential isosurfaces. Exact crossing requires authored postprocessing."
+    },
+    {
+      "order": 10,
+      "id": "NUM-31",
+      "section": "Integer/Numerical Q31",
+      "pdf_page_start": 71,
+      "pdf_page_end": 71,
+      "printed_page": "1.211",
+      "description": "Potential at a point near a uniformly charged solid sphere with an eccentric cavity.",
+      "required_components": "Positive and density-matched negative SolidSphere",
+      "reference_target": "Verify subtractive charge-volume composition and potential at P.",
+      "qualification": "—"
+    },
+    {
+      "order": 11,
+      "id": "ARCH-ADV-MC-05",
+      "section": "Archive JEE Advanced, Multiple Correct 2013 Q5",
+      "pdf_page_start": 87,
+      "pdf_page_end": 87,
+      "printed_page": "1.227",
+      "description": "Partly overlapping uniformly charged spheres of opposite volume charge densities.",
+      "required_components": "Two overlapping SolidSphere sources of opposite strengths",
+      "reference_target": "Test unfamiliar overlapping distribution and field in overlap.",
+      "qualification": "Net densities add algebraically in the overlapped volume; no conductor model."
+    },
+    {
+      "order": 12,
+      "id": "MC-36",
+      "section": "Multiple Correct Choice Q36",
+      "pdf_page_start": 48,
+      "pdf_page_end": 48,
+      "printed_page": "1.188",
+      "description": "A test charge follows an elliptical Coulomb orbit about fixed opposite charge.",
+      "required_components": "PointSource + Particle",
+      "reference_target": "Reuse the same inverse-square orbital integrator as ideal-Sun gravity.",
+      "qualification": "Choose representative bound initial conditions; angular momentum and energy postprocessing."
+    }
+  ]
+}

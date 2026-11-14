@@ -1,0 +1,31 @@
+{
+  "observation_schema_version": 1,
+  "scene": {"schema_version": 1, "title": "Fixed ideal Sun with two independent test planets", "kind": "gravity", "sources": [{"type": "point", "mass_kg": 1.98847e+30}], "particles": [{"mass_kg": 1, "position_m": [149597870700.0, 0, 0], "velocity_m_s": [0, 29785.142169221024, 0]}, {"mass_kg": 1, "position_m": [224396806050.0, 0, 0], "velocity_m_s": [0, 17023.626720530643, 9727.786697446081]}], "duration_s": 31557718.872965656, "samples": 1001, "bounds_m": [-299195741400.0, 299195741400.0, -299195741400.0, 299195741400.0, -299195741400.0, 299195741400.0]},
+  "observations": [
+    {"id": "p0_position_0", "type": "trajectory_sample", "particle_index": 0, "quantity": "position", "sample_index": 0, "expectation": {"value": [149597870700.0, 0.0, 0.0], "atol": 0.02, "rtol": 2e-09}},
+    {"id": "p0_velocity_0", "type": "trajectory_sample", "particle_index": 0, "quantity": "velocity", "sample_index": 0, "expectation": {"value": [0.0, 29785.142169221024, 0.0], "atol": 1e-07, "rtol": 2e-09}},
+    {"id": "p0_speed_0", "type": "trajectory_sample", "particle_index": 0, "quantity": "speed", "sample_index": 0, "expectation": {"value": 29785.142169221024, "atol": 1e-07, "rtol": 2e-09}},
+    {"id": "p0_total_energy_0", "type": "trajectory_sample", "particle_index": 0, "quantity": "total_energy", "sample_index": 0, "expectation": {"value": -443577347.0203543, "atol": 0.0001, "rtol": 2e-09}},
+    {"id": "p0_position_500", "type": "trajectory_sample", "particle_index": 0, "quantity": "position", "sample_index": 500, "expectation": {"value": [-149597870700.0, 1.832045535120146e-05, 0.0], "atol": 0.02, "rtol": 2e-09}},
+    {"id": "p0_velocity_500", "type": "trajectory_sample", "particle_index": 0, "quantity": "velocity", "sample_index": 500, "expectation": {"value": [-3.647627901968538e-12, -29785.142169221024, -0.0], "atol": 1e-07, "rtol": 2e-09}},
+    {"id": "p0_speed_500", "type": "trajectory_sample", "particle_index": 0, "quantity": "speed", "sample_index": 500, "expectation": {"value": 29785.142169221024, "atol": 1e-07, "rtol": 2e-09}},
+    {"id": "p0_total_energy_500", "type": "trajectory_sample", "particle_index": 0, "quantity": "total_energy", "sample_index": 500, "expectation": {"value": -443577347.0203543, "atol": 0.0001, "rtol": 2e-09}},
+    {"id": "p0_position_1000", "type": "trajectory_sample", "particle_index": 0, "quantity": "position", "sample_index": 1000, "expectation": {"value": [149597870700.0, -3.664091070240292e-05, 0.0], "atol": 0.02, "rtol": 2e-09}},
+    {"id": "p0_velocity_1000", "type": "trajectory_sample", "particle_index": 0, "quantity": "velocity", "sample_index": 1000, "expectation": {"value": [7.295255803937076e-12, 29785.142169221024, 0.0], "atol": 1e-07, "rtol": 2e-09}},
+    {"id": "p0_speed_1000", "type": "trajectory_sample", "particle_index": 0, "quantity": "speed", "sample_index": 1000, "expectation": {"value": 29785.142169221024, "atol": 1e-07, "rtol": 2e-09}},
+    {"id": "p0_total_energy_1000", "type": "trajectory_sample", "particle_index": 0, "quantity": "total_energy", "sample_index": 1000, "expectation": {"value": -443577347.0203543, "atol": 0.0001, "rtol": 2e-09}},
+    {"id": "p1_position_0", "type": "trajectory_sample", "particle_index": 1, "quantity": "position", "sample_index": 0, "expectation": {"value": [224396806050.0, -1.6556124309699292e-05, -9.460642462685309e-06], "atol": 0.02, "rtol": 2e-09}},
+    {"id": "p1_velocity_0", "type": "trajectory_sample", "particle_index": 1, "quantity": "velocity", "sample_index": 0, "expectation": {"value": [2.5632916060004362e-12, 17023.626720530643, 9727.786697446081], "atol": 1e-07, "rtol": 2e-09}},
+    {"id": "p1_speed_0", "type": "trajectory_sample", "particle_index": 1, "quantity": "speed", "sample_index": 0, "expectation": {"value": 19606.980918820056, "atol": 1e-07, "rtol": 2e-09}},
+    {"id": "p1_total_energy_0", "type": "trajectory_sample", "particle_index": 1, "quantity": "total_energy", "sample_index": 0, "expectation": {"value": -399219612.3183187, "atol": 0.0001, "rtol": 2e-09}},
+    {"id": "p1_position_500", "type": "trajectory_sample", "particle_index": 1, "quantity": "position", "sample_index": 500, "expectation": {"value": [-71167047249.17075, 84910551022.59288, 48520314870.05307], "atol": 0.02, "rtol": 2e-09}},
+    {"id": "p1_velocity_500", "type": "trajectory_sample", "particle_index": 1, "quantity": "velocity", "sample_index": 500, "expectation": {"value": [-24390.109085308337, -24576.9626413749, -14043.978652214226], "atol": 1e-07, "rtol": 2e-09}},
+    {"id": "p1_speed_500", "type": "trajectory_sample", "particle_index": 1, "quantity": "speed", "sample_index": 500, "expectation": {"value": 37364.92807771249, "atol": 1e-07, "rtol": 2e-09}},
+    {"id": "p1_total_energy_500", "type": "trajectory_sample", "particle_index": 1, "quantity": "total_energy", "sample_index": 500, "expectation": {"value": -399219612.31831896, "atol": 0.0001, "rtol": 2e-09}},
+    {"id": "p1_position_1000", "type": "trajectory_sample", "particle_index": 1, "quantity": "position", "sample_index": 1000, "expectation": {"value": [185895330406.80396, -86523016939.0187, -49441723965.15354], "atol": 0.02, "rtol": 2e-09}},
+    {"id": "p1_velocity_1000", "type": "trajectory_sample", "particle_index": 1, "quantity": "velocity", "sample_index": 1000, "expectation": {"value": [14251.718782644255, 13916.14169206139, 7952.080966892222], "atol": 1e-07, "rtol": 2e-09}},
+    {"id": "p1_speed_1000", "type": "trajectory_sample", "particle_index": 1, "quantity": "speed", "sample_index": 1000, "expectation": {"value": 21447.752319464944, "atol": 1e-07, "rtol": 2e-09}},
+    {"id": "p1_total_energy_1000", "type": "trajectory_sample", "particle_index": 1, "quantity": "total_energy", "sample_index": 1000, "expectation": {"value": -399219612.3183187, "atol": 0.0001, "rtol": 2e-09}}
+  ],
+  "notes": "Unchanged illustrative fixed-Sun scene, not an ephemeris. Both independent particles measured; no mutual interaction. References: Kepler equations."
+}

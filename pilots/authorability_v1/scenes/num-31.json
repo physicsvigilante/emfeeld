@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "title": "NUM-31 | cavity via density subtraction (primitive shapes, not a void mesh)",
+  "kind": "electric",
+  "sources": [
+    {
+      "type": "solid_sphere",
+      "charge_C": 1.666666666666667e-10,
+      "center_m": [
+        0,
+        0,
+        0
+      ],
+      "radius_m": 0.05
+    },
+    {
+      "type": "solid_sphere",
+      "charge_C": -1.3333333333333336e-12,
+      "center_m": [
+        0,
+        0.03,
+        0
+      ],
+      "radius_m": 0.01
+    }
+  ],
+  "bounds_m": [
+    -0.065,
+    0.065,
+    -0.065,
+    0.065,
+    -0.065,
+    0.065
+  ]
+}

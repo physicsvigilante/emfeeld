@@ -1,0 +1,30 @@
+{
+  "description": "Descriptive authoring contract, not a complete JSON Schema. Parser validation remains authoritative.",
+  "version": 1,
+  "extends": "turning_event_contract_v1.json",
+  "observation_schema_version": 1,
+  "condition_type": "radial_turning",
+  "optional_request_key": {
+    "initial_policy": "exclude_rest_launch"
+  },
+  "omitted_policy": "Retain original turning contract and initial-stationarity rejection.",
+  "eligibility": [
+    "Every authored initial velocity component equals exactly zero.",
+    "Initial separation exceeds min_distance_m plus coordinate uncertainty.",
+    "Initial coordinate uncertainty is within position_atol_m.",
+    "Absolute initial radial acceleration exceeds min_radial_acceleration_m_s2 plus arithmetic allowance."
+  ],
+  "root": {
+    "positive_time": "dot(position-center,velocity)/(initial_distance*time)",
+    "zero_time_limit": "initial radial acceleration",
+    "units": "m/s^2",
+    "initial_state_changed": false,
+    "skipped_interval_s": 0
+  },
+  "positive_time_semantics": "First detected local minimum/maximum/either, subject to original turning thresholds and numerical refinement; no global result.",
+  "centre_policy": "A defined-field transit can precede a later maximum. A detected centre root is rejected; source singularities remain unqualified.",
+  "failure_policy": "Local typed failures preserve unrelated observations; schema errors precede all physics.",
+  "numerical_policy": "Two terminal DOP853 solves starting at t=0, second with half cap and tenfold tighter tolerances; no retries or completeness claim.",
+  "test_scope": "Electric/gravity, exact rest, oblique geometry, composed sources, SC-28 unchanged rest state with an explicitly longer horizon.",
+  "examples": "examples/rest_turning/manifest.json"
+}

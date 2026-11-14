@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "title": "Two prescribed spheres and a uniform electric field",
+  "kind": "electric",
+  "sources": [
+    {
+      "type": "solid_sphere",
+      "charge_C": 1e-09,
+      "center_m": [
+        -1,
+        0,
+        0
+      ],
+      "radius_m": 0.4
+    },
+    {
+      "type": "solid_sphere",
+      "charge_C": -1e-09,
+      "center_m": [
+        1,
+        0,
+        0
+      ],
+      "radius_m": 0.4
+    },
+    {
+      "type": "uniform",
+      "field_N_C": [
+        0,
+        0,
+        0.25
+      ]
+    }
+  ],
+  "particles": [
+    {
+      "mass_kg": 0.001,
+      "charge_C": -1e-06,
+      "position_m": [
+        0,
+        1,
+        0
+      ],
+      "velocity_m_s": [
+        0.01,
+        0,
+        0.01
+      ]
+    }
+  ],
+  "duration_s": 25,
+  "samples": 401,
+  "bounds_m": [
+    -3,
+    3,
+    -3,
+    3,
+    -3,
+    3
+  ]
+}

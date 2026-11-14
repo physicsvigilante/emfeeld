@@ -1,0 +1,289 @@
+{
+  "protocol": "rest-launch v1",
+  "reference_basis": "Separate same-author harmonic, constant-acceleration and SC-28 energy quadrature calculations; not an independent review.",
+  "sc28_quarter_time_s": 27.320139193856047,
+  "sc28_quadrature_error_estimate_s": 3.03314475689781e-13,
+  "packets": [
+    {
+      "file": "gravity_composition.json",
+      "expected_results": [
+        {
+          "id": "p0_minimum",
+          "status": "ok",
+          "state": {
+            "time_s": 3.141592653589793,
+            "position_m": [
+              1,
+              0,
+              0
+            ],
+            "velocity_m_s": [
+              0,
+              0,
+              0
+            ],
+            "speed_m_s": 0,
+            "distance_m": 1,
+            "radial_acceleration_m_s2": 1,
+            "kinetic_J": 0,
+            "potential_J": -151,
+            "total_energy_J": -151
+          },
+          "atol": 1e-07,
+          "rtol": 1e-08
+        },
+        {
+          "id": "p0_maximum",
+          "status": "ok",
+          "state": {
+            "time_s": 6.283185307179586,
+            "position_m": [
+              3,
+              0,
+              0
+            ],
+            "velocity_m_s": [
+              0,
+              0,
+              0
+            ],
+            "speed_m_s": 0,
+            "distance_m": 3,
+            "radial_acceleration_m_s2": -1,
+            "kinetic_J": 0,
+            "potential_J": -151,
+            "total_energy_J": -151
+          },
+          "atol": 1e-07,
+          "rtol": 1e-08
+        },
+        {
+          "id": "p1_minimum",
+          "status": "ok",
+          "state": {
+            "time_s": 3.141592653589793,
+            "position_m": [
+              1,
+              0,
+              0
+            ],
+            "velocity_m_s": [
+              0,
+              0,
+              0
+            ],
+            "speed_m_s": 0,
+            "distance_m": 1,
+            "radial_acceleration_m_s2": 1,
+            "kinetic_J": 0,
+            "potential_J": -453,
+            "total_energy_J": -453
+          },
+          "atol": 1e-07,
+          "rtol": 1e-08
+        },
+        {
+          "id": "p1_maximum",
+          "status": "ok",
+          "state": {
+            "time_s": 6.283185307179586,
+            "position_m": [
+              3,
+              0,
+              0
+            ],
+            "velocity_m_s": [
+              0,
+              0,
+              0
+            ],
+            "speed_m_s": 0,
+            "distance_m": 3,
+            "radial_acceleration_m_s2": -1,
+            "kinetic_J": 0,
+            "potential_J": -453,
+            "total_energy_J": -453
+          },
+          "atol": 1e-07,
+          "rtol": 1e-08
+        },
+        {
+          "id": "initial_speed",
+          "status": "ok",
+          "value": 0,
+          "unit": "m/s"
+        },
+        {
+          "id": "potential",
+          "status": "ok",
+          "value": -151.0,
+          "unit": "J/kg"
+        }
+      ],
+      "cli_exit": 0
+    },
+    {
+      "file": "electric_initial_minimum.json",
+      "expected_results": [
+        {
+          "id": "later",
+          "status": "ok",
+          "state": {
+            "time_s": 3.141592653589793,
+            "distance_m": 3,
+            "speed_m_s": 0,
+            "radial_acceleration_m_s2": -1
+          },
+          "atol": 1e-07,
+          "rtol": 1e-08
+        }
+      ],
+      "cli_exit": 0
+    },
+    {
+      "file": "nonstopping_minimum.json",
+      "expected_results": [
+        {
+          "id": "later",
+          "status": "ok",
+          "state": {
+            "time_s": 2,
+            "position_m": [
+              0,
+              1,
+              0
+            ],
+            "velocity_m_s": [
+              2,
+              0,
+              0
+            ],
+            "speed_m_s": 2,
+            "distance_m": 1,
+            "kinetic_J": 2,
+            "potential_J": 0,
+            "total_energy_J": 2,
+            "radial_acceleration_m_s2": 4
+          },
+          "atol": 1e-07,
+          "rtol": 1e-08
+        }
+      ],
+      "cli_exit": 0
+    },
+    {
+      "file": "sc28_original_horizon.json",
+      "expected_results": [
+        {
+          "id": "future_maximum",
+          "status": "no_event"
+        },
+        {
+          "id": "valid_V",
+          "status": "ok"
+        }
+      ],
+      "cli_exit": 0
+    },
+    {
+      "file": "sc28_later_maximum.json",
+      "expected_results": [
+        {
+          "id": "future_maximum",
+          "status": "ok",
+          "state": {
+            "time_s": 54.640278387712094,
+            "position_m": [
+              0,
+              -1.7320508075688772,
+              0
+            ],
+            "velocity_m_s": [
+              0,
+              0,
+              0
+            ],
+            "distance_m": 1.7320508075688772,
+            "speed_m_s": 0
+          },
+          "atol": 1e-07,
+          "rtol": 1e-08,
+          "atols": {
+            "time_s": 1e-05
+          }
+        },
+        {
+          "id": "valid_V",
+          "status": "ok"
+        }
+      ],
+      "cli_exit": 0
+    },
+    {
+      "file": "sc28_centre_rejection.json",
+      "expected_results": [
+        {
+          "id": "centre_minimum",
+          "status": "ambiguous_event"
+        },
+        {
+          "id": "valid_V",
+          "status": "ok"
+        }
+      ],
+      "cli_exit": 1
+    },
+    {
+      "file": "no_later_turn.json",
+      "expected_results": [
+        {
+          "id": "later",
+          "status": "no_event"
+        }
+      ],
+      "cli_exit": 0
+    },
+    {
+      "file": "selection_cases.json",
+      "expected_results": [
+        {
+          "id": "equilibrium",
+          "status": "initial_condition_error"
+        },
+        {
+          "id": "nonzero_velocity",
+          "status": "initial_condition_error"
+        },
+        {
+          "id": "centre_launch",
+          "status": "initial_condition_error"
+        },
+        {
+          "id": "valid_rest",
+          "status": "ok",
+          "state": {
+            "time_s": 3.141592653589793,
+            "distance_m": 1
+          },
+          "atol": 1e-07,
+          "rtol": 1e-08
+        }
+      ],
+      "cli_exit": 1
+    },
+    {
+      "file": "source_failure.json",
+      "expected_results": [
+        {
+          "id": "later",
+          "status": "domain_error"
+        },
+        {
+          "id": "probe",
+          "status": "ok"
+        }
+      ],
+      "cli_exit": 1
+    }
+  ]
+}

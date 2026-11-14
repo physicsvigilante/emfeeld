@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "title": "SC-35 | three prescribed sheets; P between z=0 and z=3a",
+  "kind": "electric",
+  "sources": [
+    {
+      "type": "plane",
+      "charge_per_m2_C_m2": 1e-09,
+      "center_m": [
+        0,
+        0,
+        3.0
+      ],
+      "normal": [
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "type": "plane",
+      "charge_per_m2_C_m2": -2e-09,
+      "center_m": [
+        0,
+        0,
+        0
+      ],
+      "normal": [
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "type": "plane",
+      "charge_per_m2_C_m2": -1e-09,
+      "center_m": [
+        0,
+        0,
+        -1.0
+      ],
+      "normal": [
+        0,
+        0,
+        1
+      ]
+    }
+  ],
+  "bounds_m": [
+    -3,
+    3,
+    -3,
+    3,
+    -2,
+    4
+  ]
+}

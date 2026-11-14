@@ -1,0 +1,93 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "Illustrative electric rest launch from an initial distance minimum",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "solid_sphere",
+        "charge_C": -5.563250281009264e-08,
+        "radius_m": 10.0,
+        "center_m": [
+          1.0,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "solid_sphere",
+        "charge_C": -5.563250281009264e-08,
+        "radius_m": 10.0,
+        "center_m": [
+          3.0,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "uniform",
+        "field_N_C": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "particles": [
+      {
+        "mass_kg": 1.0,
+        "charge_C": 1.0,
+        "position_m": [
+          1,
+          0,
+          0
+        ],
+        "velocity_m_s": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    ],
+    "duration_s": 7.0,
+    "samples": 2,
+    "bounds_m": [
+      -10,
+      10,
+      -10,
+      10,
+      -10,
+      10
+    ]
+  },
+  "observations": [
+    {
+      "id": "later",
+      "type": "trajectory_event",
+      "particle_index": 0,
+      "condition": {
+        "type": "radial_turning",
+        "center_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "extremum": "maximum"
+      },
+      "initial_policy": "exclude_rest_launch",
+      "occurrence": "first",
+      "max_step_s": 0.05,
+      "min_distance_m": 1e-08,
+      "min_radial_acceleration_m_s2": 1e-08,
+      "accuracy": {
+        "time_atol_s": 1e-07,
+        "position_atol_m": 1e-07,
+        "velocity_atol_m_s": 1e-07,
+        "radial_speed_atol_m_s": 1e-08,
+        "rtol": 1e-08
+      }
+    }
+  ],
+  "notes": "Illustrative zero-speed launch at x=1 m. Initial minimum excluded, later maximum measured. No starting state nudge."
+}

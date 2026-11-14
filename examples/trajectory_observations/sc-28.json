@@ -1,0 +1,22 @@
+{
+  "observation_schema_version": 1,
+  "scene": {"schema_version": 1, "title": "SC-28 | negative test charge released above two fixed positive charges", "kind": "electric", "sources": [{"type": "point", "charge_C": 1e-09, "center_m": [-1.0, 0, 0]}, {"type": "point", "charge_C": 1e-09, "center_m": [1.0, 0, 0]}], "bounds_m": [-2.2, 2.2, -2.2, 2.2, -2.2, 2.2], "particles": [{"charge_C": -1e-06, "mass_kg": 0.001, "position_m": [0, 1.7320508075688772, 0], "velocity_m_s": [0, 0, 0]}], "duration_s": 40, "samples": 4001},
+  "observations": [
+    {"id": "p0_position_0", "type": "trajectory_sample", "particle_index": 0, "quantity": "position", "sample_index": 0},
+    {"id": "p0_speed_0", "type": "trajectory_sample", "particle_index": 0, "quantity": "speed", "sample_index": 0},
+    {"id": "p0_kinetic_energy_0", "type": "trajectory_sample", "particle_index": 0, "quantity": "kinetic_energy", "sample_index": 0},
+    {"id": "p0_potential_energy_0", "type": "trajectory_sample", "particle_index": 0, "quantity": "potential_energy", "sample_index": 0},
+    {"id": "p0_total_energy_0", "type": "trajectory_sample", "particle_index": 0, "quantity": "total_energy", "sample_index": 0},
+    {"id": "p0_position_2000", "type": "trajectory_sample", "particle_index": 0, "quantity": "position", "sample_index": 2000},
+    {"id": "p0_speed_2000", "type": "trajectory_sample", "particle_index": 0, "quantity": "speed", "sample_index": 2000},
+    {"id": "p0_kinetic_energy_2000", "type": "trajectory_sample", "particle_index": 0, "quantity": "kinetic_energy", "sample_index": 2000},
+    {"id": "p0_potential_energy_2000", "type": "trajectory_sample", "particle_index": 0, "quantity": "potential_energy", "sample_index": 2000},
+    {"id": "p0_total_energy_2000", "type": "trajectory_sample", "particle_index": 0, "quantity": "total_energy", "sample_index": 2000},
+    {"id": "p0_position_4000", "type": "trajectory_sample", "particle_index": 0, "quantity": "position", "sample_index": 4000},
+    {"id": "p0_speed_4000", "type": "trajectory_sample", "particle_index": 0, "quantity": "speed", "sample_index": 4000},
+    {"id": "p0_kinetic_energy_4000", "type": "trajectory_sample", "particle_index": 0, "quantity": "kinetic_energy", "sample_index": 4000},
+    {"id": "p0_potential_energy_4000", "type": "trajectory_sample", "particle_index": 0, "quantity": "potential_energy", "sample_index": 4000},
+    {"id": "p0_total_energy_4000", "type": "trajectory_sample", "particle_index": 0, "quantity": "total_energy", "sample_index": 4000}
+  ],
+  "notes": "Unchanged pilot numerical instantiation. Requests are saved times only, NOT the crossing/turning result. Extraction compared against the existing native trajectory arrays; pilot reference results are preserved."
+}

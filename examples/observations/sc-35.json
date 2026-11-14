@@ -1,0 +1,81 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "SC-35 | three prescribed sheets; P between z=0 and z=3a",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "plane",
+        "charge_per_m2_C_m2": 1e-09,
+        "center_m": [
+          0,
+          0,
+          3.0
+        ],
+        "normal": [
+          0,
+          0,
+          1
+        ]
+      },
+      {
+        "type": "plane",
+        "charge_per_m2_C_m2": -2e-09,
+        "center_m": [
+          0,
+          0,
+          0
+        ],
+        "normal": [
+          0,
+          0,
+          1
+        ]
+      },
+      {
+        "type": "plane",
+        "charge_per_m2_C_m2": -1e-09,
+        "center_m": [
+          0,
+          0,
+          -1.0
+        ],
+        "normal": [
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "bounds_m": [
+      -3,
+      3,
+      -3,
+      3,
+      -2,
+      4
+    ]
+  },
+  "observations": [
+    {
+      "id": "field_at_P",
+      "type": "field",
+      "position_m": [
+        0,
+        0,
+        1.5
+      ],
+      "expectation": {
+        "value": [
+          0,
+          0,
+          -225.88181332153604
+        ],
+        "atol": 1e-12,
+        "rtol": 1e-11
+      }
+    }
+  ],
+  "notes": "Reuses the immutable authorability-v1 scene for SC-35. Reference: signed half-space contributions of the three sheets give E_z=-2*sigma/epsilon_0. Representative a=1 m, sigma=1 nC/m^2. Numerical choices/provenance remain in pilots/authorability_v1/cases.json. This packet evaluates static observations only, not the full question or trajectories."
+}

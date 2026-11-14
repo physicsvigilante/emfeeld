@@ -1,0 +1,164 @@
+{
+  "date": "2026-11-13",
+  "parent_commit": "bebaafbef412fd1d3f94bf8c185570ec1927a607",
+  "python": "3.13.5",
+  "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+  "versions": {
+    "numpy": "2.3.5",
+    "scipy": "1.17.0",
+    "pyvista": "0.48.4",
+    "vtk": "9.6.2",
+    "pytest": "9.0.2"
+  },
+  "renderer": "vtkEGLRenderWindow / Mesa llvmpipe",
+  "review": "author verification; user acceptance pending; no independent review or Windows mouse test",
+  "tests": {
+    "command": "python -m pytest -q -W error tests viewer_tests",
+    "passed": 162,
+    "skipped": 0,
+    "headless_cases": 158,
+    "real_viewer_cases": 4
+  },
+  "scenes": {
+    "electric_composition": {
+      "status": "PASS",
+      "frames": [
+        {
+          "file": "electric_composition_000.png",
+          "sample": 0,
+          "time_s": 0.0,
+          "png_sha256": "b3962049fddb55059e9626642329b27dc5c6f1bbb13a040a47ffe280f0e9554e"
+        },
+        {
+          "file": "electric_composition_050.png",
+          "sample": 200,
+          "time_s": 12.5,
+          "png_sha256": "b3879bd449ab699bf5de48fdc8a5aacbd78fb2353237722778a94e3a2680abfc"
+        },
+        {
+          "file": "electric_composition_100.png",
+          "sample": 400,
+          "time_s": 25.0,
+          "png_sha256": "2d13c2f7f21369aed3f16977155133d04aadda1809ba10ff346c8afb92f4a19d"
+        }
+      ]
+    },
+    "electric_sphere": {
+      "status": "PASS",
+      "frames": [
+        {
+          "file": "electric_sphere_000.png",
+          "sample": 0,
+          "time_s": 0.0,
+          "png_sha256": "99ce2c67e60b3436ffaf469baae7d71fc58d856530557c15d7e79a534189c88c"
+        },
+        {
+          "file": "electric_sphere_050.png",
+          "sample": 450,
+          "time_s": 45.0,
+          "png_sha256": "73360666dd0fc796234acb42dba2d07ac21f4e14f974bb9c032cb9060dc53147"
+        },
+        {
+          "file": "electric_sphere_100.png",
+          "sample": 900,
+          "time_s": 90.0,
+          "png_sha256": "c1e6d76da74c3aafe661173360894a74abd12eb45688855b738c5cea43d341e1"
+        }
+      ]
+    },
+    "ideal_sun": {
+      "status": "PASS",
+      "frames": [
+        {
+          "file": "ideal_sun_000.png",
+          "sample": 0,
+          "time_s": 0.0,
+          "png_sha256": "324b622c546569138f3c2076f417bb84b39bc89bb2798f0c668a4f446d54300d"
+        },
+        {
+          "file": "ideal_sun_050.png",
+          "sample": 500,
+          "time_s": 15778859.436482828,
+          "png_sha256": "b07b6301046248ec466a3746603b3a097da487a9f7cacd5d155b43161bf1839b"
+        },
+        {
+          "file": "ideal_sun_100.png",
+          "sample": 1000,
+          "time_s": 31557718.872965656,
+          "png_sha256": "43048a24fbe749937ac5f827f180f155ba3a598e4c5250aa2e32bdebc9933a04"
+        }
+      ]
+    },
+    "line_plane_fields": {
+      "status": "PASS",
+      "frames": [
+        {
+          "file": "line_plane_fields_000.png",
+          "sample": 0,
+          "time_s": 0.0,
+          "png_sha256": "7156db3eaeb58c4dba9edd2124ca2a4cf8846e706d82f9581d1960d2340e19ca"
+        }
+      ]
+    },
+    "shell_fields": {
+      "status": "PASS",
+      "frames": [
+        {
+          "file": "shell_fields_000.png",
+          "sample": 0,
+          "time_s": 0.0,
+          "png_sha256": "14bba112897582eba515dbed2d6ef7242cbb661af7b41f89b43fda1a4643401c"
+        }
+      ]
+    },
+    "composition_flat": {
+      "status": "PASS",
+      "frames": [
+        {
+          "file": "composition_flat_000.png",
+          "sample": 0,
+          "time_s": 0.0,
+          "png_sha256": "9a6542dc9213c91d2c34581df301877c72cb569667618f7a78f07605d746d1e0"
+        }
+      ]
+    },
+    "composition_nested": {
+      "status": "PASS",
+      "frames": [
+        {
+          "file": "composition_nested_000.png",
+          "sample": 0,
+          "time_s": 0.0,
+          "png_sha256": "9a6542dc9213c91d2c34581df301877c72cb569667618f7a78f07605d746d1e0"
+        }
+      ]
+    },
+    "tilted_line_plane": {
+      "status": "PASS",
+      "frames": [
+        {
+          "file": "tilted_line_plane_000.png",
+          "sample": 0,
+          "time_s": 0.0,
+          "png_sha256": "b3e284567a2c6c272d2af268f279f7c6f829b5155fb8e4f4e53dbeb6fc9a1c6f"
+        }
+      ]
+    }
+  },
+  "grouping_geometry_and_png_equal": true,
+  "sample_marker_comparisons": 12,
+  "source_sha256": {
+    "src/emfeeld/__init__.py": "fe11dbfd4cbd370cd8dc5e4e9e6d2c1c936e473cbcf7900cb82848f9a3e4e1b3",
+    "src/emfeeld/__main__.py": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
+    "src/emfeeld/cli.py": "b1aa692cbea1e53a6f522f2a5da720b8abcd0e25c0e633ee006961876986ba5d",
+    "src/emfeeld/dynamics.py": "606c2ce4ca11504530a38cc201eedbb0abe216350d557379d26c7749e00b8a0c",
+    "src/emfeeld/fields.py": "6633becd2763b14d0910a50cd1767d40dfcc5474cac06a6fbf3e16852e41f499",
+    "src/emfeeld/integrals.py": "2975a3325acbd1f0ac31d4c40171bc9c68d855b50b06dbdce64e06b037d3e16a",
+    "src/emfeeld/scene.py": "1b749e22cc323e99734f1c401fc7d57a367358e017814db64b243efe076a9535",
+    "src/emfeeld/viewer.py": "c77737e042f39c42db8337d1118aff0f5720aa90b3a51cc66ff9fd934dc14f1e"
+  },
+  "additional_captures": {
+    "cli_ideal_sun.png": "324b622c546569138f3c2076f417bb84b39bc89bb2798f0c668a4f446d54300d",
+    "tilted_line_plane_rotated.png": "83d3f0df7c38684fc0ef7e61b3c26a448b40e578ed06cf1133a4df938c1f23d9"
+  }
+}

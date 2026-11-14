@@ -1,0 +1,89 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "SC-96 | square: upper charges positive, lower negative",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "point",
+        "charge_C": 1e-09,
+        "center_m": [
+          -1,
+          1,
+          0
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": 1e-09,
+        "center_m": [
+          1,
+          1,
+          0
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": -1e-09,
+        "center_m": [
+          1,
+          -1,
+          0
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": -1e-09,
+        "center_m": [
+          -1,
+          -1,
+          0
+        ]
+      }
+    ],
+    "bounds_m": [
+      -2,
+      2,
+      -2,
+      2,
+      -2,
+      2
+    ]
+  },
+  "observations": [
+    {
+      "id": "field_at_centre",
+      "type": "field",
+      "position_m": [
+        0,
+        0,
+        0
+      ],
+      "expectation": {
+        "value": [
+          0,
+          -12.710317628533279,
+          0
+        ],
+        "atol": 1e-12,
+        "rtol": 1e-11
+      }
+    },
+    {
+      "id": "potential_at_centre",
+      "type": "potential",
+      "position_m": [
+        0,
+        0,
+        0
+      ],
+      "expectation": {
+        "value": 0,
+        "atol": 1e-12,
+        "rtol": 1e-11
+      }
+    }
+  ],
+  "notes": "Reuses the immutable authorability-v1 scene for SC-96. Reference: equal-distance signed potentials cancel; vector field points in -y. Representative side=2 m and charge magnitude=1 nC. Numerical choices/provenance remain in pilots/authorability_v1/cases.json. This packet evaluates static observations only, not the full question or trajectories."
+}

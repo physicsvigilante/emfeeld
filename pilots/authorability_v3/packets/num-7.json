@@ -1,0 +1,98 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "NUM-7 | negative test charge turning on bisector of two fixed positives",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "point",
+        "charge_C": 0.00005,
+        "center_m": [
+          0,
+          3,
+          0
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": 0.00005,
+        "center_m": [
+          0,
+          -3,
+          0
+        ]
+      }
+    ],
+    "bounds_m": [
+      -11,
+      11,
+      -5,
+      5,
+      -5,
+      5
+    ],
+    "particles": [
+      {
+        "mass_kg": 1,
+        "charge_C": -0.00005,
+        "position_m": [
+          4,
+          0,
+          0
+        ],
+        "velocity_m_s": [
+          -2.8284271247461903,
+          0,
+          0
+        ]
+      }
+    ],
+    "duration_s": 35,
+    "samples": 701
+  },
+  "observations": [
+    {
+      "id": "turning_on_D_side",
+      "type": "trajectory_event",
+      "particle_index": 0,
+      "condition": {
+        "type": "radial_turning",
+        "center_m": [
+          0,
+          3,
+          0
+        ],
+        "extremum": "maximum"
+      },
+      "occurrence": "first",
+      "max_step_s": 0.03,
+      "min_distance_m": 1e-7,
+      "min_radial_acceleration_m_s2": 0.00001,
+      "accuracy": {
+        "time_atol_s": 0.000001,
+        "position_atol_m": 0.000001,
+        "velocity_atol_m_s": 0.000001,
+        "radial_speed_atol_m_s": 1e-7,
+        "rtol": 1e-7
+      }
+    },
+    {
+      "id": "V_at_C",
+      "type": "potential",
+      "position_m": [
+        4,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "K_at_C",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "kinetic_energy",
+      "sample_index": 0
+    }
+  ],
+  "notes": "Integer/Numerical Q7, PDF 69/book 1.209. Fixed +5e-5 C charges 6 m apart; moving -5e-5 C at x=4m with 4 J KE. Mass is not given: m=1 kg is illustrative and fixes v0=-sqrt(8) m/s. Observation centre chosen to avoid a radial singularity at O."
+}

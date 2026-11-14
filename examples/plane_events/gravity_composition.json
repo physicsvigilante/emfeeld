@@ -1,0 +1,135 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "Two overlapping massive spheres plus uniform gravity: saved samples",
+    "kind": "gravity",
+    "sources": [
+      {
+        "type": "solid_sphere",
+        "mass_kg": 14982844642.8839,
+        "radius_m": 4,
+        "center_m": [
+          -0.3,
+          0,
+          0.2
+        ]
+      },
+      {
+        "type": "solid_sphere",
+        "mass_kg": 29965689285.7678,
+        "radius_m": 5,
+        "center_m": [
+          0.4,
+          0.1,
+          -0.1
+        ]
+      },
+      {
+        "type": "uniform",
+        "field_m_s2": [
+          0.01,
+          -0.02,
+          0.005
+        ]
+      }
+    ],
+    "particles": [
+      {
+        "mass_kg": 1,
+        "position_m": [
+          1,
+          0,
+          0
+        ],
+        "velocity_m_s": [
+          0,
+          0.01,
+          0.02
+        ]
+      },
+      {
+        "mass_kg": 4,
+        "position_m": [
+          1,
+          0,
+          0
+        ],
+        "velocity_m_s": [
+          0,
+          0.01,
+          0.02
+        ]
+      }
+    ],
+    "duration_s": 35.331705455786654,
+    "samples": 65,
+    "bounds_m": [
+      -6,
+      6,
+      -6,
+      6,
+      -6,
+      6
+    ]
+  },
+  "observations": [
+    {
+      "id": "mass_0",
+      "type": "trajectory_event",
+      "particle_index": 0,
+      "condition": {
+        "type": "plane",
+        "point_m": [
+          0.37035573122529647,
+          0,
+          0
+        ],
+        "normal": [
+          1,
+          0,
+          0
+        ],
+        "direction": "negative"
+      },
+      "occurrence": "first",
+      "max_step_s": 0.11777235151928885,
+      "min_normal_speed_m_s": 1e-07,
+      "accuracy": {
+        "time_atol_s": 1e-06,
+        "position_atol_m": 1e-06,
+        "velocity_atol_m_s": 1e-07,
+        "rtol": 1e-07
+      }
+    },
+    {
+      "id": "mass_1",
+      "type": "trajectory_event",
+      "particle_index": 1,
+      "condition": {
+        "type": "plane",
+        "point_m": [
+          0.37035573122529647,
+          0,
+          0
+        ],
+        "normal": [
+          1,
+          0,
+          0
+        ],
+        "direction": "negative"
+      },
+      "occurrence": "first",
+      "max_step_s": 0.11777235151928885,
+      "min_normal_speed_m_s": 1e-07,
+      "accuracy": {
+        "time_atol_s": 1e-06,
+        "position_atol_m": 1e-06,
+        "velocity_atol_m_s": 1e-07,
+        "rtol": 1e-07
+      }
+    }
+  ],
+  "notes": "Same earlier illustrative two-sphere + uniform-gravity composition. Analytic references apply while particles remain within both spheres."
+}

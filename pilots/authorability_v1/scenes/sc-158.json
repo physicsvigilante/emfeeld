@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "title": "SC-158 | offset line (flux through intersecting sphere unqualified)",
+  "kind": "electric",
+  "sources": [
+    {
+      "type": "line",
+      "charge_per_m_C_m": 1e-09,
+      "center_m": [
+        0.6,
+        0,
+        0
+      ],
+      "direction": [
+        0,
+        0,
+        1
+      ],
+      "reference_radius_m": 1
+    }
+  ],
+  "bounds_m": [
+    -1.4,
+    1.4,
+    -1.4,
+    1.4,
+    -1.4,
+    1.4
+  ]
+}

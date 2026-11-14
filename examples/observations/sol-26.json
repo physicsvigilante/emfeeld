@@ -1,0 +1,76 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "SOL-26 | unequal fixed charges; release from zero-locus circle centre",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "point",
+        "charge_C": -2e-09,
+        "center_m": [
+          -3,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": 1e-09,
+        "center_m": [
+          3,
+          0,
+          0
+        ]
+      }
+    ],
+    "bounds_m": [
+      -5,
+      15,
+      -5,
+      5,
+      -5,
+      5
+    ],
+    "particles": [
+      {
+        "charge_C": 1e-06,
+        "mass_kg": 0.001,
+        "position_m": [
+          5,
+          0,
+          0
+        ],
+        "velocity_m_s": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "duration_s": 120,
+    "samples": 4001
+  },
+  "observations": [
+    {
+      "id": "centre_to_zero_locus",
+      "type": "potential_difference",
+      "from_m": [
+        5,
+        0,
+        0
+      ],
+      "to_m": [
+        9,
+        0,
+        0
+      ],
+      "expectation": {
+        "value": -2.2468879465426994,
+        "atol": 1e-12,
+        "rtol": 1e-11
+      }
+    }
+  ],
+  "notes": "Reuses the immutable authorability-v1 scene for SOL-26. Reference for representative a=1 m and Q=1 nC: V(5,0,0)=kQ/4, V(9,0,0)=0. Returned difference is V(to)-V(from), not work or crossing speed. Its embedded moving scene is NOT integrated. Numerical choices/provenance remain in pilots/authorability_v1/cases.json. This packet evaluates static observations only, not the full question or trajectories."
+}

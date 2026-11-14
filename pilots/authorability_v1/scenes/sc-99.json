@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "title": "SC-99 | negative test charge in a downward uniform field",
+  "kind": "electric",
+  "sources": [
+    {
+      "type": "uniform",
+      "field_N_C": [
+        0,
+        -100,
+        0
+      ],
+      "origin_m": [
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "bounds_m": [
+    -0.5,
+    2.5,
+    -0.5,
+    1.5,
+    -1.5,
+    1.5
+  ],
+  "particles": [
+    {
+      "charge_C": -1e-06,
+      "mass_kg": 0.001,
+      "position_m": [
+        0,
+        0,
+        0
+      ],
+      "velocity_m_s": [
+        0.5,
+        0,
+        0
+      ]
+    }
+  ],
+  "duration_s": 4,
+  "samples": 2001
+}

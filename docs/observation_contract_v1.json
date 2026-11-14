@@ -1,0 +1,133 @@
+{
+  "contract": "emfeeld.static_observations",
+  "version": 1,
+  "entrypoint": "python -m emfeeld.observations PACKET.json --output RESULT.json",
+  "packet_required": [
+    "observation_schema_version",
+    "scene",
+    "observations"
+  ],
+  "packet_optional": [
+    "notes"
+  ],
+  "scene": "embedded, unchanged scene schema version 1; no external file references or executable expressions",
+  "id_pattern": "[A-Za-z][A-Za-z0-9_.-]{0,63}",
+  "unique_ids": true,
+  "numbers": "finite JSON numbers only; no booleans, strings, implicit unit conversions, NaN or Infinity",
+  "coordinates": "three-component arrays in metres",
+  "types": {
+    "field": {
+      "required": [
+        "id",
+        "type",
+        "position_m"
+      ],
+      "shape": [
+        3
+      ],
+      "units": {
+        "electric": "N/C",
+        "gravity": "m/s^2"
+      }
+    },
+    "potential": {
+      "required": [
+        "id",
+        "type",
+        "position_m"
+      ],
+      "shape": [],
+      "units": {
+        "electric": "V",
+        "gravity": "J/kg"
+      }
+    },
+    "force": {
+      "required": [
+        "id",
+        "type",
+        "position_m"
+      ],
+      "required_by_kind": {
+        "electric": "test_charge_C",
+        "gravity": "test_mass_kg"
+      },
+      "test_mass_kg": "strictly positive",
+      "test_charge_C": "signed or zero",
+      "shape": [
+        3
+      ],
+      "units": {
+        "electric": "N",
+        "gravity": "N"
+      },
+      "semantics": "qE or mg for an independent test probe; no probe feedback, source-source force or self-force"
+    },
+    "potential_difference": {
+      "required": [
+        "id",
+        "type",
+        "from_m",
+        "to_m"
+      ],
+      "shape": [],
+      "units": {
+        "electric": "V",
+        "gravity": "J/kg"
+      },
+      "convention": "potential(to_m) - potential(from_m)"
+    }
+  },
+  "optional_per_request": [
+    "expectation"
+  ],
+  "expectation": {
+    "required": [
+      "value",
+      "atol",
+      "rtol"
+    ],
+    "value_shape": "exactly the result shape; no broadcasting",
+    "atol": "finite nonnegative number in result units",
+    "rtol": "finite nonnegative dimensionless number",
+    "comparison": "componentwise abs(actual-expected) <= atol + rtol*abs(expected)",
+    "meaning": "authored reference check only, not independent correctness, solver tolerance or certified error bound"
+  },
+  "result_statuses": [
+    "ok",
+    "domain_error",
+    "numerical_error"
+  ],
+  "aggregate_statuses": [
+    "ok",
+    "partial",
+    "failed"
+  ],
+  "failure_value": null,
+  "error_bound": null,
+  "exit_codes": {
+    "0": "all evaluated requests and supplied expectations pass; or schema-only validation succeeds",
+    "1": "one or more domain/numerical failures or failed expectations; detailed report retained",
+    "2": "invalid input, unsupported request, or file I/O failure"
+  },
+  "validation_only": "no field evaluation and no domain or accuracy certification",
+  "not_implemented": [
+    "global_closest_approach",
+    "minimum_launch_speed",
+    "flux_requests",
+    "probe_annotations",
+    "mixed_electric_gravity",
+    "conductor_response"
+  ],
+  "potential_references": "unchanged sum of source references; endpoint difference can suffer cancellation",
+  "packet_extensions": {
+    "trajectory_sample": "trajectory_sample_contract_v1.json",
+    "trajectory_event": "plane_event_contract_v1.json"
+  },
+  "schema_note": "This is a descriptive machine-readable contract, not a JSON Schema document. Runtime validation is authoritative.",
+  "additional_event_conditions": {
+    "radial": "radial_event_contract_v1.json",
+    "radial_turning": "turning_event_contract_v1.json"
+  },
+  "rest_launch_turning_extension": "rest_launch_turning_contract_v1.json"
+}

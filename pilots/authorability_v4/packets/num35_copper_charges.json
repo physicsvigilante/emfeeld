@@ -1,0 +1,49 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "NUM35 / copper electron transfer as point charges",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "point",
+        "charge_C": 15.118110236220472,
+        "center_m": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "bounds_m": [
+      -0.03,
+      0.03,
+      -0.03,
+      0.03,
+      -0.03,
+      0.03
+    ]
+  },
+  "observations": [
+    {
+      "id": "force_on_negative_piece",
+      "type": "force",
+      "position_m": [
+        0.01,
+        0,
+        0
+      ],
+      "test_charge_C": -15.118110236220472
+    },
+    {
+      "id": "field_at_other_centre",
+      "type": "field",
+      "position_m": [
+        0.01,
+        0,
+        0
+      ]
+    }
+  ],
+  "notes": "NUM35 PDF p72/book 1.212. Original 10g,63.5g/mol,NA=6e23,e=1.6e-19; one electron per 1000 atoms, 1cm separation. Q calculated by counting; Coulomb force is a textbook point-charge approximation, not exact charged-copper-conductor physics."
+}

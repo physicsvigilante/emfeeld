@@ -1,0 +1,81 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "SC-28 | negative test charge released above two fixed positive charges",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "point",
+        "charge_C": 1e-09,
+        "center_m": [
+          -1.0,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": 1e-09,
+        "center_m": [
+          1.0,
+          0,
+          0
+        ]
+      }
+    ],
+    "bounds_m": [
+      -2.2,
+      2.2,
+      -2.2,
+      2.2,
+      -2.2,
+      2.2
+    ],
+    "particles": [
+      {
+        "charge_C": -1e-06,
+        "mass_kg": 0.001,
+        "position_m": [
+          0,
+          1.7320508075688772,
+          0
+        ],
+        "velocity_m_s": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "duration_s": 40,
+    "samples": 4001
+  },
+  "observations": [
+    {
+      "id": "radius_one",
+      "type": "trajectory_event",
+      "particle_index": 0,
+      "condition": {
+        "type": "radial",
+        "center_m": [
+          0,
+          0,
+          0
+        ],
+        "radius_m": 1,
+        "direction": "inward"
+      },
+      "occurrence": "first",
+      "max_step_s": 0.1,
+      "min_radial_speed_m_s": 1e-07,
+      "accuracy": {
+        "time_atol_s": 1e-06,
+        "position_atol_m": 1e-06,
+        "velocity_atol_m_s": 1e-07,
+        "rtol": 1e-07
+      }
+    }
+  ],
+  "notes": "Exact earlier SC-28 scene, with its illustrative parameters unchanged. The requested radius 1 m is an added measurement, not a new book question."
+}

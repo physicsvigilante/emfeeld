@@ -1,0 +1,84 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "SC106 / five positive charges on hexagon",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "point",
+        "charge_C": 2e-9,
+        "center_m": [
+          -0.7,
+          1.212435565298214,
+          0
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": 2e-9,
+        "center_m": [
+          0.7,
+          1.212435565298214,
+          0
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": 2e-9,
+        "center_m": [
+          1.4,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": 2e-9,
+        "center_m": [
+          0.7,
+          -1.212435565298214,
+          0
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": 2e-9,
+        "center_m": [
+          -0.7,
+          -1.212435565298214,
+          0
+        ]
+      }
+    ],
+    "bounds_m": [
+      -2,
+      2,
+      -2,
+      2,
+      -1,
+      1
+    ]
+  },
+  "observations": [
+    {
+      "id": "field_O",
+      "type": "field",
+      "position_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "potential_O",
+      "type": "potential",
+      "position_m": [
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "notes": "SC106 PDF p33/book 1.173: five +q on hexagon of side 2a, with missing U. Illustrative q=2nC, a=0.7m. Missing vertex choice is rotationally equivalent."
+}

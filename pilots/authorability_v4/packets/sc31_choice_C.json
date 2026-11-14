@@ -1,0 +1,93 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "SC31 / choice C / six vertices on unit hexagon",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "point",
+        "charge_C": 1e-9,
+        "center_m": [
+          -0.5,
+          0.8660254037844386,
+          0
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": 1e-9,
+        "center_m": [
+          0.5,
+          0.8660254037844386,
+          0
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": -1e-9,
+        "center_m": [
+          1,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": 1e-9,
+        "center_m": [
+          0.5,
+          -0.8660254037844386,
+          0
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": -1e-9,
+        "center_m": [
+          -0.5,
+          -0.8660254037844386,
+          0
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": -1e-9,
+        "center_m": [
+          -1,
+          0,
+          0
+        ]
+      }
+    ],
+    "bounds_m": [
+      -1.5,
+      1.5,
+      -1.5,
+      1.5,
+      -0.5,
+      0.5
+    ]
+  },
+  "observations": [
+    {
+      "id": "field_O",
+      "type": "field",
+      "position_m": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "potential_O",
+      "type": "potential",
+      "position_m": [
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "notes": "SC31 PDF p24/book 1.164. Signs are in P,Q,R,S,T,U order; q=1 nC, hexagon side=1 m illustrative. Qualifying option requires vector equality E_option=2 E_single, not magnitude alone."
+}

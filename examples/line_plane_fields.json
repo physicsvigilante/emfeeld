@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "title": "Prescribed infinite line and plane (not conducting objects)",
+  "kind": "electric",
+  "sources": [
+    {
+      "type": "line",
+      "charge_per_m_C_m": 1e-10,
+      "direction": [
+        0,
+        0,
+        1
+      ],
+      "reference_radius_m": 1
+    },
+    {
+      "type": "plane",
+      "charge_per_m2_C_m2": -1e-11,
+      "normal": [
+        0,
+        1,
+        0
+      ],
+      "center_m": [
+        0,
+        -1,
+        0
+      ]
+    }
+  ],
+  "bounds_m": [
+    -3,
+    3,
+    -3,
+    3,
+    -3,
+    3
+  ]
+}

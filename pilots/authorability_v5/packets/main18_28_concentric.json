@@ -1,0 +1,87 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "JEE Main 2018 Q28 three alternately charged concentric shells",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "shell",
+        "charge_C": 5.02654824574367e-10,
+        "radius_m": 0.2,
+        "center_m": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "shell",
+        "charge_C": -2.010619298297468e-9,
+        "radius_m": 0.4,
+        "center_m": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "shell",
+        "charge_C": 8.042477193189872e-9,
+        "radius_m": 0.8,
+        "center_m": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "bounds_m": [
+      -1,
+      1,
+      -1,
+      1,
+      -1,
+      1
+    ]
+  },
+  "observations": [
+    {
+      "id": "potential_on_B",
+      "type": "potential",
+      "position_m": [
+        0.4,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "potential_on_A",
+      "type": "potential",
+      "position_m": [
+        0.2,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "E_vacuum_gap_A_B",
+      "type": "field",
+      "position_m": [
+        0.3,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "potential_on_C",
+      "type": "potential",
+      "position_m": [
+        0.8,
+        0,
+        0
+      ]
+    }
+  ],
+  "notes": "JEE Main 2018 Q28 PDF p77/book 1.217. Illustrative a=.2,b=.4,c=.8 m, sigma=1 nC/m². Source charges scale with r², not equal magnitudes."
+}

@@ -1,0 +1,3 @@
+# Preserve byte-exact, hash-locked authored JSON across Windows/Linux checkouts.
+# Never normalize bytes in the replay verifier to hide source changes.
+*.json text eol=lf

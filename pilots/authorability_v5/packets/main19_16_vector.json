@@ -1,0 +1,66 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "JEE Main Jan 2019 Q16 two off-axis point charges",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "point",
+        "charge_C": 0.000003162277660168379,
+        "center_m": [
+          1,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": -0.000025,
+        "center_m": [
+          4,
+          0,
+          0
+        ]
+      }
+    ],
+    "bounds_m": [
+      -1,
+      5,
+      -1,
+      5,
+      -2,
+      2
+    ]
+  },
+  "observations": [
+    {
+      "id": "E_y_axis_at_3",
+      "type": "field",
+      "position_m": [
+        0,
+        3,
+        0
+      ]
+    },
+    {
+      "id": "V_y_axis_at_3",
+      "type": "potential",
+      "position_m": [
+        0,
+        3,
+        0
+      ]
+    },
+    {
+      "id": "E_off_plane",
+      "type": "field",
+      "position_m": [
+        0,
+        3,
+        1
+      ]
+    }
+  ],
+  "notes": "JEE Main 2019 Q16 PDF p75/book 1.215. q1=sqrt(10) microC (not 10 microC), q2=-25 microC. First observation is textbook request; extra potential/off-plane probes are illustrative."
+}

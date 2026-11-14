@@ -1,0 +1,365 @@
+{
+  "parent_commit": "f82df8089541182ddd121fd00fc9aa6d98ad86d9",
+  "scope": "Assisted authoring examples, not blind LLM reliability or new gravitational corpus coverage. Numerical references are checks, never replacements for measured events.",
+  "packets": [
+    {
+      "file": "off_axis_free.json",
+      "cli_exit": 0,
+      "expected_results": [
+        {
+          "id": "inward",
+          "status": "ok",
+          "state": {
+            "time_s": 1.1339745962155614,
+            "position_m": [
+              -0.8660254037844386,
+              0.3,
+              0.4
+            ],
+            "velocity_m_s": [
+              1,
+              0,
+              0
+            ],
+            "speed_m_s": 1.0
+          },
+          "atol": 1e-08,
+          "rtol": 1e-08
+        },
+        {
+          "id": "outward",
+          "status": "ok",
+          "state": {
+            "time_s": 2.8660254037844384,
+            "position_m": [
+              0.8660254037844386,
+              0.3,
+              0.4
+            ],
+            "velocity_m_s": [
+              1,
+              0,
+              0
+            ],
+            "speed_m_s": 1.0
+          },
+          "atol": 1e-08,
+          "rtol": 1e-08
+        },
+        {
+          "id": "either",
+          "status": "ok",
+          "state": {
+            "time_s": 1.1339745962155614,
+            "position_m": [
+              -0.8660254037844386,
+              0.3,
+              0.4
+            ],
+            "velocity_m_s": [
+              1,
+              0,
+              0
+            ],
+            "speed_m_s": 1.0
+          },
+          "atol": 1e-08,
+          "rtol": 1e-08
+        },
+        {
+          "id": "initial_saved_speed",
+          "status": "ok"
+        }
+      ],
+      "reference": "Straight line r=(-2+t,0.3,0.4); norm(r)=1 gives t=2 +/- sqrt(3/4)."
+    },
+    {
+      "file": "sc-28.json",
+      "cli_exit": 0,
+      "expected_results": [
+        {
+          "id": "radius_one",
+          "status": "ok",
+          "state": {
+            "time_s": 18.56062575808734,
+            "position_m": [
+              0,
+              1,
+              0
+            ],
+            "velocity_m_s": [
+              0,
+              -0.08628749437041822,
+              0
+            ],
+            "speed_m_s": 0.08628749437041822
+          },
+          "atol": 1e-07,
+          "rtol": 1e-08
+        }
+      ],
+      "reference": "Energy along symmetry axis, speed^2=C*(1/hypot(1,y)-1/2); time by independent quadrature y=y0-u^2."
+    },
+    {
+      "file": "sol-26.json",
+      "cli_exit": 0,
+      "expected_results": [
+        {
+          "id": "zero_potential_sphere",
+          "status": "ok",
+          "state": {
+            "time_s": 83.87132242424467,
+            "position_m": [
+              9,
+              0,
+              0
+            ],
+            "velocity_m_s": [
+              0.06703563151850961,
+              0,
+              0
+            ],
+            "speed_m_s": 0.06703563151850961
+          },
+          "atol": 1e-07,
+          "rtol": 1e-08
+        }
+      ],
+      "reference": "V=kQ*(1/(x-3)-2/(x+3)); equal-distance-ratio locus is the sphere. On this trajectory the exit is x=9. Time uses independent quadrature x=5+u^2; speed uses energy."
+    },
+    {
+      "file": "solid_sphere_penetration.json",
+      "cli_exit": 0,
+      "expected_results": [
+        {
+          "id": "interior_radius",
+          "status": "ok",
+          "state": {
+            "time_s": 0.839181139113327,
+            "position_m": [
+              0.5,
+              0,
+              0
+            ],
+            "velocity_m_s": [
+              -1.5,
+              0,
+              0
+            ],
+            "speed_m_s": 1.5
+          },
+          "atol": 1e-07,
+          "rtol": 1e-08
+        }
+      ],
+      "reference": "Total energy 2.5 J; inside U=(3-r^2)/2, speed=sqrt(2+r^2); time outside by radial energy quadrature and inside by an asinh difference."
+    },
+    {
+      "file": "ideal_sun.json",
+      "cli_exit": 0,
+      "expected_results": [
+        {
+          "id": "planet_1_inward",
+          "status": "ok",
+          "state": {
+            "time_s": 9888017.490363883,
+            "position_m": [
+              96170059735.71419,
+              131612122308.36421,
+              75206927033.351
+            ],
+            "velocity_m_s": [
+              -25470.955796346356,
+              4863.893348723033,
+              2779.367627841734
+            ],
+            "speed_m_s": 26079.72262310082
+          },
+          "atol": 0.1,
+          "rtol": 1e-10
+        },
+        {
+          "id": "planet_1_outward",
+          "status": "ok",
+          "state": {
+            "time_s": 27072823.02735958,
+            "position_m": [
+              96170059735.71397,
+              -131612122308.36426,
+              -75206927033.35103
+            ],
+            "velocity_m_s": [
+              25470.955796346374,
+              4863.893348723007,
+              2779.3676278417192
+            ],
+            "speed_m_s": 26079.72262310083
+          },
+          "atol": 0.1,
+          "rtol": 1e-10
+        },
+        {
+          "id": "circular_no_inner_crossing",
+          "status": "no_event"
+        }
+      ],
+      "reference": "Independent Kepler expressions from apocentre: a=(2/r0-v0^2/mu)^-1, e=r0/a-1, cos(E)=(1-R/a)/e; t=(E-e*sin(E)-pi)*sqrt(a^3/mu)."
+    },
+    {
+      "file": "gravity_composition.json",
+      "cli_exit": 0,
+      "expected_results": [
+        {
+          "id": "mass_0_inward",
+          "status": "ok",
+          "state": {
+            "time_s": 5.597800141715072,
+            "position_m": [
+              0.712945176565233,
+              -0.21807098583381584,
+              0.18842301139884807
+            ],
+            "velocity_m_s": [
+              -0.09394702457838536,
+              -0.08137006102465967,
+              0.04166690066799621
+            ],
+            "speed_m_s": 0.13108493761514037
+          },
+          "atol": 1e-07,
+          "rtol": 1e-08
+        },
+        {
+          "id": "mass_0_outward",
+          "status": "ok",
+          "state": {
+            "time_s": 12.208474527983308,
+            "position_m": [
+              0.014682245773596725,
+              -0.8640744065863342,
+              0.4156750011077547
+            ],
+            "velocity_m_s": [
+              -0.09239650566154413,
+              -0.09102711582907783,
+              0.018979220082529842
+            ],
+            "speed_m_s": 0.13108493761514026
+          },
+          "atol": 1e-07,
+          "rtol": 1e-08
+        },
+        {
+          "id": "mass_1_inward",
+          "status": "ok",
+          "state": {
+            "time_s": 5.597800141715072,
+            "position_m": [
+              0.712945176565233,
+              -0.21807098583381584,
+              0.18842301139884807
+            ],
+            "velocity_m_s": [
+              -0.09394702457838536,
+              -0.08137006102465967,
+              0.04166690066799621
+            ],
+            "speed_m_s": 0.13108493761514037
+          },
+          "atol": 1e-07,
+          "rtol": 1e-08
+        },
+        {
+          "id": "mass_1_outward",
+          "status": "ok",
+          "state": {
+            "time_s": 12.208474527983308,
+            "position_m": [
+              0.014682245773596725,
+              -0.8640744065863342,
+              0.4156750011077547
+            ],
+            "velocity_m_s": [
+              -0.09239650566154413,
+              -0.09102711582907783,
+              0.018979220082529842
+            ],
+            "speed_m_s": 0.13108493761514026
+          },
+          "atol": 1e-07,
+          "rtol": 1e-08
+        }
+      ],
+      "reference": "Analytic harmonic vector solution while inside both spheres, then scalar root of its radius, without evaluating model.field or integrating engine trajectories."
+    },
+    {
+      "file": "selection_cases.json",
+      "cli_exit": 1,
+      "expected_results": [
+        {
+          "id": "ordinary",
+          "status": "ok"
+        },
+        {
+          "id": "initial_on_sphere",
+          "status": "initial_condition_error"
+        },
+        {
+          "id": "too_slow",
+          "status": "ambiguous_event"
+        },
+        {
+          "id": "no_hit",
+          "status": "no_event"
+        }
+      ],
+      "reference": "Elementary line/sphere geometry; explicit admission checks, not accepted tangencies."
+    },
+    {
+      "file": "unsupported_motion.json",
+      "cli_exit": 1,
+      "expected_results": [
+        {
+          "id": "not_admitted",
+          "status": "unsupported_trajectory"
+        },
+        {
+          "id": "valid_potential",
+          "status": "ok"
+        }
+      ],
+      "reference": "Retained motion restriction; continuous shell potential still evaluates."
+    },
+    {
+      "file": "particle_failure.json",
+      "cli_exit": 1,
+      "expected_results": [
+        {
+          "id": "singular_start",
+          "status": "domain_error"
+        },
+        {
+          "id": "valid_infall",
+          "status": "ok",
+          "state": {
+            "time_s": 2.5707963267948966,
+            "position_m": [
+              1,
+              0,
+              0
+            ],
+            "velocity_m_s": [
+              -1,
+              0,
+              0
+            ],
+            "speed_m_s": 1.0
+          },
+          "atol": 1e-08,
+          "rtol": 1e-08
+        }
+      ],
+      "reference": "For GM=1 radial fall from rest at r=2 to r=1: t=1+pi/2, speed=1."
+    }
+  ]
+}

@@ -1,0 +1,213 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "rest launch; offset observation centre",
+    "kind": "gravity",
+    "sources": [
+      {
+        "type": "solid_sphere",
+        "mass_kg": 7491422321441.949,
+        "radius_m": 10.0,
+        "center_m": [
+          1.0,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "solid_sphere",
+        "mass_kg": 7491422321441.949,
+        "radius_m": 10.0,
+        "center_m": [
+          3.0,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "uniform",
+        "field_m_s2": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "particles": [
+      {
+        "mass_kg": 1.0,
+        "charge_C": 1.0,
+        "position_m": [
+          2,
+          0,
+          0
+        ],
+        "velocity_m_s": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "mass_kg": 1.0,
+        "charge_C": 1.0,
+        "position_m": [
+          3.0,
+          0.0,
+          0.0
+        ],
+        "velocity_m_s": [
+          1e-15,
+          0,
+          0
+        ]
+      },
+      {
+        "mass_kg": 1.0,
+        "charge_C": 1.0,
+        "position_m": [
+          0,
+          0,
+          0
+        ],
+        "velocity_m_s": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      },
+      {
+        "mass_kg": 1.0,
+        "charge_C": 1.0,
+        "position_m": [
+          3.0,
+          0.0,
+          0.0
+        ],
+        "velocity_m_s": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    ],
+    "duration_s": 7.0,
+    "samples": 2,
+    "bounds_m": [
+      -10,
+      10,
+      -10,
+      10,
+      -10,
+      10
+    ]
+  },
+  "observations": [
+    {
+      "id": "equilibrium",
+      "type": "trajectory_event",
+      "particle_index": 0,
+      "condition": {
+        "type": "radial_turning",
+        "center_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "extremum": "minimum"
+      },
+      "initial_policy": "exclude_rest_launch",
+      "occurrence": "first",
+      "max_step_s": 0.05,
+      "min_distance_m": 1e-08,
+      "min_radial_acceleration_m_s2": 1e-08,
+      "accuracy": {
+        "time_atol_s": 1e-07,
+        "position_atol_m": 1e-07,
+        "velocity_atol_m_s": 1e-07,
+        "radial_speed_atol_m_s": 1e-08,
+        "rtol": 1e-08
+      }
+    },
+    {
+      "id": "nonzero_velocity",
+      "type": "trajectory_event",
+      "particle_index": 1,
+      "condition": {
+        "type": "radial_turning",
+        "center_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "extremum": "minimum"
+      },
+      "initial_policy": "exclude_rest_launch",
+      "occurrence": "first",
+      "max_step_s": 0.05,
+      "min_distance_m": 1e-08,
+      "min_radial_acceleration_m_s2": 1e-08,
+      "accuracy": {
+        "time_atol_s": 1e-07,
+        "position_atol_m": 1e-07,
+        "velocity_atol_m_s": 1e-07,
+        "radial_speed_atol_m_s": 1e-08,
+        "rtol": 1e-08
+      }
+    },
+    {
+      "id": "centre_launch",
+      "type": "trajectory_event",
+      "particle_index": 2,
+      "condition": {
+        "type": "radial_turning",
+        "center_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "extremum": "minimum"
+      },
+      "initial_policy": "exclude_rest_launch",
+      "occurrence": "first",
+      "max_step_s": 0.05,
+      "min_distance_m": 1e-08,
+      "min_radial_acceleration_m_s2": 1e-08,
+      "accuracy": {
+        "time_atol_s": 1e-07,
+        "position_atol_m": 1e-07,
+        "velocity_atol_m_s": 1e-07,
+        "radial_speed_atol_m_s": 1e-08,
+        "rtol": 1e-08
+      }
+    },
+    {
+      "id": "valid_rest",
+      "type": "trajectory_event",
+      "particle_index": 3,
+      "condition": {
+        "type": "radial_turning",
+        "center_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "extremum": "minimum"
+      },
+      "initial_policy": "exclude_rest_launch",
+      "occurrence": "first",
+      "max_step_s": 0.05,
+      "min_distance_m": 1e-08,
+      "min_radial_acceleration_m_s2": 1e-08,
+      "accuracy": {
+        "time_atol_s": 1e-07,
+        "position_atol_m": 1e-07,
+        "velocity_atol_m_s": 1e-07,
+        "radial_speed_atol_m_s": 1e-08,
+        "rtol": 1e-08
+      }
+    }
+  ],
+  "notes": "Illustrative mixed requests. Exact rest, resolved departure, and separated observation centre are explicit eligibility conditions; valid unrelated measurements survive rejections."
+}

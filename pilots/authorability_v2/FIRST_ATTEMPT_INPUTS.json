@@ -1,0 +1,17 @@
+{
+  "cases.json": "724151e190b14fdb883e3bda1e0c75947e8e550a61ffecf734709ab748725730",
+  "PROTOCOL.md": "0323bceb1c32a05bd60a75d7a27b5e14835a10a2af9cc21885c4403409c7e5da",
+  "run_pilot.py": "720594a8b4bf163268d73d8be9ac7b6fc634a86b3f1192788508543402b87a2e",
+  "references.json": "69a1a236a0b31012811cb4c3afaf25c8d9e50e1c35156b1ef615f3c9abd258ba",
+  "frozen_files.json": "6c3c3078e693694b434a781024ababe4918e4c3774acc85cc98010bad5a3ac31",
+  "packets/P04-uniform-motion.json": "4c721f24d61d5a60f8f6d1df45f811b80ce951ffd62b03019f791ced266567fe",
+  "packets/P05-two-charge-crossing.json": "a21e923f5badb2afa2b10347e625de7c52cb2a31c8c1c2db3c9a7f467a6d0b00",
+  "packets/P08-gravity-composition.json": "f020de875b65a0037b5d830e987f09944eded442ab8070bd023e7192384f5328",
+  "packets/P03-cavity.json": "4a628877da1289dfe517e9ca036a73dac104c2464c8aa950fa7874a4c4689422",
+  "packets/P07-numerical-stop.json": "fa864be7224a8e5926dc36dd702a10cb59e46741878b599d00bc31b2fa45a6d7",
+  "packets/P02-cube.json": "4c91c6f7898f08280df1117a754322ac132113e2fa76913c7cf4e17b547d836c",
+  "packets/P06-potential-crossing.json": "427fc22e1ed3703e0cb32abbacb6596632fab235b47468413402c3b2df606bb4",
+  "packets/P01-line-reference.json": "761312f0e775b1c94cb0a02ffc60650c924754e61a96b854594181b33d9b5068",
+  "controls/L01-rest-turning.json": "560144527b139484c21ac22b3f94b49834629e4c3b5dcb3ab8a5de43b76c75f3",
+  "controls/L02-ring.json": "9f738e195d7bd855773a7cf4436ecccfaba626e2dd09b3f3d2270615b527bb6b"
+}

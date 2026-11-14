@@ -1,0 +1,103 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "Illustrative off-axis radial crossings",
+    "kind": "gravity",
+    "sources": [
+      {
+        "type": "point",
+        "mass_kg": 14982844642.8839
+      }
+    ],
+    "particles": [
+      {
+        "mass_kg": 2,
+        "position_m": [
+          0,
+          0,
+          0
+        ],
+        "velocity_m_s": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "mass_kg": 1,
+        "position_m": [
+          2,
+          0,
+          0
+        ],
+        "velocity_m_s": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "duration_s": 10,
+    "samples": 2,
+    "bounds_m": [
+      -3,
+      3,
+      -3,
+      3,
+      -3,
+      3
+    ]
+  },
+  "observations": [
+    {
+      "id": "singular_start",
+      "type": "trajectory_event",
+      "particle_index": 0,
+      "condition": {
+        "type": "radial",
+        "center_m": [
+          0,
+          0,
+          0
+        ],
+        "radius_m": 1,
+        "direction": "inward"
+      },
+      "occurrence": "first",
+      "max_step_s": 0.05,
+      "min_radial_speed_m_s": 1e-07,
+      "accuracy": {
+        "time_atol_s": 1e-06,
+        "position_atol_m": 1e-06,
+        "velocity_atol_m_s": 1e-07,
+        "rtol": 1e-07
+      }
+    },
+    {
+      "id": "valid_infall",
+      "type": "trajectory_event",
+      "particle_index": 1,
+      "condition": {
+        "type": "radial",
+        "center_m": [
+          0,
+          0,
+          0
+        ],
+        "radius_m": 1,
+        "direction": "inward"
+      },
+      "occurrence": "first",
+      "max_step_s": 0.05,
+      "min_radial_speed_m_s": 1e-07,
+      "accuracy": {
+        "time_atol_s": 1e-06,
+        "position_atol_m": 1e-06,
+        "velocity_atol_m_s": 1e-07,
+        "rtol": 1e-07
+      }
+    }
+  ],
+  "notes": "Singular launch must not suppress another particle. Valid terminal search finishes before the later source singularity; this is not collision protection."
+}

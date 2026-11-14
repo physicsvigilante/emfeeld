@@ -1,0 +1,63 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "SC53 / radially symmetric hollow charged sphere",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "shell",
+        "charge_C": 5.006925252908337e-9,
+        "radius_m": 0.25,
+        "center_m": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "bounds_m": [
+      -1,
+      1,
+      -1,
+      1,
+      -1,
+      1
+    ]
+  },
+  "observations": [
+    {
+      "id": "V_surface_minus_3R",
+      "type": "potential_difference",
+      "from_m": [
+        0.75,
+        0,
+        0
+      ],
+      "to_m": [
+        0.25,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "E_at_3R",
+      "type": "field",
+      "position_m": [
+        0.75,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "V_centre",
+      "type": "potential",
+      "position_m": [
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "notes": "SC53 PDF p27/book 1.167. Illustrative R=0.25m and V(R)-V(3R)=120V; supplied Q is derived using the analytic isolated-shell relation. This does not represent arbitrary conductor polarization."
+}

@@ -1,0 +1,137 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "Archive 2013 Q5 | overlapping equal/opposite density spheres",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "solid_sphere",
+        "charge_C": 4.188790204786391e-09,
+        "center_m": [
+          -0.4,
+          0,
+          0
+        ],
+        "radius_m": 1.0
+      },
+      {
+        "type": "solid_sphere",
+        "charge_C": -2.1446605848506326e-09,
+        "center_m": [
+          0.4,
+          0,
+          0
+        ],
+        "radius_m": 0.8
+      }
+    ],
+    "bounds_m": [
+      -1.6,
+      1.6,
+      -1.6,
+      1.6,
+      -1.6,
+      1.6
+    ]
+  },
+  "observations": [
+    {
+      "id": "overlap_0_field",
+      "type": "field",
+      "position_m": [
+        0,
+        0,
+        0
+      ],
+      "expectation": {
+        "value": [
+          30.117575109538144,
+          0.0,
+          0.0
+        ],
+        "atol": 1e-12,
+        "rtol": 1e-11
+      }
+    },
+    {
+      "id": "overlap_0_potential",
+      "type": "potential",
+      "position_m": [
+        0,
+        0,
+        0
+      ],
+      "expectation": {
+        "value": 20.329363198938236,
+        "atol": 1e-12,
+        "rtol": 1e-11
+      }
+    },
+    {
+      "id": "overlap_1_field",
+      "type": "field",
+      "position_m": [
+        0.1,
+        0.2,
+        0.1
+      ],
+      "expectation": {
+        "value": [
+          30.117575109538144,
+          0.0,
+          0.0
+        ],
+        "atol": 1e-12,
+        "rtol": 1e-11
+      }
+    },
+    {
+      "id": "overlap_1_potential",
+      "type": "potential",
+      "position_m": [
+        0.1,
+        0.2,
+        0.1
+      ],
+      "expectation": {
+        "value": 17.31760568798443,
+        "atol": 1e-12,
+        "rtol": 1e-11
+      }
+    },
+    {
+      "id": "overlap_2_field",
+      "type": "field",
+      "position_m": [
+        -0.1,
+        -0.1,
+        0.2
+      ],
+      "expectation": {
+        "value": [
+          30.117575109538144,
+          0.0,
+          0.0
+        ],
+        "atol": 1e-12,
+        "rtol": 1e-11
+      }
+    },
+    {
+      "id": "overlap_2_potential",
+      "type": "potential",
+      "position_m": [
+        -0.1,
+        -0.1,
+        0.2
+      ],
+      "expectation": {
+        "value": 23.34112070989205,
+        "atol": 1e-12,
+        "rtol": 1e-11
+      }
+    }
+  ],
+  "notes": "Reuses the immutable authorability-v1 scene for ARCH-ADV-MC-05. Reference inside both spheres: E=rho(c2-c1)/(3*epsilon_0); V=rho[(3R1^2-r1^2)-(3R2^2-r2^2)]/(6*epsilon_0). Representative unequal radii and three genuinely 3D probes. Numerical choices/provenance remain in pilots/authorability_v1/cases.json. This packet evaluates static observations only, not the full question or trajectories."
+}

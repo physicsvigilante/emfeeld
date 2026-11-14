@@ -1,0 +1,68 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "Illustrative repulsive solid-sphere penetration, above threshold",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "solid_sphere",
+        "charge_C": 1.1126500562018528e-10,
+        "radius_m": 1
+      }
+    ],
+    "particles": [
+      {
+        "mass_kg": 1,
+        "charge_C": 1,
+        "position_m": [
+          2,
+          0,
+          0
+        ],
+        "velocity_m_s": [
+          -2,
+          0,
+          0
+        ]
+      }
+    ],
+    "duration_s": 3,
+    "samples": 5,
+    "bounds_m": [
+      -3,
+      3,
+      -3,
+      3,
+      -3,
+      3
+    ]
+  },
+  "observations": [
+    {
+      "id": "interior_radius",
+      "type": "trajectory_event",
+      "particle_index": 0,
+      "condition": {
+        "type": "radial",
+        "center_m": [
+          0,
+          0,
+          0
+        ],
+        "radius_m": 0.5,
+        "direction": "inward"
+      },
+      "occurrence": "first",
+      "max_step_s": 0.015,
+      "min_radial_speed_m_s": 1e-07,
+      "accuracy": {
+        "time_atol_s": 1e-06,
+        "position_atol_m": 1e-06,
+        "velocity_atol_m_s": 1e-07,
+        "rtol": 1e-07
+      }
+    }
+  ],
+  "notes": "Illustrative SI parameters: kQ=1, q=m=1, R=1 m. A finite nonzero radial-speed crossing, not the minimum-speed turning-point problem. No mechanical resistance, collision or conductor response."
+}

@@ -1,0 +1,82 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "SC38 concentric conductors outer charge -3Q",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "shell",
+        "charge_C": 1e-9,
+        "radius_m": 0.25,
+        "center_m": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "shell",
+        "charge_C": -3.0000000000000004e-9,
+        "radius_m": 0.75,
+        "center_m": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "bounds_m": [
+      -1,
+      1,
+      -1,
+      1,
+      -1,
+      1
+    ]
+  },
+  "observations": [
+    {
+      "id": "V_inner_minus_outer",
+      "type": "potential_difference",
+      "from_m": [
+        0.75,
+        0,
+        0
+      ],
+      "to_m": [
+        0.25,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "V_inner",
+      "type": "potential",
+      "position_m": [
+        0.25,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "V_outer",
+      "type": "potential",
+      "position_m": [
+        0.75,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "E_gap",
+      "type": "field",
+      "position_m": [
+        0.5,
+        0,
+        0
+      ]
+    }
+  ],
+  "notes": "Single Correct Q38 PDF p25/book 1.165. Illustrative Q=1 nC, a=.25m, b=.75m. Radially symmetric vacuum-gap representation; not general conductor response."
+}

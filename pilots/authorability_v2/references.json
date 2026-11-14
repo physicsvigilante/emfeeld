@@ -1,0 +1,484 @@
+{
+  "provenance": "Separate closed-form/quadrature expressions evaluated before native packets; same assistant, not independent or blind.",
+  "constants": {
+    "epsilon_0": 8.8541878188e-12,
+    "G": 6.6743e-11
+  },
+  "checks": {
+    "P01-line-reference": [
+      {
+        "observation": "V_reference",
+        "path": "value",
+        "expected": 0,
+        "unit": "V",
+        "atol": 1e-09,
+        "rtol": 1e-08
+      },
+      {
+        "observation": "V_P",
+        "path": "value",
+        "expected": 34.3508343778519,
+        "unit": "V",
+        "atol": 1e-09,
+        "rtol": 1e-08
+      },
+      {
+        "observation": "delta_V",
+        "path": "value",
+        "expected": 34.3508343778519,
+        "unit": "V",
+        "atol": 1e-09,
+        "rtol": 1e-08
+      }
+    ],
+    "P02-cube": [
+      {
+        "observation": "E_center",
+        "path": "value",
+        "expected": [
+          1.7296551477004707,
+          1.7296551477004707,
+          1.7296551477004707
+        ],
+        "unit": "N/C",
+        "atol": 1e-09,
+        "rtol": 1e-08
+      },
+      {
+        "observation": "E_center",
+        "path": "magnitude",
+        "expected": 2.995850595390266,
+        "unit": "N/C",
+        "atol": 1e-09,
+        "rtol": 1e-08
+      },
+      {
+        "observation": "V_center",
+        "path": "value",
+        "expected": 36.32275810170989,
+        "unit": "V",
+        "atol": 1e-09,
+        "rtol": 1e-08
+      }
+    ],
+    "P03-cavity": [
+      {
+        "observation": "V_P",
+        "path": "value",
+        "expected": 35.11136897797393,
+        "unit": "V",
+        "atol": 1e-09,
+        "rtol": 1e-10
+      }
+    ],
+    "P04-uniform-motion": [
+      {
+        "observation": "initial_K",
+        "path": "value",
+        "expected": 0.0022500000000000003,
+        "unit": "J",
+        "atol": 1e-12,
+        "rtol": 1e-08
+      },
+      {
+        "observation": "position_t2",
+        "path": "value",
+        "expected": [
+          3.0,
+          1.2,
+          0.0
+        ],
+        "unit": "m",
+        "atol": 1e-09,
+        "rtol": 1e-08
+      },
+      {
+        "observation": "velocity_t2",
+        "path": "value",
+        "expected": [
+          1.5,
+          1.2,
+          0.0
+        ],
+        "unit": "m/s",
+        "atol": 1e-09,
+        "rtol": 1e-08
+      },
+      {
+        "observation": "speed_t2",
+        "path": "value",
+        "expected": 1.9209372712298545,
+        "unit": "m/s",
+        "atol": 1e-09,
+        "rtol": 1e-08
+      },
+      {
+        "observation": "K_t2",
+        "path": "value",
+        "expected": 0.00369,
+        "unit": "J",
+        "atol": 1e-12,
+        "rtol": 1e-08
+      },
+      {
+        "observation": "U_t2",
+        "path": "value",
+        "expected": -0.00144,
+        "unit": "J",
+        "atol": 1e-12,
+        "rtol": 1e-08
+      },
+      {
+        "observation": "total_t2",
+        "path": "value",
+        "expected": 0.00225,
+        "unit": "J",
+        "atol": 1e-12,
+        "rtol": 1e-08
+      },
+      {
+        "observation": "exit_plane",
+        "path": "state.time_s",
+        "expected": 1.5,
+        "unit": "s",
+        "atol": 1e-09,
+        "rtol": 1e-08
+      },
+      {
+        "observation": "exit_plane",
+        "path": "state.position_m",
+        "expected": [
+          2.25,
+          0.675,
+          0.0
+        ],
+        "unit": "m",
+        "atol": 1e-09,
+        "rtol": 1e-08
+      },
+      {
+        "observation": "exit_plane",
+        "path": "state.velocity_m_s",
+        "expected": [
+          1.5,
+          0.9,
+          0.0
+        ],
+        "unit": "m/s",
+        "atol": 1e-09,
+        "rtol": 1e-08
+      }
+    ],
+    "P05-two-charge-crossing": [
+      {
+        "observation": "midpoint",
+        "path": "state.time_s",
+        "expected": 27.320139193856054,
+        "unit": "s",
+        "atol": 1e-06,
+        "rtol": 1e-08
+      },
+      {
+        "observation": "midpoint",
+        "path": "state.speed_m_s",
+        "expected": 0.13407126303701922,
+        "unit": "m/s",
+        "atol": 1e-08,
+        "rtol": 1e-08
+      },
+      {
+        "observation": "midpoint",
+        "path": "state.position_m",
+        "expected": [
+          0,
+          0,
+          0
+        ],
+        "unit": "m",
+        "atol": 1e-06,
+        "rtol": 1e-08
+      }
+    ],
+    "P06-potential-crossing": [
+      {
+        "observation": "zero_potential_sphere",
+        "path": "state.time_s",
+        "expected": 83.87132242424467,
+        "unit": "s",
+        "atol": 1e-06,
+        "rtol": 1e-08
+      },
+      {
+        "observation": "zero_potential_sphere",
+        "path": "state.position_m",
+        "expected": [
+          9,
+          0,
+          0
+        ],
+        "unit": "m",
+        "atol": 1e-06,
+        "rtol": 1e-08
+      },
+      {
+        "observation": "zero_potential_sphere",
+        "path": "state.speed_m_s",
+        "expected": 0.06703563151850961,
+        "unit": "m/s",
+        "atol": 1e-08,
+        "rtol": 1e-08
+      },
+      {
+        "observation": "V_start",
+        "path": "value",
+        "expected": 2.2468879465426994,
+        "unit": "V",
+        "atol": 1e-09,
+        "rtol": 1e-08
+      },
+      {
+        "observation": "V_sphere_equator",
+        "path": "value",
+        "expected": 0,
+        "unit": "V",
+        "atol": 1e-09,
+        "rtol": 1e-08
+      },
+      {
+        "observation": "delta_V",
+        "path": "value",
+        "expected": -2.2468879465426994,
+        "unit": "V",
+        "atol": 1e-09,
+        "rtol": 1e-08
+      }
+    ],
+    "P07-numerical-stop": [
+      {
+        "observation": "stop",
+        "path": "state.distance_m",
+        "expected": 0.09988885865580269,
+        "unit": "m",
+        "atol": 1e-09,
+        "rtol": 1e-08
+      },
+      {
+        "observation": "stop",
+        "path": "state.time_s",
+        "expected": 0.00022220032075848329,
+        "unit": "s",
+        "atol": 1e-10,
+        "rtol": 1e-08
+      },
+      {
+        "observation": "stop",
+        "path": "state.velocity_m_s",
+        "expected": [
+          0,
+          0,
+          0
+        ],
+        "unit": "m/s",
+        "atol": 1e-07,
+        "rtol": 0
+      },
+      {
+        "observation": "stop",
+        "path": "state.total_energy_J",
+        "expected": 8.997551786170797e-07,
+        "unit": "J",
+        "atol": 1e-14,
+        "rtol": 1e-08
+      }
+    ],
+    "P08-gravity-composition": [
+      {
+        "observation": "p0_position",
+        "path": "value",
+        "expected": [
+          -0.7245395048629037,
+          -0.3889914092510625,
+          2.0816490111195805
+        ],
+        "unit": "m",
+        "atol": 1e-08,
+        "rtol": 1e-08
+      },
+      {
+        "observation": "p0_velocity",
+        "path": "value",
+        "expected": [
+          -1.0702534774029087,
+          -1.6399630516965078,
+          -0.17036673212743692
+        ],
+        "unit": "m/s",
+        "atol": 1e-08,
+        "rtol": 1e-08
+      },
+      {
+        "observation": "p0_minimum",
+        "path": "state.time_s",
+        "expected": 0.7853981633974483,
+        "unit": "s",
+        "atol": 1e-08,
+        "rtol": 1e-08
+      },
+      {
+        "observation": "p0_minimum",
+        "path": "state.distance_m",
+        "expected": 1,
+        "unit": "m",
+        "atol": 1e-08,
+        "rtol": 1e-08
+      },
+      {
+        "observation": "p0_minimum",
+        "path": "state.speed_m_s",
+        "expected": 2,
+        "unit": "m/s",
+        "atol": 1e-08,
+        "rtol": 1e-08
+      },
+      {
+        "observation": "p0_minimum",
+        "path": "state.position_m",
+        "expected": [
+          -0.48000000000000004,
+          -0.03999999999999998,
+          2.1
+        ],
+        "unit": "m",
+        "atol": 1e-08,
+        "rtol": 1e-08
+      },
+      {
+        "observation": "p0_minimum",
+        "path": "state.velocity_m_s",
+        "expected": [
+          -1.2,
+          -1.6,
+          -0.0
+        ],
+        "unit": "m/s",
+        "atol": 1e-08,
+        "rtol": 1e-08
+      },
+      {
+        "observation": "p0_minimum",
+        "path": "state.kinetic_J",
+        "expected": 0.4,
+        "unit": "J",
+        "atol": 1e-08,
+        "rtol": 1e-08
+      },
+      {
+        "observation": "p0_minimum",
+        "path": "state.potential_J",
+        "expected": -29.525000000000002,
+        "unit": "J",
+        "atol": 1e-07,
+        "rtol": 1e-08
+      },
+      {
+        "observation": "p1_position",
+        "path": "value",
+        "expected": [
+          -0.7245395048629037,
+          -0.3889914092510625,
+          2.0816490111195805
+        ],
+        "unit": "m",
+        "atol": 1e-08,
+        "rtol": 1e-08
+      },
+      {
+        "observation": "p1_velocity",
+        "path": "value",
+        "expected": [
+          -1.0702534774029087,
+          -1.6399630516965078,
+          -0.17036673212743692
+        ],
+        "unit": "m/s",
+        "atol": 1e-08,
+        "rtol": 1e-08
+      },
+      {
+        "observation": "p1_minimum",
+        "path": "state.time_s",
+        "expected": 0.7853981633974483,
+        "unit": "s",
+        "atol": 1e-08,
+        "rtol": 1e-08
+      },
+      {
+        "observation": "p1_minimum",
+        "path": "state.distance_m",
+        "expected": 1,
+        "unit": "m",
+        "atol": 1e-08,
+        "rtol": 1e-08
+      },
+      {
+        "observation": "p1_minimum",
+        "path": "state.speed_m_s",
+        "expected": 2,
+        "unit": "m/s",
+        "atol": 1e-08,
+        "rtol": 1e-08
+      },
+      {
+        "observation": "p1_minimum",
+        "path": "state.position_m",
+        "expected": [
+          -0.48000000000000004,
+          -0.03999999999999998,
+          2.1
+        ],
+        "unit": "m",
+        "atol": 1e-08,
+        "rtol": 1e-08
+      },
+      {
+        "observation": "p1_minimum",
+        "path": "state.velocity_m_s",
+        "expected": [
+          -1.2,
+          -1.6,
+          -0.0
+        ],
+        "unit": "m/s",
+        "atol": 1e-08,
+        "rtol": 1e-08
+      },
+      {
+        "observation": "p1_minimum",
+        "path": "state.kinetic_J",
+        "expected": 4.0,
+        "unit": "J",
+        "atol": 1e-08,
+        "rtol": 1e-08
+      },
+      {
+        "observation": "p1_minimum",
+        "path": "state.potential_J",
+        "expected": -295.25,
+        "unit": "J",
+        "atol": 1e-07,
+        "rtol": 1e-08
+      }
+    ],
+    "L01-rest-turning": [
+      {
+        "observation": "valid_V",
+        "path": "value",
+        "expected": 8.987551786170798,
+        "unit": "V",
+        "atol": 1e-09,
+        "rtol": 1e-08
+      }
+    ],
+    "L02-ring": []
+  }
+}

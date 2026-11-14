@@ -1,0 +1,66 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "NUM18: 3D Ex cancellation, second charge inferred by author",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "point",
+        "charge_C": 7.723245335901128e-8,
+        "center_m": [
+          0,
+          0,
+          0
+        ]
+      },
+      {
+        "type": "point",
+        "charge_C": -3.3e-8,
+        "center_m": [
+          2,
+          0,
+          0
+        ]
+      }
+    ],
+    "bounds_m": [
+      -1,
+      4,
+      -2,
+      2,
+      -1,
+      3
+    ]
+  },
+  "observations": [
+    {
+      "id": "field_P",
+      "type": "field",
+      "position_m": [
+        3,
+        1,
+        1
+      ]
+    },
+    {
+      "id": "potential_P",
+      "type": "potential",
+      "position_m": [
+        3,
+        1,
+        1
+      ]
+    },
+    {
+      "id": "field_offaxis",
+      "type": "field",
+      "position_m": [
+        3,
+        1,
+        2
+      ]
+    }
+  ],
+  "notes": "Q1 and both charge locations from question; Q2=-33 nC derived in authoring, not solved inversely by engine."
+}

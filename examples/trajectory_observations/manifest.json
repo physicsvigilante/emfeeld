@@ -1,0 +1,83 @@
+{
+  "scope": "Saved-sample observation packets, not a new blind benchmark.",
+  "examples": [
+    {
+      "file": "sc-99.json",
+      "expected_status": "ok",
+      "requests": 21,
+      "original_scene": "pilots/authorability_v1/scenes/sc-99.json",
+      "expected_failures": {},
+      "notes": "Unchanged pilot instantiation. Reference: constant-acceleration equations; energies in J, not electric potential in V."
+    },
+    {
+      "file": "mc-36.json",
+      "expected_status": "ok",
+      "requests": 28,
+      "original_scene": "pilots/authorability_v1/scenes/mc-36.json",
+      "expected_failures": {},
+      "notes": "Unchanged pilot ellipse; separate Kepler-equation reference, not quantum or radiating electron dynamics."
+    },
+    {
+      "file": "ideal_sun.json",
+      "expected_status": "ok",
+      "requests": 24,
+      "original_scene": "examples/ideal_sun.json",
+      "expected_failures": {},
+      "notes": "Unchanged illustrative fixed-Sun scene, not an ephemeris. Both independent particles measured; no mutual interaction. References: Kepler equations."
+    },
+    {
+      "file": "gravity_composition.json",
+      "expected_status": "ok",
+      "requests": 56,
+      "original_scene": null,
+      "expected_failures": {},
+      "notes": "New illustrative authoring test, not a PDF problem. Independent harmonic-oscillator reference inside both penetrable prescribed spheres; different test masses share a path."
+    },
+    {
+      "file": "sc-28.json",
+      "expected_status": "ok",
+      "requests": 15,
+      "original_scene": "pilots/authorability_v1/scenes/sc-28.json",
+      "expected_failures": {},
+      "notes": "Unchanged pilot numerical instantiation. Requests are saved times only, NOT the crossing/turning result. Extraction compared against the existing native trajectory arrays; pilot reference results are preserved."
+    },
+    {
+      "file": "sol-26.json",
+      "expected_status": "ok",
+      "requests": 15,
+      "original_scene": "pilots/authorability_v1/scenes/sol-26.json",
+      "expected_failures": {},
+      "notes": "Unchanged pilot numerical instantiation. Requests are saved times only, NOT the crossing/turning result. Extraction compared against the existing native trajectory arrays; pilot reference results are preserved."
+    },
+    {
+      "file": "selection_errors.json",
+      "expected_status": "partial",
+      "requests": 5,
+      "original_scene": null,
+      "expected_failures": {
+        "selection_error": 2
+      },
+      "notes": "Deliberate off-grid and too-tight tolerance failures. Nearest successful time is 0.25 s, not the requested 0.26 s."
+    },
+    {
+      "file": "unsupported_motion.json",
+      "expected_status": "partial",
+      "requests": 3,
+      "original_scene": null,
+      "expected_failures": {
+        "unsupported_trajectory": 1
+      },
+      "notes": "No shell crossing support added, including at initial sample. The continuous potential and valid exterior field still return."
+    },
+    {
+      "file": "particle_failure.json",
+      "expected_status": "partial",
+      "requests": 4,
+      "original_scene": null,
+      "expected_failures": {
+        "domain_error": 2
+      },
+      "notes": "Deliberate singular launch for particle 0; particle 1 is a neutral test particle away from the singularity. Failed solves are cached, not retried per measurement."
+    }
+  ]
+}

@@ -1,0 +1,93 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "NUM30 / electron from concentric charged inner shell to outer shell, vacuum-gap radial field",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "point",
+        "charge_C": -6e-8,
+        "center_m": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "bounds_m": [
+      -0.35,
+      0.35,
+      -0.35,
+      0.35,
+      -0.35,
+      0.35
+    ],
+    "particles": [
+      {
+        "mass_kg": 9.09090909090909e-31,
+        "charge_C": -1.6e-19,
+        "position_m": [
+          0.15,
+          0,
+          0
+        ],
+        "velocity_m_s": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "duration_s": 2.5e-8,
+    "samples": 501
+  },
+  "observations": [
+    {
+      "id": "first_outer_radius",
+      "type": "trajectory_event",
+      "particle_index": 0,
+      "condition": {
+        "type": "radial",
+        "center_m": [
+          0,
+          0,
+          0
+        ],
+        "radius_m": 0.3,
+        "direction": "outward"
+      },
+      "occurrence": "first",
+      "max_step_s": 2e-11,
+      "min_radial_speed_m_s": 1,
+      "accuracy": {
+        "time_atol_s": 2e-11,
+        "position_atol_m": 0.00002,
+        "velocity_atol_m_s": 200,
+        "rtol": 0.000001
+      }
+    },
+    {
+      "id": "initial_kinetic",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "kinetic_energy",
+      "sample_index": 0
+    },
+    {
+      "id": "potential_gap_difference",
+      "type": "potential_difference",
+      "from_m": [
+        0.15,
+        0,
+        0
+      ],
+      "to_m": [
+        0.3,
+        0,
+        0
+      ]
+    }
+  ],
+  "notes": "NUM30 PDF p71/book 1.211. Qinner=-6e-8 C; rinner=.15m; router=.3m; e/m=1.76e11 C/kg, electron q=-1.6e-19 C. The point source is analytically equivalent ONLY in the shell vacuum gap. First outward crossing is valid; trajectory continuation beyond impact with the outer shell is NOT a physical collision simulation."
+}

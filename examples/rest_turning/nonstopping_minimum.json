@@ -1,0 +1,73 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "Illustrative non-stopping radial minimum after rest launch",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "uniform",
+        "field_N_C": [
+          1,
+          0,
+          0
+        ]
+      }
+    ],
+    "particles": [
+      {
+        "mass_kg": 1.0,
+        "charge_C": 1.0,
+        "position_m": [
+          -2,
+          1,
+          0
+        ],
+        "velocity_m_s": [
+          0.0,
+          0.0,
+          0.0
+        ]
+      }
+    ],
+    "duration_s": 7.0,
+    "samples": 2,
+    "bounds_m": [
+      -10,
+      10,
+      -10,
+      10,
+      -10,
+      10
+    ]
+  },
+  "observations": [
+    {
+      "id": "later",
+      "type": "trajectory_event",
+      "particle_index": 0,
+      "condition": {
+        "type": "radial_turning",
+        "center_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "extremum": "minimum"
+      },
+      "initial_policy": "exclude_rest_launch",
+      "occurrence": "first",
+      "max_step_s": 0.05,
+      "min_distance_m": 1e-08,
+      "min_radial_acceleration_m_s2": 1e-08,
+      "accuracy": {
+        "time_atol_s": 1e-07,
+        "position_atol_m": 1e-07,
+        "velocity_atol_m_s": 1e-07,
+        "radial_speed_atol_m_s": 1e-08,
+        "rtol": 1e-08
+      }
+    }
+  ],
+  "notes": "Illustrative rest launch with x=-2+t^2/2 m and y=1 m. Minimum distance is not a total stop."
+}

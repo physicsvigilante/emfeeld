@@ -1,0 +1,392 @@
+{
+  "version": 1,
+  "description": "Two catalogue-guided compositions checked with same-author harmonic expressions; no engine-derived references.",
+  "cases": [
+    {
+      "id": "discovery_electric",
+      "packet": "examples/authoring/discovery_electric.json",
+      "sha256": "0ca3d65cfcf8435384efa0009e71c27df7ae9cf0e560a9dbfea0ed23aee34f44",
+      "statuses": {
+        "field_initial": "ok",
+        "potential_initial": "ok",
+        "position_t1": "ok",
+        "velocity_t1_5": "ok",
+        "cross_equilibrium_plane": "ok"
+      },
+      "checks": [
+        {
+          "id": "field_initial",
+          "path": [
+            "value"
+          ],
+          "value": [
+            -0.7,
+            -0.2,
+            0.1
+          ],
+          "atol": 1e-08,
+          "rtol": 1e-08
+        },
+        {
+          "id": "field_initial",
+          "path": [
+            "unit"
+          ],
+          "value": "N/C"
+        },
+        {
+          "id": "potential_initial",
+          "path": [
+            "value"
+          ],
+          "value": -10.168262499999999,
+          "atol": 1e-08,
+          "rtol": 1e-08
+        },
+        {
+          "id": "potential_initial",
+          "path": [
+            "unit"
+          ],
+          "value": "V"
+        },
+        {
+          "id": "position_t1",
+          "path": [
+            "value"
+          ],
+          "value": [
+            0.4140645156269081,
+            0.2463546581352073,
+            0.15719041713437049
+          ],
+          "atol": 1e-08,
+          "rtol": 1e-08
+        },
+        {
+          "id": "position_t1",
+          "path": [
+            "unit"
+          ],
+          "value": "m"
+        },
+        {
+          "id": "velocity_t1_5",
+          "path": [
+            "value"
+          ],
+          "value": [
+            -0.7053202107896084,
+            -0.1853515569872703,
+            0.11036007891056088
+          ],
+          "atol": 1e-08,
+          "rtol": 1e-08
+        },
+        {
+          "id": "velocity_t1_5",
+          "path": [
+            "unit"
+          ],
+          "value": "m/s"
+        },
+        {
+          "id": "cross_equilibrium_plane",
+          "path": [
+            "state",
+            "time_s"
+          ],
+          "value": 1.4288992721907328,
+          "atol": 1e-07,
+          "rtol": 1e-08
+        },
+        {
+          "id": "cross_equilibrium_plane",
+          "path": [
+            "state",
+            "position_m"
+          ],
+          "value": [
+            0.11999999999999991,
+            0.19627416997969524,
+            0.21935028842544402
+          ],
+          "atol": 1e-07,
+          "rtol": 1e-08
+        },
+        {
+          "id": "cross_equilibrium_plane",
+          "path": [
+            "state",
+            "velocity_m_s"
+          ],
+          "value": [
+            -0.7071067811865475,
+            -0.16970562748477144,
+            0.12020815280171308
+          ],
+          "atol": 1e-07,
+          "rtol": 1e-08
+        },
+        {
+          "id": "cross_equilibrium_plane",
+          "path": [
+            "state",
+            "speed_m_s"
+          ],
+          "value": 0.7370549504616327,
+          "atol": 1e-07,
+          "rtol": 1e-08
+        },
+        {
+          "id": "cross_equilibrium_plane",
+          "path": [
+            "state",
+            "kinetic_J"
+          ],
+          "value": 2.716249999999999e-07,
+          "atol": 1e-10,
+          "rtol": 1e-08
+        },
+        {
+          "id": "cross_equilibrium_plane",
+          "path": [
+            "state",
+            "potential_J"
+          ],
+          "value": -1.0403637499999997e-05,
+          "atol": 1e-10,
+          "rtol": 1e-08
+        },
+        {
+          "id": "cross_equilibrium_plane",
+          "path": [
+            "state",
+            "total_energy_J"
+          ],
+          "value": -1.0132012499999998e-05,
+          "atol": 1e-10,
+          "rtol": 1e-08
+        },
+        {
+          "id": "cross_equilibrium_plane",
+          "path": [
+            "units",
+            "time_s"
+          ],
+          "value": "s"
+        },
+        {
+          "id": "cross_equilibrium_plane",
+          "path": [
+            "units",
+            "total_energy_J"
+          ],
+          "value": "J"
+        },
+        {
+          "id": "cross_equilibrium_plane",
+          "path": [
+            "diagnostics",
+            "refinement",
+            "passed"
+          ],
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "discovery_gravity",
+      "packet": "examples/authoring/discovery_gravity.json",
+      "sha256": "67dc5e1c354b2693bee8d834543f827cc2e50aa183f38e243422f7dfbaf0a7f7",
+      "statuses": {
+        "field_initial": "ok",
+        "potential_initial": "ok",
+        "position_t1": "ok",
+        "velocity_t1_5": "ok",
+        "cross_equilibrium_plane": "ok"
+      },
+      "checks": [
+        {
+          "id": "field_initial",
+          "path": [
+            "value"
+          ],
+          "value": [
+            -0.7,
+            -0.2,
+            0.1
+          ],
+          "atol": 1e-08,
+          "rtol": 1e-08
+        },
+        {
+          "id": "field_initial",
+          "path": [
+            "unit"
+          ],
+          "value": "m/s^2"
+        },
+        {
+          "id": "potential_initial",
+          "path": [
+            "value"
+          ],
+          "value": -10.168262499999999,
+          "atol": 1e-08,
+          "rtol": 1e-08
+        },
+        {
+          "id": "potential_initial",
+          "path": [
+            "unit"
+          ],
+          "value": "J/kg"
+        },
+        {
+          "id": "position_t1",
+          "path": [
+            "value"
+          ],
+          "value": [
+            0.4140645156269081,
+            0.2463546581352073,
+            0.15719041713437049
+          ],
+          "atol": 1e-08,
+          "rtol": 1e-08
+        },
+        {
+          "id": "position_t1",
+          "path": [
+            "unit"
+          ],
+          "value": "m"
+        },
+        {
+          "id": "velocity_t1_5",
+          "path": [
+            "value"
+          ],
+          "value": [
+            -0.7053202107896084,
+            -0.1853515569872703,
+            0.11036007891056088
+          ],
+          "atol": 1e-08,
+          "rtol": 1e-08
+        },
+        {
+          "id": "velocity_t1_5",
+          "path": [
+            "unit"
+          ],
+          "value": "m/s"
+        },
+        {
+          "id": "cross_equilibrium_plane",
+          "path": [
+            "state",
+            "time_s"
+          ],
+          "value": 1.4288992721907328,
+          "atol": 1e-07,
+          "rtol": 1e-08
+        },
+        {
+          "id": "cross_equilibrium_plane",
+          "path": [
+            "state",
+            "position_m"
+          ],
+          "value": [
+            0.11999999999999991,
+            0.19627416997969524,
+            0.21935028842544402
+          ],
+          "atol": 1e-07,
+          "rtol": 1e-08
+        },
+        {
+          "id": "cross_equilibrium_plane",
+          "path": [
+            "state",
+            "velocity_m_s"
+          ],
+          "value": [
+            -0.7071067811865475,
+            -0.16970562748477144,
+            0.12020815280171308
+          ],
+          "atol": 1e-07,
+          "rtol": 1e-08
+        },
+        {
+          "id": "cross_equilibrium_plane",
+          "path": [
+            "state",
+            "speed_m_s"
+          ],
+          "value": 0.7370549504616327,
+          "atol": 1e-07,
+          "rtol": 1e-08
+        },
+        {
+          "id": "cross_equilibrium_plane",
+          "path": [
+            "state",
+            "kinetic_J"
+          ],
+          "value": 0.5432499999999999,
+          "atol": 1e-10,
+          "rtol": 1e-08
+        },
+        {
+          "id": "cross_equilibrium_plane",
+          "path": [
+            "state",
+            "potential_J"
+          ],
+          "value": -20.807274999999997,
+          "atol": 1e-10,
+          "rtol": 1e-08
+        },
+        {
+          "id": "cross_equilibrium_plane",
+          "path": [
+            "state",
+            "total_energy_J"
+          ],
+          "value": -20.264024999999997,
+          "atol": 1e-10,
+          "rtol": 1e-08
+        },
+        {
+          "id": "cross_equilibrium_plane",
+          "path": [
+            "units",
+            "time_s"
+          ],
+          "value": "s"
+        },
+        {
+          "id": "cross_equilibrium_plane",
+          "path": [
+            "units",
+            "total_energy_J"
+          ],
+          "value": "J"
+        },
+        {
+          "id": "cross_equilibrium_plane",
+          "path": [
+            "diagnostics",
+            "refinement",
+            "passed"
+          ],
+          "value": true
+        }
+      ]
+    }
+  ]
+}

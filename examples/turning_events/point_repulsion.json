@@ -1,0 +1,93 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "Repulsive point source: genuine stop and return",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "point",
+        "charge_C": 1.1126500562018528e-10
+      }
+    ],
+    "particles": [
+      {
+        "mass_kg": 1,
+        "charge_C": 1,
+        "position_m": [
+          2,
+          0,
+          0
+        ],
+        "velocity_m_s": [
+          -1,
+          0,
+          0
+        ]
+      }
+    ],
+    "duration_s": 5,
+    "samples": 2,
+    "bounds_m": [
+      -4,
+      4,
+      -4,
+      4,
+      -4,
+      4
+    ]
+  },
+  "observations": [
+    {
+      "id": "turn",
+      "type": "trajectory_event",
+      "particle_index": 0,
+      "condition": {
+        "type": "radial_turning",
+        "center_m": [
+          0,
+          0,
+          0
+        ],
+        "extremum": "minimum"
+      },
+      "occurrence": "first",
+      "max_step_s": 0.05,
+      "min_distance_m": 1e-08,
+      "min_radial_acceleration_m_s2": 1e-08,
+      "accuracy": {
+        "time_atol_s": 1e-07,
+        "position_atol_m": 1e-07,
+        "velocity_atol_m_s": 1e-07,
+        "radial_speed_atol_m_s": 1e-08,
+        "rtol": 1e-08
+      }
+    },
+    {
+      "id": "maximum",
+      "type": "trajectory_event",
+      "particle_index": 0,
+      "condition": {
+        "type": "radial_turning",
+        "center_m": [
+          0,
+          0,
+          0
+        ],
+        "extremum": "maximum"
+      },
+      "occurrence": "first",
+      "max_step_s": 0.05,
+      "min_distance_m": 1e-08,
+      "min_radial_acceleration_m_s2": 1e-08,
+      "accuracy": {
+        "time_atol_s": 1e-07,
+        "position_atol_m": 1e-07,
+        "velocity_atol_m_s": 1e-07,
+        "radial_speed_atol_m_s": 1e-08,
+        "rtol": 1e-08
+      }
+    }
+  ],
+  "notes": "Illustrative SI choices make kQq/m=1 m^3/s^2. Energy gives r_min=1 m; separate time integral gives 1+asinh(1)/sqrt(2) s. No maximum detected before t=5 s."
+}

@@ -1,0 +1,670 @@
+{
+  "version": 1,
+  "description": "Exact published v6 forward-output regression; same-author analytic references, not a blind benchmark or native inverse solutions.",
+  "cases": [
+    {
+      "id": "ARCH13-Q6-GAP",
+      "packet": "pilots/authorability_v6/first_attempt/ARCH13-Q6-GAP.json",
+      "sha256": "5dd4325a20e06e66fcd532761f2d37d84e55628c683404730bfb11639416a6cd",
+      "statuses": {
+        "E_target": "ok",
+        "V_target": "ok",
+        "E_check": "ok"
+      },
+      "checks": [
+        {
+          "id": "E_target",
+          "path": [
+            "value"
+          ],
+          "value": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "atol": 1e-09,
+          "rtol": 1e-10
+        },
+        {
+          "id": "E_target",
+          "path": [
+            "unit"
+          ],
+          "value": "N/C"
+        },
+        {
+          "id": "V_target",
+          "path": [
+            "value"
+          ],
+          "value": 70.58806666298,
+          "atol": 1e-09,
+          "rtol": 1e-10
+        },
+        {
+          "id": "V_target",
+          "path": [
+            "unit"
+          ],
+          "value": "V"
+        },
+        {
+          "id": "E_check",
+          "path": [
+            "value"
+          ],
+          "value": [
+            -9.638206628705124,
+            25.248955529264748,
+            0.0
+          ],
+          "atol": 1e-09,
+          "rtol": 1e-10
+        },
+        {
+          "id": "E_check",
+          "path": [
+            "unit"
+          ],
+          "value": "N/C"
+        }
+      ]
+    },
+    {
+      "id": "ARCH13-Q6-OUTER",
+      "packet": "pilots/authorability_v6/first_attempt/ARCH13-Q6-OUTER.json",
+      "sha256": "59171ad315879ab5d141ebad9fbc46814a0fecfcbba4cfc09349105799853b13",
+      "statuses": {
+        "E_target": "ok",
+        "V_target": "ok",
+        "E_check": "ok"
+      },
+      "checks": [
+        {
+          "id": "E_target",
+          "path": [
+            "value"
+          ],
+          "value": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "atol": 1e-09,
+          "rtol": 1e-10
+        },
+        {
+          "id": "E_target",
+          "path": [
+            "unit"
+          ],
+          "value": "N/C"
+        },
+        {
+          "id": "V_target",
+          "path": [
+            "value"
+          ],
+          "value": 9.035272532861438,
+          "atol": 1e-09,
+          "rtol": 1e-10
+        },
+        {
+          "id": "V_target",
+          "path": [
+            "unit"
+          ],
+          "value": "V"
+        },
+        {
+          "id": "E_check",
+          "path": [
+            "value"
+          ],
+          "value": [
+            -9.638206628705124,
+            0.40195606389578753,
+            0.0
+          ],
+          "atol": 1e-09,
+          "rtol": 1e-10
+        },
+        {
+          "id": "E_check",
+          "path": [
+            "unit"
+          ],
+          "value": "N/C"
+        }
+      ]
+    },
+    {
+      "id": "ARCH14-Q4-LINE",
+      "packet": "pilots/authorability_v6/first_attempt/ARCH14-Q4-LINE.json",
+      "sha256": "5670ed94b372b57316bc9fb9136bfc097b00fa10dd0dc56324512d4b8bde32dc",
+      "statuses": {
+        "E_r0": "ok",
+        "E_half": "ok"
+      },
+      "checks": [
+        {
+          "id": "E_r0",
+          "path": [
+            "value"
+          ],
+          "value": [
+            5.647045333038401,
+            0.0,
+            0.0
+          ],
+          "atol": 1e-09,
+          "rtol": 1e-10
+        },
+        {
+          "id": "E_r0",
+          "path": [
+            "unit"
+          ],
+          "value": "N/C"
+        },
+        {
+          "id": "E_half",
+          "path": [
+            "value"
+          ],
+          "value": [
+            11.294090666076801,
+            0.0,
+            0.0
+          ],
+          "atol": 1e-09,
+          "rtol": 1e-10
+        },
+        {
+          "id": "E_half",
+          "path": [
+            "unit"
+          ],
+          "value": "N/C"
+        }
+      ]
+    },
+    {
+      "id": "ARCH14-Q4-PLANE",
+      "packet": "pilots/authorability_v6/first_attempt/ARCH14-Q4-PLANE.json",
+      "sha256": "ffda4566d0a2c99b7c3857b3ae907aeda457992c896f8dbd8ebbcc3970f8000d",
+      "statuses": {
+        "E_r0": "ok",
+        "E_half": "ok"
+      },
+      "checks": [
+        {
+          "id": "E_r0",
+          "path": [
+            "value"
+          ],
+          "value": [
+            0.0,
+            0.0,
+            5.647045333038401
+          ],
+          "atol": 1e-09,
+          "rtol": 1e-10
+        },
+        {
+          "id": "E_r0",
+          "path": [
+            "unit"
+          ],
+          "value": "N/C"
+        },
+        {
+          "id": "E_half",
+          "path": [
+            "value"
+          ],
+          "value": [
+            0.0,
+            0.0,
+            5.647045333038401
+          ],
+          "atol": 1e-09,
+          "rtol": 1e-10
+        },
+        {
+          "id": "E_half",
+          "path": [
+            "unit"
+          ],
+          "value": "N/C"
+        }
+      ]
+    },
+    {
+      "id": "ARCH14-Q4-POINT",
+      "packet": "pilots/authorability_v6/first_attempt/ARCH14-Q4-POINT.json",
+      "sha256": "dac8d46d03f383274b3c33e1166ded8e61dce6f581b517018ccd2692d9b6544e",
+      "statuses": {
+        "E_r0": "ok",
+        "E_half": "ok"
+      },
+      "checks": [
+        {
+          "id": "E_r0",
+          "path": [
+            "value"
+          ],
+          "value": [
+            5.647045333038401,
+            0.0,
+            0.0
+          ],
+          "atol": 1e-09,
+          "rtol": 1e-10
+        },
+        {
+          "id": "E_r0",
+          "path": [
+            "unit"
+          ],
+          "value": "N/C"
+        },
+        {
+          "id": "E_half",
+          "path": [
+            "value"
+          ],
+          "value": [
+            22.588181332153603,
+            0.0,
+            0.0
+          ],
+          "atol": 1e-09,
+          "rtol": 1e-10
+        },
+        {
+          "id": "E_half",
+          "path": [
+            "unit"
+          ],
+          "value": "N/C"
+        }
+      ]
+    },
+    {
+      "id": "MAIN19-Q5-LINE-OUTWARD",
+      "packet": "pilots/authorability_v6/first_attempt/MAIN19-Q5-LINE-OUTWARD.json",
+      "sha256": "3fac0d23930d7c271fa664aa05438723bbaaa128b6c982252c39bb9a9702f579",
+      "statuses": {
+        "cross_double_radius": "ok",
+        "initial_speed": "ok",
+        "initial_V": "ok",
+        "target_V": "ok"
+      },
+      "checks": [
+        {
+          "id": "cross_double_radius",
+          "path": [
+            "state",
+            "time_s"
+          ],
+          "value": 1.7887688153403605,
+          "atol": 1e-06,
+          "rtol": 1e-08
+        },
+        {
+          "id": "cross_double_radius",
+          "path": [
+            "state",
+            "position_m"
+          ],
+          "value": [
+            1,
+            0,
+            0
+          ],
+          "atol": 1e-08,
+          "rtol": 1e-08
+        },
+        {
+          "id": "cross_double_radius",
+          "path": [
+            "state",
+            "velocity_m_s"
+          ],
+          "value": [
+            0.4991871865631484,
+            0,
+            0
+          ],
+          "atol": 1e-07,
+          "rtol": 1e-08
+        },
+        {
+          "id": "cross_double_radius",
+          "path": [
+            "state",
+            "speed_m_s"
+          ],
+          "value": 0.4991871865631484,
+          "atol": 1e-07,
+          "rtol": 1e-08
+        },
+        {
+          "id": "cross_double_radius",
+          "path": [
+            "state",
+            "kinetic_J"
+          ],
+          "value": 0.0001245939236144158,
+          "atol": 1e-10,
+          "rtol": 1e-08
+        },
+        {
+          "id": "cross_double_radius",
+          "path": [
+            "diagnostics",
+            "refinement",
+            "passed"
+          ],
+          "value": true
+        },
+        {
+          "id": "initial_speed",
+          "path": [
+            "value"
+          ],
+          "value": 0.0,
+          "atol": 1e-15,
+          "rtol": 0
+        },
+        {
+          "id": "initial_speed",
+          "path": [
+            "unit"
+          ],
+          "value": "m/s"
+        },
+        {
+          "id": "initial_V",
+          "path": [
+            "value"
+          ],
+          "value": 124.59392361441577,
+          "atol": 1e-09,
+          "rtol": 1e-10
+        },
+        {
+          "id": "initial_V",
+          "path": [
+            "unit"
+          ],
+          "value": "V"
+        },
+        {
+          "id": "target_V",
+          "path": [
+            "value"
+          ],
+          "value": 0.0,
+          "atol": 1e-09,
+          "rtol": 1e-10
+        },
+        {
+          "id": "target_V",
+          "path": [
+            "unit"
+          ],
+          "value": "V"
+        }
+      ]
+    },
+    {
+      "id": "NUM10-COULOMB-WEIGHT",
+      "packet": "pilots/authorability_v6/first_attempt/NUM10-COULOMB-WEIGHT.json",
+      "sha256": "86027ff14f9c23881c7eb8022dcfc8af59b2ce415eab67d0c9e3e3b88b5f32c5",
+      "statuses": {
+        "E_at_second": "ok",
+        "F_on_second": "ok"
+      },
+      "checks": [
+        {
+          "id": "E_at_second",
+          "path": [
+            "value"
+          ],
+          "value": [
+            1.0624999999999999e-07,
+            0.0,
+            0.0
+          ],
+          "atol": 1e-38,
+          "rtol": 1e-10
+        },
+        {
+          "id": "E_at_second",
+          "path": [
+            "unit"
+          ],
+          "value": "N/C"
+        },
+        {
+          "id": "F_on_second",
+          "path": [
+            "value"
+          ],
+          "value": [
+            1.6999999999999998e-26,
+            0.0,
+            0.0
+          ],
+          "atol": 1e-38,
+          "rtol": 1e-10
+        },
+        {
+          "id": "F_on_second",
+          "path": [
+            "unit"
+          ],
+          "value": "N"
+        }
+      ]
+    },
+    {
+      "id": "NUM18-THREED-EX",
+      "packet": "pilots/authorability_v6/first_attempt/NUM18-THREED-EX.json",
+      "sha256": "902e4c2f71dc3a97aee01e58cbcb46a7bf2ed649a107dc83d6e98e623c7b11de",
+      "statuses": {
+        "field_P": "ok",
+        "potential_P": "ok",
+        "field_offaxis": "ok"
+      },
+      "checks": [
+        {
+          "id": "field_P",
+          "path": [
+            "value"
+          ],
+          "value": [
+            7.105427357601002e-15,
+            -38.05241324941035,
+            -38.05241324941035
+          ],
+          "atol": 1e-09,
+          "rtol": 1e-10
+        },
+        {
+          "id": "field_P",
+          "path": [
+            "unit"
+          ],
+          "value": "N/C"
+        },
+        {
+          "id": "potential_P",
+          "path": [
+            "value"
+          ],
+          "value": 38.05241324941039,
+          "atol": 1e-09,
+          "rtol": 1e-10
+        },
+        {
+          "id": "potential_P",
+          "path": [
+            "unit"
+          ],
+          "value": "V"
+        },
+        {
+          "id": "field_offaxis",
+          "path": [
+            "value"
+          ],
+          "value": [
+            19.572708845850183,
+            -6.929323442635383,
+            -13.858646885270765
+          ],
+          "atol": 1e-09,
+          "rtol": 1e-10
+        },
+        {
+          "id": "field_offaxis",
+          "path": [
+            "unit"
+          ],
+          "value": "N/C"
+        }
+      ]
+    },
+    {
+      "id": "SC09-POLYGON",
+      "packet": "pilots/authorability_v6/first_attempt/SC09-POLYGON.json",
+      "sha256": "906f4fdc87153b56b2a17d53b646ed9c163fd71465864854e4af738978e46ab4",
+      "statuses": {
+        "E_centre": "ok",
+        "V_centre": "ok",
+        "E_above": "ok"
+      },
+      "checks": [
+        {
+          "id": "E_centre",
+          "path": [
+            "value"
+          ],
+          "value": [
+            12.482710814126108,
+            0.0,
+            0.0
+          ],
+          "atol": 1e-09,
+          "rtol": 1e-10
+        },
+        {
+          "id": "E_centre",
+          "path": [
+            "unit"
+          ],
+          "value": "N/C"
+        },
+        {
+          "id": "V_centre",
+          "path": [
+            "value"
+          ],
+          "value": 89.87551786170798,
+          "atol": 1e-09,
+          "rtol": 1e-10
+        },
+        {
+          "id": "V_centre",
+          "path": [
+            "unit"
+          ],
+          "value": "V"
+        },
+        {
+          "id": "E_above",
+          "path": [
+            "value"
+          ],
+          "value": [
+            8.0448265322553,
+            -8.881784197001252e-16,
+            28.156892862893546
+          ],
+          "atol": 1e-09,
+          "rtol": 1e-10
+        },
+        {
+          "id": "E_above",
+          "path": [
+            "unit"
+          ],
+          "value": "N/C"
+        }
+      ]
+    },
+    {
+      "id": "SC17-HALF-POTENTIAL",
+      "packet": "pilots/authorability_v6/first_attempt/SC17-HALF-POTENTIAL.json",
+      "sha256": "4093e8dd3ebb4b1307d08c426817b738a5480a645879569f2a827df7366544a3",
+      "statuses": {
+        "centre": "ok",
+        "P_candidate": "ok",
+        "at_surface": "ok"
+      },
+      "checks": [
+        {
+          "id": "centre",
+          "path": [
+            "value"
+          ],
+          "value": 134.81327679256196,
+          "atol": 1e-09,
+          "rtol": 1e-10
+        },
+        {
+          "id": "centre",
+          "path": [
+            "unit"
+          ],
+          "value": "V"
+        },
+        {
+          "id": "P_candidate",
+          "path": [
+            "value"
+          ],
+          "value": 67.40663839628098,
+          "atol": 1e-09,
+          "rtol": 1e-10
+        },
+        {
+          "id": "P_candidate",
+          "path": [
+            "unit"
+          ],
+          "value": "V"
+        },
+        {
+          "id": "at_surface",
+          "path": [
+            "value"
+          ],
+          "value": 89.87551786170798,
+          "atol": 1e-09,
+          "rtol": 1e-10
+        },
+        {
+          "id": "at_surface",
+          "path": [
+            "unit"
+          ],
+          "value": "V"
+        }
+      ]
+    }
+  ]
+}
