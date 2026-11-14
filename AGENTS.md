@@ -53,3 +53,15 @@ Shared potential colour ranges and camera framing are comparison aids; arrows
 still show direction only. Teacher acceptance is not inferred from rendering.
 Keep historical evidence untouched. CI must cover relevant PRs targeting main
 and relevant main pushes; do not return to foundation-branch-only triggers.
+
+## Immutable named model revisions (candidate)
+Read docs/MODEL_REVISIONS_IMPLEMENTATION.md and its pinned design contract.
+Never edit an accepted revision in place, silently resolve a `latest` parent, or
+retarget a physical change by array position. Investigations, analysis settings
+and presentation are separate from physical revisions. Revalidate each request
+against each revision; keep source hypotheses distinct from source-grounded facts.
+Computed-input receipts are recorded evidence, not independent certification;
+changed dependencies block affected execution. Do not broaden the old study-v1
+contract, overwrite source/pilot evidence, or weaken its numerical restrictions.
+The implementation branch is stacked on PR #2; neither PR #2 nor design PR #3
+is implicitly accepted or merged by a new implementation commit.

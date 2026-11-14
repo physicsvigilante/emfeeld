@@ -1,0 +1,30 @@
+{
+  "import_version": 1,
+  "model_id": "gravity-exploration",
+  "revision_id": "root",
+  "source_sha256": "5d2b0731adee648906d8bcf363a4ae49db37917abab422f9254be3e8ec0f2062",
+  "source_ids": [
+    "sun"
+  ],
+  "particle_ids": [
+    "planet_circular",
+    "planet_inclined"
+  ],
+  "default_origin": {
+    "origin": "illustrative_choice",
+    "reason": "Reuse the existing illustrative model unchanged",
+    "evidence": "examples/ideal_sun.json; not a source-given textbook instance"
+  },
+  "interpretation": {
+    "statement": "Reuse one physical model for a source-property hypothesis and a launch-condition hypothesis.",
+    "assumptions": [
+      "Sources fixed and prescribed; independent nonrelativistic test particles; no collision or source feedback."
+    ],
+    "requirements": [
+      "fixed_prescribed_sources",
+      "independent_nonrelativistic_test_particles"
+    ],
+    "unresolved": [],
+    "scenario_intent": "illustrative_exploration"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "presentation_version": 1,
+  "id": "gravity-overview",
+  "bounds_m": [
+    -299195741400.0,
+    299195741400.0,
+    -299195741400.0,
+    299195741400.0,
+    -299195741400.0,
+    299195741400.0
+  ],
+  "replay_seconds": 12.0,
+  "entity_order": [
+    "sun",
+    "planet_circular",
+    "planet_inclined"
+  ]
+}

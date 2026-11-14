@@ -1,0 +1,39 @@
+{
+  "investigation_version": 1,
+  "id": "motion-inspection",
+  "model_id": "electric-exploration",
+  "observations": [
+    {
+      "id": "field_probe",
+      "type": "field",
+      "position_m": [
+        0.82,
+        0.17000000000000004,
+        -0.015000000000000013
+      ]
+    },
+    {
+      "id": "potential_probe",
+      "type": "potential",
+      "position_m": [
+        0.82,
+        0.17000000000000004,
+        -0.015000000000000013
+      ]
+    },
+    {
+      "id": "test_charge_position",
+      "type": "trajectory_sample",
+      "particle_id": "test_charge",
+      "quantity": "position",
+      "sample_index": 30
+    },
+    {
+      "id": "test_charge_speed",
+      "type": "trajectory_sample",
+      "particle_id": "test_charge",
+      "quantity": "speed",
+      "sample_index": 30
+    }
+  ]
+}
