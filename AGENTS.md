@@ -65,3 +65,11 @@ changed dependencies block affected execution. Do not broaden the old study-v1
 contract, overwrite source/pilot evidence, or weaken its numerical restrictions.
 The implementation branch is stacked on PR #2; neither PR #2 nor design PR #3
 is implicitly accepted or merged by a new implementation commit.
+
+## Native revision-and-view convenience
+Read docs/NATIVE_MODEL_WORKFLOW.md. The command delegates revision, calculation and
+presentation to the existing native implementations; do not add another store or
+physical solver. Reuse only captured settings from an integrity-checked same-root
+run, never inherit its numerical pass. Preserve parent snapshots, explicit requests,
+failed attempts and calculation/view outcomes separately. Never auto-upgrade the
+portable handoff store or mistake a missing event for a fulfilled measurement.
