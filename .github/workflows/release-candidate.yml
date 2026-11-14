@@ -100,6 +100,7 @@ jobs:
         run: |
           set -euo pipefail
           python tools/qualify_viewer.py --output output/release-candidate/viewer 2>&1 | tee output/release-candidate/render.log
+          python tools/qualify_particle_visibility.py --output output/release-candidate/particle-visibility 2>&1 | tee output/release-candidate/particle-visibility.log
       - name: Two-configuration teaching studies and honest rejection
         run: |
           set -euo pipefail
