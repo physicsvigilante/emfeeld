@@ -4,6 +4,7 @@ on:
     branches: [foundation/analytic-fields-v1]
     paths:
       - '.github/workflows/release-candidate.yml'
+      - '.gitattributes'
       - 'src/**'
       - 'tests/**'
       - 'viewer_tests/**'

@@ -21,3 +21,7 @@ Goal: qualify a fresh clean checkout of the existing emfeeld candidate; do not e
 - Keep PR #1 draft and unmerged until explicit user acceptance after viewing the evidence.
 
 The workflow `.github/workflows/release-candidate.yml` is read-only with respect to repository contents (it checks out without persisted credentials and uploads evidence artifacts). It installs dependencies only on hosted CI runners, not on the user's computer.
+
+## Windows LF/CRLF integrity requirement
+
+The first cross-platform candidate run found that Windows Git checkout converted authored JSON LF to CRLF, causing all 10 exact published-byte SHA256 checks to fail although the other 850 tests passed. The CRLF-transformed SHA256 was reproduced exactly from the original packet on Linux. Enforce canonical LF checkout using `.gitattributes` (`*.json text eol=lf`), not by disabling packet hash validation or rewriting expected hashes. Re-run both clean-install platform gates and retain the failed Windows run as evidence.
