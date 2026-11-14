@@ -2,7 +2,29 @@
 
 A local, LLM-authorable explorer for **analytic electrostatic and Newtonian gravitational fields, potentials, and test-particle motion in 3D**.
 
-**Status: candidate with tested numerical core and real Linux/PyVista previews.** Eight scenes have passed offscreen rendering and programmatic time-slider checks; screenshots were inspected in chat. Windows desktop/mouse interaction remains untested. This is author verification, not independent review. The [approved chat workflow](docs/CHAT_WORKFLOW_DECISION.md) requires explicit user acceptance before merge. See [viewer qualification](docs/VIEWER_QUALIFICATION.md). This is not a general electromagnetic or conductor solver.
+**Status: merged analytic-field foundation with qualified Linux/Windows offscreen previews.** Eight scenes have passed offscreen rendering and programmatic time-slider checks; screenshots were inspected in chat. Windows desktop/mouse interaction remains untested. This is author verification, not independent review. The [approved chat workflow](docs/CHAT_WORKFLOW_DECISION.md) requires explicit user acceptance before merge. See [viewer qualification](docs/VIEWER_QUALIFICATION.md). This is not a general electromagnetic or conductor solver.
+
+## Teaching accompaniment and two-configuration studies
+
+The primary goal is faithful physical interpretation and verified simulation of
+supported systems. Textbook final answers, exam formats and solution sequences
+are optional. Interpretation fidelity, physical correctness, simulation coverage,
+educational usefulness and textbook-answer completeness are separate outcomes.
+An explicitly requested quantity still requires a genuine computed result.
+
+```text
+python -m emfeeld.study run examples/studies/electric.json --output output/electric-study-001 --render
+python -m emfeeld.study run examples/studies/gravity.json --output output/gravity-study-001 --render
+python -m emfeeld.study view output/electric-study-001 --configuration variant
+```
+
+Each study records assumptions, keeps a baseline packet, changes exactly one
+source strength, and retains measurements and checked full-horizon trajectories.
+The report and snapshots compare configurations at matching physical times, with
+shared potential colour scales. Playback uses saved arrays without reintegration.
+Use a new output directory each time. Rendering and numerical checks do not
+establish classroom usefulness or correct source interpretation by themselves.
+See [the bounded study contract](docs/TEACHING_STUDIES.md).
 
 ## Machine-readable capability discovery
 
@@ -126,6 +148,6 @@ The ordinary `python -m pytest -q` remains the headless suite. `viewer_tests` ex
 
 Shell/plane fields and potentials work, but motion involving them is rejected until surface-crossing behavior has been qualified. Point/line singular encounters are not collision handling. No source reaction, radiation, induced conductor charge, relativistic motion, simultaneous electric-plus-gravity coupling, or self-consistent many-body dynamics is implemented.
 
-Playback is now available for the existing moving scenes; PR #1 remains draft and unmerged. Windows desktop interaction remains a separate optional qualification before claiming Windows support. Plane/radial observation events and local turning points are documented in the authoring workflow; they do not add material collision handling. Integral teaching views remain separate work. Do not add a general mesh solver or a large application framework merely to run another supported arrangement.
+Playback is available for existing moving scenes; foundation PR #1 is merged. New features require separate acceptance. Windows desktop interaction remains a separate optional qualification before claiming Windows support. Plane/radial observation events and local turning points are documented in the authoring workflow; they do not add material collision handling. Integral teaching views remain separate work. Do not add a general mesh solver or a large application framework merely to run another supported arrangement.
 
 No license has yet been selected by the repository owner.

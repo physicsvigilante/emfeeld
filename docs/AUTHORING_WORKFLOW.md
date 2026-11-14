@@ -68,3 +68,18 @@ This workflow runs in this chat or locally without another coding agent. A true
 held-out reliability study still needs an author context without the answers and
 a separately prepared judge. The ongoing source-aware chat cannot establish
 that independence merely by naming folders `author` and `verifier`.
+
+## 5. Teaching studies rather than answer-format benchmarks
+
+The simulator accompanies teaching and exploration. Report interpretation
+fidelity, physical correctness, simulation coverage, educational usefulness and
+textbook-answer completeness separately. Original answer reproduction is optional;
+fulfilling an explicitly supported measurement request is not. Preserve the old
+pilot scoring and frozen evidence rather than retrospectively improving them.
+
+For a controlled comparison, author a V1 study with one baseline packet and one
+source-strength replacement. Record assumptions, illustrative choices, computed
+inputs and unresolved source information. See TEACHING_STUDIES.md. The adapter
+validates both configurations and records arrays/diagnostics before presentation.
+It neither interprets natural language nor certifies an author's interpretation.
+Supported inverse mathematics and new source laws remain separate work.

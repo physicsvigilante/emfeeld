@@ -1,0 +1,127 @@
+{
+  "study_version": 1,
+  "title": "How does doubling one sphere charge change the motion?",
+  "interpretation": {
+    "statement": "Compare two prescribed uniformly charged spheres and one positive test charge, doubling only the first negative source charge.",
+    "givens": [],
+    "assumptions": [
+      "Sources are fixed prescribed distributions; test bodies have no backreaction.",
+      "Motion is nonrelativistic and collision-free."
+    ],
+    "illustrative_choices": [
+      "All source charges, radii, positions and test-particle properties are illustrative SI values.",
+      "The observation locations, one-second horizon and display bounds are illustrative."
+    ],
+    "computed_inputs": [],
+    "unresolved": [],
+    "requirements": [
+      "fixed_prescribed_sources",
+      "independent_nonrelativistic_test_particles"
+    ]
+  },
+  "baseline": {
+    "observation_schema_version": 1,
+    "scene": {
+      "schema_version": 1,
+      "title": "Two charged spheres: change one charge only",
+      "kind": "electric",
+      "sources": [
+        {
+          "type": "solid_sphere",
+          "charge_C": -1e-09,
+          "radius_m": 1.8,
+          "center_m": [
+            -0.5,
+            0,
+            0
+          ]
+        },
+        {
+          "type": "solid_sphere",
+          "charge_C": -2e-09,
+          "radius_m": 2.2,
+          "center_m": [
+            0.5,
+            0.2,
+            0
+          ]
+        }
+      ],
+      "particles": [
+        {
+          "mass_kg": 1e-06,
+          "charge_C": 1e-06,
+          "position_m": [
+            0.3,
+            0.2,
+            0.1
+          ],
+          "velocity_m_s": [
+            0,
+            0.1,
+            0.1
+          ]
+        }
+      ],
+      "duration_s": 1,
+      "samples": 101,
+      "bounds_m": [
+        -3,
+        3,
+        -3,
+        3,
+        -3,
+        3
+      ]
+    },
+    "observations": [
+      {
+        "id": "field_probe",
+        "type": "field",
+        "position_m": [
+          0.3,
+          0.2,
+          0.1
+        ]
+      },
+      {
+        "id": "potential_probe",
+        "type": "potential",
+        "position_m": [
+          0.3,
+          0.2,
+          0.1
+        ]
+      },
+      {
+        "id": "position_half",
+        "type": "trajectory_sample",
+        "particle_index": 0,
+        "quantity": "position",
+        "sample_index": 50
+      },
+      {
+        "id": "speed_half",
+        "type": "trajectory_sample",
+        "particle_index": 0,
+        "quantity": "speed",
+        "sample_index": 50
+      }
+    ],
+    "notes": "Illustrative teaching study, not a transcription of a textbook question. Spheres are penetrable prescribed density, not conductors."
+  },
+  "change": {
+    "source_index": 0,
+    "parameter": "charge_C",
+    "from_value": -1e-09,
+    "to_value": -2e-09,
+    "origin": "illustrative",
+    "reason": "Double the first source charge; retain all geometry and launch data."
+  },
+  "checks": {
+    "position_atol_m": 1e-06,
+    "velocity_atol_m_s": 1e-07,
+    "rtol": 1e-07,
+    "max_normalized_energy_drift": 1e-07
+  }
+}
