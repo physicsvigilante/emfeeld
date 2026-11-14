@@ -28,7 +28,8 @@ def sample_values(model, points, *, potential=False):
     return result
 
 
-def make_plotter(scene, *, resolution=41, off_screen=False, replay_seconds=12.0):
+def make_plotter(scene, *, resolution=41, off_screen=False, replay_seconds=12.0,
+                 recorded=None, potential_clim=None, study_label=None):
     """Return a plotter with sources, field directions, potential slice and time scrubber.
 
     Space toggles replay; Home restarts paused; Left/Right step saved samples.
@@ -36,6 +37,13 @@ def make_plotter(scene, *, resolution=41, off_screen=False, replay_seconds=12.0)
     Point/particle markers have schematic screen sizes. Line/plane patches are
     explicitly finite renderings of infinite sources, not physical boundaries.
     """
+    if recorded is not None:
+        from .study import validate_recorded
+        validate_recorded(scene, recorded)
+    if potential_clim is not None:
+        c = np.asarray(potential_clim, dtype=float)
+        if c.shape != (2,) or not np.isfinite(c).all() or c[0] >= c[1]:
+            raise ValueError("potential_clim must be two finite increasing values")
     try:
         import pyvista as pv
     except ImportError as exc:
@@ -56,7 +64,7 @@ def make_plotter(scene, *, resolution=41, off_screen=False, replay_seconds=12.0)
     center = (lower + upper) / 2
     span = float(np.max(upper - lower))
     plot = PlaybackPlotter(off_screen=off_screen, window_size=(1200, 850))
-    plot.add_title(scene.title, font_size=12)
+    plot.add_title(scene.title if study_label is None else f"{scene.title} | {study_label}", font_size=12)
     unit = "V" if scene.model.kind == "electric" else "J/kg"
     x, y = np.meshgrid(np.linspace(lower[0], upper[0], resolution),
                        np.linspace(lower[1], upper[1], resolution), indexing="ij")
@@ -65,6 +73,7 @@ def make_plotter(scene, *, resolution=41, off_screen=False, replay_seconds=12.0)
     plane["potential"] = sample_values(scene.model, plane.points, potential=True)
     if np.isfinite(plane["potential"]).any():
         plot.add_mesh(plane, scalars="potential", opacity=0.7, nan_opacity=0,
+                      **({"clim": potential_clim} if potential_clim is not None else {}),
                       scalar_bar_args={"title": f"Potential [{unit}]",
                                        "position_x": 0.86, "position_y": 0.25,
                                        "width": 0.12, "height": 0.50, "vertical": True,
@@ -107,7 +116,7 @@ def make_plotter(scene, *, resolution=41, off_screen=False, replay_seconds=12.0)
             missing_geometry.add(name)
             warnings.warn(f"No geometry adapter for {name}; its field and potential are still included.",
                           RuntimeWarning, stacklevel=2)
-    trajectories = scene.trajectories()
+    trajectories = scene.trajectories() if recorded is None else recorded
     markers = []
     for trajectory in trajectories:
         plot.add_mesh(pv.lines_from_points(trajectory.position_m), line_width=3,
@@ -157,7 +166,12 @@ def make_plotter(scene, *, resolution=41, off_screen=False, replay_seconds=12.0)
                      use_2d=False, use_3d_text=False)
     plot.add_axes()
     plot.view_isometric()
-    plot.reset_camera()
+    if recorded is None:
+        plot.reset_camera()
+    else:
+        # Mark an explicit camera as set: auto-framing during show() otherwise
+        # depends on each configuration's glyph/trajectory bounds.
+        plot.camera_position = (tuple(center + 2 * span), tuple(center), (0., 0., 1.))
     # Reserve space for the fixed title, time controls and potential legend.
     # Camera framing only: no source coordinates, field values or motion change.
     plot.camera.zoom(0.74)

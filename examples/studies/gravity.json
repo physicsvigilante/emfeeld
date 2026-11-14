@@ -1,0 +1,130 @@
+{
+  "study_version": 1,
+  "title": "Increase the ideal Sun mass; keep both launches unchanged",
+  "interpretation": {
+    "statement": "Compare both independent test-planet trajectories under the fixed ideal Sun before and after increasing its mass by twenty percent.",
+    "givens": [],
+    "assumptions": [
+      "Sources are fixed prescribed distributions; test bodies have no backreaction.",
+      "Motion is nonrelativistic and collision-free."
+    ],
+    "illustrative_choices": [
+      "The baseline scene is copied from examples/ideal_sun.json; it is illustrative, not an ephemeris.",
+      "The variant mass is an explicit classroom parameter choice."
+    ],
+    "computed_inputs": [],
+    "unresolved": [],
+    "requirements": [
+      "fixed_prescribed_sources",
+      "independent_nonrelativistic_test_particles"
+    ]
+  },
+  "baseline": {
+    "observation_schema_version": 1,
+    "scene": {
+      "schema_version": 1,
+      "title": "Fixed ideal Sun with two independent test planets",
+      "kind": "gravity",
+      "sources": [
+        {
+          "type": "point",
+          "mass_kg": 1.98847e+30
+        }
+      ],
+      "particles": [
+        {
+          "mass_kg": 1,
+          "position_m": [
+            149597870700.0,
+            0,
+            0
+          ],
+          "velocity_m_s": [
+            0,
+            29785.142169221024,
+            0
+          ]
+        },
+        {
+          "mass_kg": 1,
+          "position_m": [
+            224396806050.0,
+            0,
+            0
+          ],
+          "velocity_m_s": [
+            0,
+            17023.626720530643,
+            9727.786697446081
+          ]
+        }
+      ],
+      "duration_s": 31557718.872965656,
+      "samples": 1001,
+      "bounds_m": [
+        -299195741400.0,
+        299195741400.0,
+        -299195741400.0,
+        299195741400.0,
+        -299195741400.0,
+        299195741400.0
+      ]
+    },
+    "observations": [
+      {
+        "id": "g_probe",
+        "type": "field",
+        "position_m": [
+          149597870700.0,
+          0,
+          0
+        ]
+      },
+      {
+        "id": "phi_probe",
+        "type": "potential",
+        "position_m": [
+          149597870700.0,
+          0,
+          0
+        ]
+      },
+      {
+        "id": "planet0_position",
+        "type": "trajectory_sample",
+        "particle_index": 0,
+        "quantity": "position",
+        "sample_index": 500
+      },
+      {
+        "id": "planet0_speed",
+        "type": "trajectory_sample",
+        "particle_index": 0,
+        "quantity": "speed",
+        "sample_index": 500
+      },
+      {
+        "id": "planet1_position",
+        "type": "trajectory_sample",
+        "particle_index": 1,
+        "quantity": "position",
+        "sample_index": 500
+      }
+    ],
+    "notes": "Uses the existing ideal_sun scene unchanged. Independent test planets, no mutual gravity or source recoil."
+  },
+  "change": {
+    "source_index": 0,
+    "parameter": "mass_kg",
+    "from_value": 1.98847e+30,
+    "to_value": 2.386164e+30,
+    "origin": "illustrative",
+    "reason": "Increase only the fixed source mass; retain both velocities, positions and particle masses."
+  },
+  "checks": {
+    "position_atol_m": 100.0,
+    "velocity_atol_m_s": 0.0001,
+    "rtol": 1e-07,
+    "max_normalized_energy_drift": 1e-07
+  }
+}
