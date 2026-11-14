@@ -73,7 +73,12 @@ def _save_screenshot(plot, output):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description=__doc__)
+    argv = list(sys.argv[1:] if argv is None else argv)
+    if argv and argv[0] == "model":
+        from .model_cli import main as model_main
+        return model_main(argv[1:])
+    parser = argparse.ArgumentParser(description=__doc__,
+        epilog="Named models: python -m emfeeld model --help")
     parser.add_argument("command", choices=("validate", "run", "view", "capabilities"))
     parser.add_argument("scene", type=Path, nargs="?")
     parser.add_argument("--output", type=Path, help="run: NPZ output; capabilities: generated JSON output")

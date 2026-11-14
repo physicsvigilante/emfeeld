@@ -172,3 +172,15 @@ python verification/check_model_revision_runs.py output/model-revisions-001 --ou
 This is a separately reviewed candidate stacked on Teaching Study V1. Neither
 candidate is merged by publication. Teacher usefulness and textbook-answer
 completeness remain separate from numerical execution and reference agreement.
+
+## Native revision-and-view command (candidate)
+
+```powershell
+python -m emfeeld model apply revision.json --store my-model --using runs/root-motion --output runs/change-001 --view
+```
+
+Reuse the explicitly identified previous run's investigation/settings, apply a native
+pinned-parent proposal and compute fresh checked results before opening its recorded
+preview. No physics or source facts are silently changed. See
+[the native workflow guide](docs/NATIVE_MODEL_WORKFLOW.md), including the explicit
+import requirement for older portable handoff stores. Existing commands remain supported.
