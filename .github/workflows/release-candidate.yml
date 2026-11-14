@@ -121,6 +121,11 @@ jobs:
           set -euo pipefail
           python tools/qualify_native_model_workflow.py --output output/release-candidate/native-model --render 2>&1 | tee output/release-candidate/native-model.log
           python verification/check_model_revision_runs.py output/release-candidate/native-model --output output/release-candidate/native-model-analytic.json
+      - name: Zero-energy rest launch and separate energy-time reference
+        run: |
+          set -euo pipefail
+          python tools/qualify_energy_balance.py --output output/release-candidate/zero-energy --render 2>&1 | tee output/release-candidate/zero-energy.log
+          python verification/check_zero_energy_run.py output/release-candidate/zero-energy --output output/release-candidate/zero-energy-reference.json
       - name: Preserve both success and failure evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

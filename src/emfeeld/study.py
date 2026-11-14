@@ -17,6 +17,7 @@ import sys
 import numpy as np
 
 from .dynamics import Trajectory, integrate
+from .energy import check_energy_balance, ENERGY_DIAGNOSTIC_VERSION
 from .fields import DomainError, G, epsilon_0
 from .observations import load_packet, packet_from_dict, run_packet, _digest, _number
 from .scene import strict_keys
@@ -142,9 +143,19 @@ def check_trajectory(scene, particle, trajectory, settings):
         difference = np.abs(a - b)
         passed = passed and bool(np.all(difference <= settings[key] + settings['rtol'] * np.maximum(np.abs(a), np.abs(b))))
         differences[name] = float(np.max(difference))
-    drift = max(float(trajectory.normalized_energy_drift), float(refined.normalized_energy_drift))
-    passed = passed and math.isfinite(drift) and drift <= settings['max_normalized_energy_drift']
+    # Exact zero exchange needs exact stationary, zero-force evidence; it is not
+    # a license to pass moving arrays whose tiny energies have underflowed away.
+    stationary_zero_force = False
+    if trajectory.energy_balance['zero_exchange'] or refined.energy_balance['zero_exchange']:
+        coupling = particle.charge_C if scene.model.kind == 'electric' else particle.mass_kg
+        stationary_zero_force = bool(coupling == 0 or np.all(scene.model.field(particle.position_m) == 0))
+    energy_checks = {name: check_energy_balance(t, settings['max_normalized_energy_drift'],
+                                                stationary_zero_force=stationary_zero_force)
+                     for name, t in (('base', trajectory), ('refined', refined))}
+    drift = max(c['normalized_residual'] for c in energy_checks.values())
+    passed = passed and all(c['passed'] for c in energy_checks.values())
     return {'passed': passed, 'max_differences': differences, 'max_normalized_energy_drift': drift,
+            'energy_check_version': ENERGY_DIAGNOSTIC_VERSION, 'energy_checks': energy_checks,
             'meaning': MEANING}
 
 

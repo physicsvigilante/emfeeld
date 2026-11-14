@@ -101,8 +101,8 @@ class TrajectorySamples:
                     'position_m': list(particle.position_m), 'velocity_m_s': list(particle.velocity_m_s)},
                 'integration_attempted': False, 'status': 'pending',
                 'solver': {'method': 'DOP853', **SOLVER_SETTINGS, 'max_step_s': self.max_step_s},
-                'diagnostic_meaning': 'energy drift is an observation, not a trajectory error bound; '
-                                      'its normalization depends on the potential reference'}
+                'diagnostic_meaning': 'energy diagnostic v2 is an observation, not a trajectory error bound; '
+                                      'the exchange scale and finite-precision resolution are reported separately'}
         trajectory = None
         if not self.scene.model.trajectory_safe:
             info.update(_failure('unsupported_trajectory', 'trajectory_not_qualified',
@@ -120,7 +120,8 @@ class TrajectorySamples:
                         raise FloatingPointError('trajectory energy diagnostics are nonfinite')
                     info.update(status='ok', samples=len(self.times), evaluations=trajectory.evaluations,
                                 start_time_s=float(self.times[0]), end_time_s=float(self.times[-1]),
-                                max_energy_drift_J=drift, normalized_energy_drift=normalized)
+                                max_energy_drift_J=drift, normalized_energy_drift=normalized,
+                                energy_balance=trajectory.energy_balance)
             except DomainError as exc:
                 info.update(_failure('domain_error', 'undefined_or_unresolved_trajectory', str(exc)))
             except (FloatingPointError, OverflowError) as exc:
