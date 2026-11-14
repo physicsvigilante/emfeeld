@@ -25,8 +25,9 @@ Historical all-file freeze tests belong on their pinned snapshots. Keep them
 unchanged; replay their behavioral cases separately against current code. See
 docs/AUTHORING_REPAIR.md for the current suite and exact test-accounting boundary.
 New input/path safety checks do not alter physical laws or relax tolerances.
-PR #1 stays draft and unmerged. No independent review or Windows interaction
-qualification is implied by the author-run checks.
+PR #1 is merged. New implementation work belongs on a feature branch and must
+remain unmerged until explicit acceptance. Author-run checks do not imply
+independent review or human Windows interaction qualification.
 
 ## Capability discovery and export integrity
 Read docs/CAPABILITIES.md before authoring new packets. Generate the catalogue
@@ -34,3 +35,21 @@ with `python -m emfeeld capabilities`; validate the resulting packet normally.
 Keep catalogue keys/enums and parser-consistency tests aligned. Never infer a
 solved event from CLI exit zero alone. Preserve single-document source provenance
 and staged screenshot exports; new capability work must not relax these guards.
+
+## Teaching-first studies
+The primary objective is faithful interpretation and verified simulation of
+supported systems for teaching and exploration. Textbook answers and their format
+are optional, but every explicitly requested supported quantity must be computed
+and checked before calling that request answered. Report interpretation fidelity,
+physical/numerical correctness, simulation coverage, educational usefulness and
+textbook-answer completeness separately; never combine them into one success rate.
+Read docs/TEACHING_STUDIES.md. Preserve source givens, assumptions, illustrative
+choices, computed inputs and unresolved information separately. A declared
+conductor requirement must not become a prescribed uniform sphere silently.
+The study V1 variant replaces exactly one source-strength scalar. Do not change
+launch conditions, geometry, references or numerical settings to obtain a pass.
+Study previews consume recorded arrays, not silently reintegrated trajectories.
+Shared potential colour ranges and camera framing are comparison aids; arrows
+still show direction only. Teacher acceptance is not inferred from rendering.
+Keep historical evidence untouched. CI must cover relevant PRs targeting main
+and relevant main pushes; do not return to foundation-branch-only triggers.

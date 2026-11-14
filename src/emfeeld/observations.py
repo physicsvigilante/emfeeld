@@ -407,10 +407,10 @@ def _packet_requests(scene: Scene, data: Any) -> tuple[Observation | TrajectoryO
     return tuple(requests)
 
 
-def _evaluate_packet(scene: Scene, requests) -> tuple[list[dict], dict | None]:
+def _evaluate_packet(scene: Scene, requests, capture=None) -> tuple[list[dict], dict | None]:
     # Keep the static-only report shape and static public API backward compatible.
     has_motion = any(isinstance(r, TrajectoryObservation) for r in requests)
-    samples = TrajectorySamples(scene) if has_motion else None
+    samples = TrajectorySamples(scene) if has_motion or capture is not None else None
     events = PlaneEvents(scene) if any(isinstance(r, PlaneRequest) for r in requests) else None
     radial = RadialEvents(scene) if any(isinstance(r, RadialRequest) for r in requests) else None
     turning = TurningEvents(scene) if any(isinstance(r, TurningRequest) for r in requests) else None
@@ -438,6 +438,11 @@ def _evaluate_packet(scene: Scene, requests) -> tuple[list[dict], dict | None]:
         else:
             r = _evaluate(scene.model, (request,))[0]
         results.append(r)
+    if capture is not None:
+        # Explicit opt-in study capture: all displayed particles use this same
+        # saved-sample cache, including particles without a public sample request.
+        capture["trajectories"] = tuple(samples._trajectory(i)[0]
+                                        for i in range(len(scene.particles)))
     return results, samples.runs if samples is not None else None
 
 
@@ -464,17 +469,25 @@ def _digest(data: Any) -> str:
                                      ensure_ascii=False, allow_nan=False).encode("utf-8")).hexdigest()
 
 
-def run_packet(data: dict) -> dict:
+def run_packet(data: dict, *, capture: dict | None = None) -> dict:
     """Validate the complete packet, then evaluate static, saved-state and event requests.
 
     Saved samples integrate once per referenced particle. Plane/radial events use separate
     base/refined terminal searches, cached per exact request. Test particles never
     become sources. Event accuracy compares two fixed-tolerance solver runs; it
     is separate from static/sample expectation checks and from solver settings.
+    Optional empty capture receives scene_sha256 and complete saved Trajectory
+    objects (None on failure). This opt-in computes all scene particles once for
+    presentation; with capture omitted the established request-only policy holds.
     """
+    if capture is not None:
+        if not isinstance(capture, dict) or capture:
+            raise ValueError("capture must be an empty dictionary")
     data = deepcopy(data)
     scene, requests = packet_from_dict(data)
-    results, trajectory_runs = _evaluate_packet(scene, requests)
+    results, trajectory_runs = _evaluate_packet(scene, requests, capture)
+    if capture is not None:
+        capture["scene_sha256"] = _digest(data["scene"])
     good = [r["status"] in ("ok", "no_event") and r.get("check", {}).get("passed", True) is True for r in results]
     report = {
         "observation_result_version": 1, "title": scene.title, "kind": scene.model.kind,
@@ -523,6 +536,9 @@ def run_packet(data: dict) -> dict:
                             ("ambiguous_events", "ambiguous_event"), ("convergence_errors", "convergence_error"),
                             ("unsupported_trajectories", "unsupported_trajectory"), ("integration_errors", "integration_error")):
             report["counts"][key] = sum(r["status"] == status for r in results)
+    if capture is not None:
+        report["trajectory_capture"] = "All scene particles captured from the saved-sample cache; event searches remain separate."
+        report["trajectories"] = report["trajectory_capture"]
     json.dumps(report, allow_nan=False)  # Never export NaN/Infinity as a result.
     return report
 

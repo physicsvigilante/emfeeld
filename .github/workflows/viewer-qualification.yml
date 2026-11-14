@@ -1,13 +1,25 @@
 name: Real PyVista qualification
 on:
   push:
-    branches: [foundation/analytic-fields-v1]
+    branches: [main]
     paths:
       - '.github/workflows/viewer-qualification.yml'
       - 'tools/qualify_viewer.py'
       - 'src/**'
       - 'tests/**'
       - 'pyproject.toml'
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/viewer-qualification.yml'
+      - 'src/**'
+      - 'tests/**'
+      - 'viewer_tests/**'
+      - 'tools/**'
+      - 'examples/**'
+      - 'verification/**'
+      - 'pyproject.toml'
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:

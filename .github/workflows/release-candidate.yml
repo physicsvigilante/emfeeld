@@ -1,7 +1,7 @@
 name: Release candidate clean-install qualification
 on:
   push:
-    branches: [foundation/analytic-fields-v1]
+    branches: [main]
     paths:
       - '.github/workflows/release-candidate.yml'
       - '.gitattributes'
@@ -10,6 +10,21 @@ on:
       - 'viewer_tests/**'
       - 'tools/**'
       - 'verification/**'
+      - 'examples/**'
+      - 'pilots/**'
+      - 'pyproject.toml'
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/release-candidate.yml'
+      - '.gitattributes'
+      - 'src/**'
+      - 'tests/**'
+      - 'viewer_tests/**'
+      - 'tools/**'
+      - 'verification/**'
+      - 'examples/**'
+      - 'pilots/**'
       - 'pyproject.toml'
   workflow_dispatch:
 permissions:
@@ -85,6 +100,16 @@ jobs:
         run: |
           set -euo pipefail
           python tools/qualify_viewer.py --output output/release-candidate/viewer 2>&1 | tee output/release-candidate/render.log
+      - name: Two-configuration teaching studies and honest rejection
+        run: |
+          set -euo pipefail
+          python -m emfeeld.study run examples/studies/electric.json --output output/release-candidate/study-electric --render
+          python -m emfeeld.study run examples/studies/gravity.json --output output/release-candidate/study-gravity --render
+          if python -m emfeeld.study run examples/studies/unsupported_conductor.json --output output/release-candidate/study-unsupported; then
+            echo 'Unsupported conductor was incorrectly accepted'; exit 1
+          else
+            test "$?" -eq 1
+          fi
       - name: Preserve both success and failure evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
