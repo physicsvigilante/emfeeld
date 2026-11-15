@@ -38,7 +38,8 @@ def capture(scene_path, output):
             for i, trajectory in enumerate(trajectories):
                 position = trajectory.position_m[index]
                 actor = plot.actors[f'particle_{i}']
-                np.testing.assert_array_equal(actor.mapper.dataset.points, position[None,:])
+                np.testing.assert_array_equal(actor.position, position)
+                assert actor.mapper.dataset.n_cells > 0 and actor.prop.GetRepresentation() == 2
                 plot.renderer.SetWorldPoint(*position, 1.)
                 plot.renderer.WorldToDisplay()
                 x, y, _ = plot.renderer.GetDisplayPoint()

@@ -41,7 +41,10 @@ def test_particle_is_visible_on_its_path_and_potential_slice(camera, monkeypatch
         plot.show(auto_close=False)
         marker = plot.actors['particle_0']
         path = plot.actors['trajectory_0']
-        assert marker.prop.point_size == 28
+        assert marker.mapper.dataset.n_points > 1
+        assert marker.mapper.dataset.n_cells > 0
+        assert marker.prop.GetRepresentation() == 2
+        assert marker.use_bounds is False
         assert not marker.prop.lighting
         assert marker.prop.color.hex_rgb == '#ff00ff'
         assert path.prop.color.hex_rgb == '#000000'
@@ -54,8 +57,8 @@ def test_particle_is_visible_on_its_path_and_potential_slice(camera, monkeypatch
             slider = plot._emfeeld_playback.slider
             slider.GetRepresentation().SetValue(float(trajectories[0].time_s[index]))
             slider.InvokeEvent('EndInteractionEvent')
-            np.testing.assert_array_equal(marker.mapper.dataset.points,
-                                          trajectories[0].position_m[index:index+1])
+            np.testing.assert_array_equal(marker.position,
+                                          trajectories[0].position_m[index])
             np.testing.assert_array_equal(plot.renderer.cube_axes_actor.bounds, scene.bounds_m)
             image = plot.screenshot(return_img=True)
             pixels, center = magenta_region(plot, image, trajectories[0].position_m[index])
@@ -81,7 +84,7 @@ def test_both_gravity_particles_have_moving_visible_markers(monkeypatch):
             image = p.screenshot(return_img=True)
             for i,t in enumerate(ts):
                 a = p.actors[f'particle_{i}']
-                np.testing.assert_array_equal(a.mapper.dataset.points, t.position_m[index:index+1])
+                np.testing.assert_array_equal(a.position, t.position_m[index])
                 pixels, _ = magenta_region(p, image, t.position_m[index])
                 assert pixels >= 80
         for t,saved in zip(ts,original): np.testing.assert_array_equal(t.position_m,saved)

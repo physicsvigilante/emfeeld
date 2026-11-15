@@ -75,12 +75,12 @@ def capture(name, scene, output):
         np.testing.assert_array_equal(axes.bounds, scene.bounds_m)
         axis_labels = {axis: list(getattr(axes, f'{axis}_labels')) for axis in 'xyz'}
         markers = []
-        for trajectory in expected:
-            candidates = [m for m in datasets if m.n_points == 1 and
-                          np.array_equal(m.points, trajectory.position_m[:1])]
-            if len(candidates) != 1:
-                raise AssertionError(f'Expected one real marker dataset, found {len(candidates)}')
-            markers.append(candidates[0])
+        for index, trajectory in enumerate(expected):
+            marker = plot.actors[f'particle_{index}']
+            if marker.mapper.dataset.n_points <= 1 or marker.mapper.dataset.n_cells <= 0:
+                raise AssertionError('Expected a polygonal sphere, not a single point')
+            np.testing.assert_array_equal(marker.position, trajectory.position_m[0])
+            markers.append(marker)
         if expected and len(plot.widgets.slider_widgets) != 1:
             raise AssertionError('Moving scene needs one real VTK slider')
         plot.show(auto_close=False, interactive=False)
@@ -95,8 +95,8 @@ def capture(name, scene, output):
                 # event, but it does NOT simulate or qualify a desktop mouse drag.
                 widget.InvokeEvent(vtkCommand.EndInteractionEvent)
                 for marker, trajectory in zip(markers, expected):
-                    np.testing.assert_array_equal(marker.points,
-                                                   trajectory.position_m[sample:sample + 1])
+                    np.testing.assert_array_equal(marker.position,
+                                                   trajectory.position_m[sample])
             np.testing.assert_array_equal(axes.bounds, scene.bounds_m)
             for axis in 'xyz':
                 assert list(getattr(axes, f'{axis}_labels')) == axis_labels[axis]
@@ -111,7 +111,7 @@ def capture(name, scene, output):
             result['frames'].append({
                 'file': filename, 'sample': sample,
                 'time_s': sample * scene.duration_s / (scene.samples - 1),
-                'marker_positions_m': [m.points[0].tolist() for m in markers],
+                'marker_positions_m': [list(m.position) for m in markers],
                 'axis_bounds_m': list(axes.bounds), 'axis_labels': axis_labels,
                 'png_sha256': hashlib.sha256((output / filename).read_bytes()).hexdigest(),
             })

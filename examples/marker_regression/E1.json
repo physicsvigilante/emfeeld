@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "title": "E1 | Negative infinite line charge and prescribed axial electric field",
+  "kind": "electric",
+  "sources": [
+    {
+      "center_m": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "charge_per_m_C_m": -2e-11,
+      "direction": [
+        0.0,
+        0.0,
+        1.0
+      ],
+      "reference_radius_m": 1.0,
+      "type": "line"
+    },
+    {
+      "field_N_C": [
+        0.0,
+        0.0,
+        0.15
+      ],
+      "origin_m": [
+        0,
+        0,
+        0
+      ],
+      "type": "uniform"
+    }
+  ],
+  "particles": [
+    {
+      "charge_C": 1e-06,
+      "mass_kg": 1e-06,
+      "position_m": [
+        1.0,
+        0.0,
+        0.0
+      ],
+      "velocity_m_s": [
+        0.0,
+        0.55,
+        0.1
+      ]
+    }
+  ],
+  "duration_s": 4.0,
+  "samples": 101,
+  "bounds_m": [
+    -2.5,
+    2.5,
+    -2.5,
+    2.5,
+    -0.5,
+    2.2
+  ]
+}
