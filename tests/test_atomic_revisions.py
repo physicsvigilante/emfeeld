@@ -292,3 +292,87 @@ def test_v1_v2_remain_independent_and_no_cross_revision_reuse(tmp_path):
     p = atomic(root, [add_source('v2source'), add_particle('fresh')])
     d = revise(tmp_path, store, p)
     assert d['code'] == 'identity_conflict'
+
+
+def test_four_member_transaction_reindexes_named_body_and_refuses_old_request(tmp_path):
+    store, root = imported(tmp_path)
+    old = store.read(root)[0]
+    children = [
+        replace('right', -2e-9, -4e-9),
+        remove(store, root, 'probe', 'particle'),
+        add_source('added-field'),
+        add_particle('replacement-body'),
+    ]
+    d = revise(tmp_path, store, atomic(root, children))
+    assert d['status'] == 'accepted'
+    rev = store.read(d['reference'])[0]
+    assert rev['particle_order'] == ['replacement-body']
+    assert rev['source_order'] == ['left', 'right', 'added-field']
+    assert rev['entities']['left'] == old['entities']['left']
+    # A stale investigation referencing removed probe is never redirected.
+    old_request, _ = execute(tmp_path, store, d['reference'], name='old-body')
+    assert old_request['status'] == 'rejected' and old_request['code'] == 'wrong_role'
+    def new_request(inv, ana, pres):
+        inv['observations'][-1]['particle_id'] = 'replacement-body'
+        pres['entity_order'] = ['left', 'right', 'added-field', 'replacement-body']
+    fresh, out = execute(tmp_path, store, d['reference'], change=new_request, name='new-body')
+    assert fresh['execution_complete']
+    assert json.loads((out/'mapping.json').read_text())['particles'] == {'replacement-body':0}
+    model_runs.inspect_run(out, expected_reference=d['reference'])
+
+
+def test_removal_of_computed_dependent_and_its_source_leaves_no_dangling_receipt(tmp_path):
+    def dependencies(spec):
+        spec['computed_inputs'] = [{
+            'target_id': 'probe', 'property': 'velocity_m_s',
+            'provenance': {'origin': 'computed_result',
+                           'reason': 'Explicit calculation', 'evidence': 'Test receipt'},
+            'receipt': computed_receipt(),
+        }]
+    store, root = imported(tmp_path, mutate=dependencies)
+    original = store.read(root)[1]
+    d = revise(tmp_path, store, atomic(root, [
+        remove(store, root, 'probe', 'particle'),
+        remove(store, root, 'left', 'source'),
+    ]))
+    assert d['status'] == 'accepted'
+    child = store.read(d['reference'])[0]
+    assert child['source_order'] == ['right'] and child['particle_order'] == []
+    assert child['stale_dependencies'] == []
+    assert store.read(root)[1] == original
+
+
+def test_atomic_lock_and_incomplete_history_fail_closed(tmp_path):
+    store, root = imported(tmp_path)
+    p = atomic(root, [add_source('new'), add_particle('newbody')])
+    lock = store.path/'structural-write.lock'
+    lock.write_text('other writer')
+    refused = revise(tmp_path, store, p)
+    assert refused['status'] == 'rejected' and refused['code'] == 'store_busy'
+    assert lock.read_text() == 'other writer'
+    lock.unlink()
+    # An interrupted revision directory blocks subsequent atomic identity admission.
+    incomplete = store._directory('interrupted')
+    incomplete.mkdir()
+    next_p = atomic(root, [add_source('second'), add_particle('secondbody')], ident='another')
+    blocked = revise(tmp_path, store, next_p)
+    assert blocked['code'] == 'incomplete_history'
+    assert incomplete.exists()
+    assert len(list((store.path/'revisions').glob('*/reference.json'))) == 1
+
+
+def test_duplicate_target_and_stale_parent_preserve_original_bytes(tmp_path):
+    store, root = imported(tmp_path)
+    baseline = files(store.path)
+    repeated = atomic(root, [
+        replace('left', -1e-9, -3e-9),
+        replace('left', -1e-9, -4e-9, prop='charge_C')])
+    first = revise(tmp_path, store, repeated)
+    assert first['code'] == 'duplicate_target'
+    stale = atomic(root, [add_source('external'), add_particle('external-body')], ident='stale')
+    stale['parent']['sha256'] = '0'*64
+    second = revise(tmp_path, store, stale)
+    assert second['code'] == 'stale_parent'
+    assert len(list((store.path/'revisions').iterdir())) == 1
+    for name, raw in baseline.items():
+        assert (store.path/name).read_bytes() == raw
