@@ -399,7 +399,10 @@ class ModelStore:
             parent, _ = self.read(proposal['parent'])
             if self._directory(proposal['revision_id']).exists():
                 raise RevisionError('identity_conflict', 'revision ID is already used, including incomplete attempts')
-            if type(proposal.get('proposal_version')) is int and proposal['proposal_version'] == 2:
+            if type(proposal.get('proposal_version')) is int and proposal['proposal_version'] == 3:
+                from .atomic_revisions import publish
+                reference = publish(self, parent, proposal, proposal['parent'])
+            elif type(proposal.get('proposal_version')) is int and proposal['proposal_version'] == 2:
                 if (proposal.get('expected_role') == 'particle' and
                         proposal.get('operation') in ('add_particle', 'remove_particle')):
                     from .particle_revisions import publish
