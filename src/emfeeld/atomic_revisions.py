@@ -67,7 +67,7 @@ def _property(parent, member, origin, result):
     if not _same_physical_value(member['expected_value'], row['properties'][prop]):
         raise RevisionError('old_value_mismatch', 'expected value differs from the exact parent')
     if member['value'] == row['properties'][prop]:
-        raise RevisionError('no_op', 'a property member must change its complete physical value')
+        raise RevisionError('no_op_member', 'a composite member must change its complete physical value')
     result['entities'][target]['properties'][prop] = deepcopy(member['value'])
     result['entities'][target]['provenance'][prop] = deepcopy(origin)
     return (target, prop)
