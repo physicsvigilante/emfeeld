@@ -22,14 +22,18 @@ def test_marker_style_does_not_encode_charge_or_change_saved_positions(backend):
     assert {'particle_0','particle_1','trajectory_0','trajectory_1'} <= set(by_name)
     for i in range(2):
         mesh,opts=by_name[f'particle_{i}']
-        assert opts['color']=='magenta' and opts['point_size']==28
+        assert opts['color']=='magenta' and opts['style']=='surface'
+        assert 'point_size' not in opts and 'render_points_as_spheres' not in opts
+        assert mesh.sphere_options['radius'] == 1.0
+        actor = p.actors[f'particle_{i}']
+        assert actor.scale == (0.025 * 6,) * 3
+        assert actor.use_bounds is False
         assert opts['lighting'] is False and opts['show_scalar_bar'] is False
-        assert opts['render_points_as_spheres'] is True
         assert by_name[f'trajectory_{i}'][1]['color']=='black'
     for index in (0,2,1,0):
         p._emfeeld_playback.seek(index)
         for i,r in enumerate(positions):
-            np.testing.assert_array_equal(by_name[f'particle_{i}'][0].points,r[index:index+1])
+            np.testing.assert_array_equal(p.actors[f'particle_{i}'].position,r[index])
             np.testing.assert_array_equal(r,old[i])
     assert 'not charge sign' in p.text_actors['particle_key'].input
     assert 'not field lines' in p.text_actors['particle_key'].input

@@ -34,8 +34,9 @@ def make_plotter(scene, *, resolution=41, off_screen=False, replay_seconds=12.0,
 
     Space toggles replay; Home restarts paused; Left/Right step saved samples.
     Replay is display-only and stops at the end. No field lines or integral UI.
-    Magenta particle markers have schematic 28-pixel screen sizes, independent
-    of charge sign, physical radius, mass, zoom and coordinate units. Line/plane patches are
+    Magenta particle markers are polygonal spheres with display-only radius
+    2.5 percent of the largest authored viewing span. Size does not encode
+    physical radius, mass or charge; it changes on screen with zoom. Line/plane patches are
     explicitly finite renderings of infinite sources, not physical boundaries.
     """
     if recorded is not None:
@@ -125,15 +126,24 @@ def make_plotter(scene, *, resolution=41, off_screen=False, replay_seconds=12.0,
     for index, trajectory in enumerate(trajectories):
         plot.add_mesh(pv.lines_from_points(trajectory.position_m), line_width=3,
                       color="black", show_scalar_bar=False, name=f"trajectory_{index}")
-        marker = pv.PolyData(trajectory.position_m[:1].copy())
-        plot.add_mesh(marker, point_size=28, color="magenta", lighting=False,
-                      render_points_as_spheres=True, show_scalar_bar=False,
-                      name=f"particle_{index}")
-        markers.append(marker)
+        # A real polygon surface avoids the point-sprite path that was invisible
+        # on the reported Windows/VTK stack. Keep geometry local to the origin:
+        # VTK's actor transform retains the saved float64 position even for
+        # astronomical coordinates. Never add offsets to the trajectory array.
+        marker = pv.Sphere(radius=1.0, center=(0., 0., 0.),
+                           theta_resolution=24, phi_resolution=24)
+        actor = plot.add_mesh(marker, color="magenta", lighting=False,
+                              style="surface", show_scalar_bar=False,
+                              pickable=False, name=f"particle_{index}")
+        actor.scale = (0.025 * span,) * 3  # Schematic radius, not a physical size.
+        actor.position = tuple(trajectory.position_m[0])
+        actor.use_bounds = False  # Display size must not change camera framing.
+        markers.append(actor)
 
     if trajectories:
         plot.add_text("Magenta: test particles\n"
-                      "Schematic size; not charge sign.\n"
+                      "Schematic sphere; not physical size.\n"
+                      "Colour is not charge sign.\n"
                       "Black: calculated paths\n"
                       "(not field lines).",
                       position=(0.02, 0.54), viewport=True, name="particle_key", font_size=9)
@@ -148,7 +158,7 @@ def make_plotter(scene, *, resolution=41, off_screen=False, replay_seconds=12.0,
 
         def display(state):
             for marker, trajectory in zip(markers, trajectories):
-                marker.points = trajectory.position_m[state.index:state.index + 1].copy()
+                marker.position = tuple(trajectory.position_m[state.index])
             # Update text in place: replacing actors can reset authored axes.
             time_label.input = f"Sample time: {state.time_s:.6g} s"
             status_label.input = ("Playing" if state.playing else

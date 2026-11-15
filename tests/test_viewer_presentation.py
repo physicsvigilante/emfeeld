@@ -17,9 +17,19 @@ class Recorder:
         self.meshes, self.notes, self.sliders = [], [], []
         self.zoom_factors = []
         self.text_actors = {}
+        self.actors = {}
         self.camera = SimpleNamespace(zoom=self.zoom_factors.append)
 
-    def add_mesh(self, mesh, **kwargs): self.meshes.append((mesh, kwargs))
+    def add_mesh(self, mesh, **kwargs):
+        self.meshes.append((mesh, kwargs))
+        actor = SimpleNamespace(position=(0., 0., 0.), scale=(1., 1., 1.),
+                                use_bounds=True, mapper=SimpleNamespace(dataset=mesh))
+        if 'name' in kwargs:
+            self.actors[kwargs['name']] = actor
+        return actor
+    def add_points(self, points, **kwargs):
+        return self.add_mesh(points, **kwargs)
+
     def add_text(self, text, **kwargs):
         self.notes.append((text, kwargs))
         actor = SimpleNamespace(input=text)
@@ -45,6 +55,7 @@ def backend(monkeypatch):
     fake = SimpleNamespace(
         Plotter=Recorder, StructuredGrid=Grid,
         PolyData=lambda points: SimpleNamespace(points=points),
+        Sphere=lambda **kwargs: SimpleNamespace(sphere_options=kwargs),
         lines_from_points=lambda points: ('trajectory', points),
         Line=lambda *args: ('line', args), Plane=lambda **kwargs: ('plane', kwargs))
     monkeypatch.setitem(sys.modules, 'pyvista', fake)
@@ -91,8 +102,8 @@ def test_time_controls_do_not_use_title_band(backend):
     assert options['fmt'] == '%.3g'
     for time in (0, 1, 2):
         callback(time)
-        marker = [m for m, _ in plot.meshes if isinstance(m, SimpleNamespace)][0]
-        np.testing.assert_array_equal(marker.points, positions[time:time + 1])
+        marker = plot.actors['particle_0']
+        np.testing.assert_array_equal(marker.position, positions[time])
     time_options = [kw for _, kw in plot.notes if kw.get('name') == 'time']
     assert all(kw['viewport'] and kw['position'][1] < 0.90 for kw in time_options)
     assert len(time_options) == 1  # Slider updates must not replace the text actor.

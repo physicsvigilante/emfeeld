@@ -35,8 +35,7 @@ def test_real_keys_timer_slider_and_immutable_numerics(name, monkeypatch):
         labels = {a:list(getattr(axes, f'{a}_labels')) for a in 'xyz'}
         datasets = [a.mapper.dataset for a in plot.renderer.actors.values()
                     if hasattr(a, 'mapper') and hasattr(a.mapper, 'dataset')]
-        markers = [next(m for m in datasets if m.n_points == 1 and
-                        np.array_equal(m.points, t.position_m[:1])) for t in expected]
+        markers = [plot.actors[f'particle_{i}'] for i in range(len(expected))]
         potential = next(m for m in datasets if 'potential' in m.array_names)
         potential_before = potential['potential'].copy()
         # Any attempted resimulation during playback now fails this test.
@@ -46,7 +45,7 @@ def test_real_keys_timer_slider_and_immutable_numerics(name, monkeypatch):
         def check(index):
             assert controller.state.index == index
             for marker, trajectory in zip(markers, expected):
-                np.testing.assert_array_equal(marker.points, trajectory.position_m[index:index+1])
+                np.testing.assert_array_equal(marker.position, trajectory.position_m[index])
             np.testing.assert_array_equal(axes.bounds, scene.bounds_m)
             for axis in 'xyz':
                 assert list(getattr(axes, f'{axis}_labels')) == labels[axis]
