@@ -18,10 +18,14 @@ Both operations use finite float64 operands only; JSON integers/values that over
 
 - **E1**: two named electric field probes, ratio of magnitudes; unrelated potential difference allowed only when within the same qualified domain; preserved energy/trajectory identities. Independently compute ideal source fields for a separate two-probe arrangement.
 - **G1**: two independent particle position observations at the same saved time, separation; separately integrate or use analytic constant-acceleration reference where qualified. A different-time selection must return unavailable without interpolation.
-- **T1**: static cross-domain gravity-field magnitude ratio and invalid absolute-potential ratio. Test that no electric/gravity unit string is conflated.
+- **T1**: static **electric** shell-and-point composition; field-magnitude ratios at separate probes and refusal of absolute-potential ratios. Static gravity coverage is separately included in the headless uniform-field tests; no mixed-domain ratio is admitted.
 
 Adversarial cases: zero denominator, exact-time mismatch, same particle twice, duplicate request IDs, bad unit/type, failed measurement and authored check, tampered input or native run, nonfinite/overflow values, NaNs, missing native run inventory, existing output and path alias, malformed part, malformed position shape. Preserve every first failure; tests distinguish expected rejection from observed physics failures. Additional supported operations and complex ratios require a new reviewed contract.
 
 ## Reviewer and release gate
 
 Before opening review, Chat A completes source implementation, self-checks and fresh full Linux/Windows plus real-PyVista CI. Publish source PR as draft with exact base/head/tree and evidence hashes. Then Chat A writes `physicsvigilante/review_sandbox/projects/emfeeld/pr-<number>/REQUEST.md`, `REVIEWER-PROMPT-01.md`, and `STATUS.md`, with source links, CI IDs and known limitations. Chat B in a **separate ChatGPT conversation** reads the exact pinned source and writes a unique `reviews/review-01-chat-b.md` directly in the central repository. Only the reviewer writes reviewer findings. Owner says `Review complete`; Chat A fetches and triages them. A source merge requires separate owner approval and post-merge CI, never merely a passing CI or Chat B verdict. Teaching evaluation remains paused.
+
+### Design-record correction before independent review
+
+The first frozen T1 description incorrectly called the existing static shell/point source arrangement gravitational; the actual preselected T1 source scene has `kind: electric`. This is a factual contract-label correction, not new physics, a new case or evidence from another implementation. The earlier committed wording is preserved in the first source commit; the reviewer should consider the corrected case attribution and the existing static-gravity headless cases separately.
