@@ -381,3 +381,29 @@ def test_duplicate_target_and_stale_parent_preserve_original_bytes(tmp_path):
     assert len(list((store.path/'revisions').iterdir())) == 1
     for name, raw in baseline.items():
         assert (store.path/name).read_bytes() == raw
+
+
+def test_singular_added_launch_is_valid_construction_but_not_a_trajectory_pass(tmp_path):
+    scene = base_scene()
+    scene['sources'][0] = {'type':'point','charge_C':-1e-9,'center_m':[0,0,0]}
+    store, root = imported(tmp_path, scene)
+    original = store.read(root)[1]
+    singular = add_particle('at-point-center')
+    singular['particle']['position_m'] = [0,0,0]
+    d = revise(tmp_path, store, atomic(root, [
+        singular, replace('right', -2e-9, -3e-9),
+    ], ident='singular-launch'))
+    assert d['status'] == 'accepted' and d['numerical_work'] == 'not_run'
+    assert store.read(root)[1] == original
+    assert store.read(d['reference'])[0]['entities']['at-point-center']['properties']['position_m'] == [0,0,0]
+    # The engine must not pass a trajectory just because the final physical
+    # construction was accepted. Saved failure evidence remains separately
+    # inspectable; no softening or launch adjustment is introduced.
+    summary, output = execute(tmp_path, store, d['reference'], name='singular-attempt')
+    assert summary['status'] == 'partial' and not summary['execution_complete']
+    assert summary['numerical_checks_passed'] is False
+    checked = json.loads((output/'native/checks.json').read_text())
+    assert checked['render_ready'] is False
+    assert any(row['particle_index'] == 1 and row['passed'] is False
+               for row in checked['trajectory_checks'])
+    model_runs.inspect_run(output, expected_reference=d['reference'])
