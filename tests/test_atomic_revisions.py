@@ -189,11 +189,12 @@ def test_invalid_requests_are_rejected_without_partial_descendant(tmp_path, muta
             store.revise(source)
     else:
         d = revise(tmp_path, store, p)
-        # A syntactically valid no-op is intentionally distinguished from an
-        # invalid/rejected proposal by the pre-existing native decision API.
-        assert d['status'] == ('no_op' if p['changes'][0].get('value') == -1e-9
-                               and p['changes'][0]['operation'] == 'replace_property'
-                               else 'rejected')
+        # A V3 composite cannot be labeled wholly no-op when another member
+        # requests a real change. Unlike unchanged V1 single-property edits,
+        # a no-op member rejects the entire attempted transaction.
+        assert d['status'] == 'rejected'
+        if p['changes'][0].get('value') == -1e-9 and p['changes'][0]['operation'] == 'replace_property':
+            assert d['code'] == 'no_op_member'
     assert len(list((store.path/'revisions').iterdir())) == 1
 
 
