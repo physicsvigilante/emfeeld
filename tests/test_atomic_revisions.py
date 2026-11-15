@@ -189,7 +189,11 @@ def test_invalid_requests_are_rejected_without_partial_descendant(tmp_path, muta
             store.revise(source)
     else:
         d = revise(tmp_path, store, p)
-        assert d['status'] == 'rejected'
+        # A syntactically valid no-op is intentionally distinguished from an
+        # invalid/rejected proposal by the pre-existing native decision API.
+        assert d['status'] == ('no_op' if p['changes'][0].get('value') == -1e-9
+                               and p['changes'][0]['operation'] == 'replace_property'
+                               else 'rejected')
     assert len(list((store.path/'revisions').iterdir())) == 1
 
 
