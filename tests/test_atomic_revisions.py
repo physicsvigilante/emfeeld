@@ -183,10 +183,13 @@ def test_invalid_requests_are_rejected_without_partial_descendant(tmp_path, muta
     if p['changes'][0].get('value') != p['changes'][0].get('value'):
         source = tmp_path/'bad-nonfinite.json'
         source.write_text(json.dumps(p, allow_nan=True))
-        d = store.revise(source)
+        # This is malformed JSON under the strict authoring contract, so
+        # admission stops before an identifiable proposal attempt is created.
+        with pytest.raises(ValueError, match='nonfinite'):
+            store.revise(source)
     else:
         d = revise(tmp_path, store, p)
-    assert d['status'] == 'rejected'
+        assert d['status'] == 'rejected'
     assert len(list((store.path/'revisions').iterdir())) == 1
 
 
