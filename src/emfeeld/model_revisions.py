@@ -399,8 +399,12 @@ class ModelStore:
             parent, _ = self.read(proposal['parent'])
             if self._directory(proposal['revision_id']).exists():
                 raise RevisionError('identity_conflict', 'revision ID is already used, including incomplete attempts')
-            candidate = derive(parent, proposal, proposal['parent'])
-            reference = self._publish(candidate)
+            if type(proposal.get('proposal_version')) is int and proposal['proposal_version'] == 2:
+                from .structural_revisions import publish
+                reference = publish(self, parent, proposal, proposal['parent'])
+            else:
+                candidate = derive(parent, proposal, proposal['parent'])
+                reference = self._publish(candidate)
             decision.update(status='accepted', reference=reference, qualification='construction_only',
                             plan='rebuild_existing_source_assembly; revalidate_each_analysis; fresh_numerical_results')
         except (ValueError, KeyError, TypeError, FileExistsError, FileNotFoundError) as exc:

@@ -126,6 +126,13 @@ jobs:
           set -euo pipefail
           python tools/qualify_energy_balance.py --output output/release-candidate/zero-energy --render 2>&1 | tee output/release-candidate/zero-energy.log
           python verification/check_zero_energy_run.py output/release-candidate/zero-energy --output output/release-candidate/zero-energy-reference.json
+      - name: Structural source revisions and separate physical references
+        run: |
+          set -euo pipefail
+          python tools/qualify_structural_revisions.py --output output/release-candidate/structural --render 2>&1 | tee output/release-candidate/structural.log
+          python verification/check_structural_runs.py output/release-candidate/structural --output output/release-candidate/structural-reference.json
+          python tools/qualify_structural_revisions.py --cases examples/structural_revisions/reserved_cases.json --output output/release-candidate/structural-transfer --render 2>&1 | tee output/release-candidate/structural-transfer.log
+          python verification/check_structural_runs.py output/release-candidate/structural-transfer --output output/release-candidate/structural-transfer-reference.json
       - name: Preserve both success and failure evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

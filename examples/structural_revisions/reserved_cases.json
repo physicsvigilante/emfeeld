@@ -1,0 +1,69 @@
+{
+  "cases_version": 1,
+  "evidence_kind": "preselected reserved transfer, same author; exposed not independent",
+  "original_spec_sha256": "d8a651d396d5f2580d7c19259b35b4ac5fa1c24f9229e78f989bdb57ee752a24",
+  "cases": [
+    {
+      "id": "T1",
+      "scene": "examples/structural_revisions/T1.json",
+      "source_ids": [
+        "shell",
+        "central_point"
+      ],
+      "particle_ids": [],
+      "mode": "static",
+      "probes": [
+        [
+          0.4,
+          0.3,
+          0.2
+        ],
+        [
+          3.0,
+          1.0,
+          0.5
+        ],
+        [
+          -1.0,
+          -0.4,
+          0.3
+        ]
+      ],
+      "changes": [
+        {
+          "id": "add_sheet",
+          "operation": "add_source",
+          "target_id": "tilted_sheet",
+          "source": {
+            "type": "plane",
+            "charge_per_m2_C_m2": 3e-11,
+            "center_m": [
+              0.0,
+              0.0,
+              -1.0
+            ],
+            "normal": [
+              1.0,
+              2.0,
+              3.0
+            ]
+          },
+          "view_order": [
+            "shell",
+            "central_point",
+            "tilted_sheet"
+          ]
+        },
+        {
+          "id": "remove_point",
+          "operation": "remove_source",
+          "target_id": "central_point",
+          "view_order": [
+            "shell",
+            "tilted_sheet"
+          ]
+        }
+      ]
+    }
+  ]
+}
