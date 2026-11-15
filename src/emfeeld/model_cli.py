@@ -74,7 +74,8 @@ def _finish(output: Path, outcome: dict) -> dict:
 def apply_revision(proposal_path: str | Path, *, store_path: str | Path,
                    using: str | Path, output: str | Path,
                    run_id: str | None = None, view: bool = False,
-                   render: bool = False, sample_index: int = 0) -> dict[str, Any]:
+                   render: bool = False, sample_index: int = 0,
+                   presentation_path: str | Path | None = None) -> dict[str, Any]:
     """Compose native revise -> execute -> present; retain every stage separately.
 
     Expected proposal/analysis failures return an explicit outcome. Unexpected
@@ -98,8 +99,8 @@ def apply_revision(proposal_path: str | Path, *, store_path: str | Path,
     raw_proposal = proposal_path.read_bytes()
     proposal = decode(raw_proposal)
     if (not isinstance(proposal, dict) or type(proposal.get('proposal_version')) is not int
-            or proposal['proposal_version'] != 1):
-        raise ValueError('a native proposal_version 1 document is required; portable helper revisions are not auto-converted')
+            or proposal['proposal_version'] not in (1, 2)):
+        raise ValueError('a native proposal_version 1 or 2 document is required; portable helper revisions are not auto-converted')
     for name in ('proposal_id', 'revision_id'):
         identifier(proposal.get(name))
     check_reference(proposal.get('parent'))
@@ -108,6 +109,13 @@ def apply_revision(proposal_path: str | Path, *, store_path: str | Path,
     except (KeyError, TypeError, ValueError) as exc:
         raise ValueError('invalid native model store; portable helper stores require explicit import') from exc
     settings, binding = _settings(using, store)
+    if presentation_path is not None:
+        replacement = Path(presentation_path).read_bytes()
+        decode(replacement)  # capture once; full membership validation uses descendant
+        binding['explicit_overrides'] = {'presentation.json': {
+            'source': str(presentation_path), 'sha256': sha256(replacement),
+            'replaces_sha256': binding['settings_sha256']['presentation.json']}}
+        settings['presentation.json'] = replacement
     analysis = decode(settings['analysis.json'])
     if sample_index >= (analysis.get('samples', 1) if analysis['mode'] == 'trajectory' else 1):
         raise ValueError('sample_index must select an existing saved sample')
@@ -175,6 +183,7 @@ def main(argv=None):
     p.add_argument('--store', required=True, type=Path)
     p.add_argument('--using', required=True, type=Path, help='sealed native run supplying explicit investigation/analysis/presentation settings')
     p.add_argument('--output', required=True, type=Path, help='new attempt directory outside model store and prior run')
+    p.add_argument('--presentation', type=Path, help='explicit replacement presentation; inherited entity IDs are never silently repaired')
     p.add_argument('--run-id', help='optional safe identifier; otherwise a fresh run ID is generated')
     group = p.add_mutually_exclusive_group()
     group.add_argument('--view', action='store_true', help='open recorded interactive view after successful calculation')
@@ -183,7 +192,8 @@ def main(argv=None):
     a = parser.parse_args(args)
     try:
         result = apply_revision(a.proposal, store_path=a.store, using=a.using, output=a.output,
-                                run_id=a.run_id, view=a.view, render=a.render, sample_index=a.sample_index)
+                                run_id=a.run_id, view=a.view, render=a.render, sample_index=a.sample_index,
+                                presentation_path=a.presentation)
     except (ValueError, OSError) as exc:
         print(f'emfeeld model apply: {exc}', file=sys.stderr)
         return 2

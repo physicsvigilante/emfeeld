@@ -1,0 +1,29 @@
+{
+  "cases_version": 1,
+  "evidence_kind": "project-informed same-author transfer; not blind or classroom evidence",
+  "cases": [
+    {
+      "id": "E1",
+      "scene": "examples/marker_regression/E1.json",
+      "source_ids": ["negative_line", "axial_field"],
+      "particle_ids": ["test_charge"],
+      "mode": "trajectory",
+      "changes": [
+        {"id": "add_line", "operation": "add_source", "target_id": "positive_line",
+         "source": {"type": "line", "charge_per_m_C_m": 1e-11, "center_m": [-1.4, 0.6, 0], "direction": [0, 0, 1], "reference_radius_m": 1.0},
+         "view_order": ["negative_line", "axial_field", "test_charge", "positive_line"]}
+      ]
+    },
+    {
+      "id": "G1",
+      "scene": "examples/marker_regression/G1.json",
+      "source_ids": ["source_A", "source_B"],
+      "particle_ids": ["body_1", "body_2"],
+      "mode": "trajectory",
+      "changes": [
+        {"id": "remove_B", "operation": "remove_source", "target_id": "source_B",
+         "view_order": ["source_A", "body_1", "body_2"]}
+      ]
+    }
+  ]
+}
