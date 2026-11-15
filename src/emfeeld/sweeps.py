@@ -8,7 +8,7 @@ from __future__ import annotations
 import argparse
 import math
 from copy import deepcopy
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
 import sys
 
 from . import model_runs
@@ -77,7 +77,12 @@ def validate_spec(spec, parent):
         if not shape_matches(actual, value):
             raise ValueError(f'sweep member {index}: invalid property shape or type')
         def finite(x):
-            return all(finite(z) for z in x) if isinstance(x, list) else type(x) in (int, float) and math.isfinite(x)
+            if isinstance(x, list):
+                return all(finite(z) for z in x)
+            try:
+                return type(x) in (int, float) and math.isfinite(x)
+            except OverflowError:
+                return False  # Finite JSON integers must fit the numerical backend.
         if not finite(value):
             raise ValueError(f'sweep member {index}: finite physical values are required')
         if _same_value(actual, value) or any(_same_value(value, prior) for prior in values[:index]):
@@ -107,6 +112,8 @@ def run_sweep(spec_path, *, store_path, using, output):
     parent, _ = store.read(spec['parent'])
     validate_spec(spec, parent)
     captured, template = _settings(using, store)
+    requested_ids = [row['id'] for row in
+                     decode(captured['investigation.json'])['observations']]
     native, revision, summary, _ = model_runs.inspect_run(using, expected_reference=spec['parent'])
     if not summary.get('execution_complete') or native['reference'] != spec['parent']:
         raise RevisionError('invalid_template', 'the sealed template must be a complete run of this exact parent')
@@ -166,21 +173,33 @@ def run_sweep(spec_path, *, store_path, using, output):
                     inputs/'analysis.json', inputs/'presentation.json', child_dir,
                     run_id=ident)
                 row['status'] = 'complete' if calculated['execution_complete'] else 'partial'
-                row['run_path'] = str(child_dir.relative_to(output))
+                row['run_path'] = child_dir.relative_to(output).as_posix()
                 row['request_statuses'] = calculated.get('request_statuses', {})
                 row['unfulfilled_requests'] = calculated.get('unfulfilled_requests', {})
                 if calculated['execution_complete']:
                     model_runs.inspect_run(child_dir, expected_reference=decision['reference'])
                     comparison = model_runs.compare_runs(base_dir, child_dir)
                     put(member_dir / 'comparison.json', encode(comparison))
-                    row['comparison_path'] = str((member_dir / 'comparison.json').relative_to(output))
-                    if any(m['comparison'] in ('not_available', 'different_sample_times')
-                           for m in comparison['measurements']):
+                    row['comparison_path'] = (member_dir / 'comparison.json').relative_to(output).as_posix()
+                    measurements = comparison['measurements']
+                    # Empty, missing, duplicated or unknown comparison rows cannot
+                    # turn a fulfilled native run into a fulfilled investigation.
+                    admitted = ('variant_minus_baseline',
+                                'separate_event_states_not_equal_times')
+                    if ([m.get('id') for m in measurements] != requested_ids or
+                            any(m.get('comparison') not in admitted
+                                for m in measurements)):
                         row['status'] = 'partial'
                         row['reason'] = 'native comparison unavailable for at least one observation'
             report['members'].append(row)
     else:
         report['reason'] = 'fresh baseline was incomplete; no hypotheses executed'
+        report['members'] = [
+            {'index': i, 'value': value, 'revision_id': _member_id(spec['id'], i),
+             'decision': 'not_attempted', 'status': 'not_run', 'reference': None,
+             'reason': 'fresh baseline incomplete; member not executed'}
+            for i, value in enumerate(spec['values'], start=1)
+        ]
     report['status'] = ('complete' if baseline['execution_complete'] and
                         all(m['status'] == 'complete' for m in report['members']) else 'partial')
     put(output / 'summary.json', encode(report))
@@ -197,6 +216,21 @@ def run_sweep(spec_path, *, store_path, using, output):
     return report
 
 
+def _captured_path(root: Path, value: str) -> Path:
+    """Read relative artifact paths from either platform, without changing bytes."""
+    if not isinstance(value, str) or not value:
+        raise RevisionError('sweep_integrity', 'captured path must be a relative string')
+    posix = PurePosixPath(value.replace('\\', '/'))
+    windows = PureWindowsPath(value)
+    if (posix.is_absolute() or windows.drive or windows.root or
+            '..' in posix.parts or not posix.parts):
+        raise RevisionError('sweep_integrity', 'captured path must stay inside sweep')
+    path = root.joinpath(*posix.parts)
+    if not path.resolve().is_relative_to(root.resolve()):
+        raise RevisionError('sweep_integrity', 'captured path escapes sweep')
+    return path
+
+
 def inspect_sweep(output):
     """Verify the captured sweep and all complete native runs without executing physics."""
     output = Path(output)
@@ -207,11 +241,13 @@ def inspect_sweep(output):
     raw = (output/'inputs/sweep.json').read_bytes()
     if decode(raw)['parent'] != report['parent']:
         raise RevisionError('sweep_integrity', 'sweep input differs from captured parent')
-    if report['baseline']['status'] == 'complete':
-        model_runs.inspect_run(output/'baseline', expected_reference=report['parent'])
+    # Failed/rejected native baselines have sealed evidence too. Inspect them
+    # without claiming their calculations succeeded.
+    model_runs.inspect_run(output/'baseline', expected_reference=report['parent'])
     for member in report['members']:
         if member.get('run_path'):
-            model_runs.inspect_run(output/member['run_path'], expected_reference=member['reference'])
+            model_runs.inspect_run(_captured_path(output, member['run_path']),
+                                   expected_reference=member['reference'])
     return report
 
 
