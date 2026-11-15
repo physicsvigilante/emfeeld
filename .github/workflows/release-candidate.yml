@@ -133,6 +133,13 @@ jobs:
           python verification/check_structural_runs.py output/release-candidate/structural --output output/release-candidate/structural-reference.json
           python tools/qualify_structural_revisions.py --cases examples/structural_revisions/reserved_cases.json --output output/release-candidate/structural-transfer --render 2>&1 | tee output/release-candidate/structural-transfer.log
           python verification/check_structural_runs.py output/release-candidate/structural-transfer --output output/release-candidate/structural-transfer-reference.json
+      - name: Reusable investigation sweeps and separate physical references
+        run: |
+          set -euo pipefail
+          for case in E1 G1 T1; do
+            python tools/qualify_sweeps.py --case "$case" --output "output/release-candidate/sweep-$case" 2>&1 | tee "output/release-candidate/sweep-$case.log"
+            python verification/check_sweep_runs.py "output/release-candidate/sweep-$case/sweep" --case "$case" --output "output/release-candidate/sweep-$case-reference.json"
+          done
       - name: Preserve both success and failure evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
