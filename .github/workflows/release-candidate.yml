@@ -140,6 +140,11 @@ jobs:
             python tools/qualify_sweeps.py --case "$case" --output "output/release-candidate/sweep-$case" 2>&1 | tee "output/release-candidate/sweep-$case.log"
             python verification/check_sweep_runs.py "output/release-candidate/sweep-$case/sweep" --case "$case" --output "output/release-candidate/sweep-$case-reference.json"
           done
+      - name: Sealed derived observations with separate physical references
+        run: |
+          set -euo pipefail
+          python -m pytest -q -W error tests/test_derived_observations.py 2>&1 | tee output/release-candidate/derived-tests.log
+          python tools/qualify_derived_observations.py --source output/release-candidate --output output/release-candidate/derived-001 2>&1 | tee output/release-candidate/derived-reference.log
       - name: Preserve both success and failure evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
