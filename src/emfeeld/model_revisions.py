@@ -400,7 +400,11 @@ class ModelStore:
             if self._directory(proposal['revision_id']).exists():
                 raise RevisionError('identity_conflict', 'revision ID is already used, including incomplete attempts')
             if type(proposal.get('proposal_version')) is int and proposal['proposal_version'] == 2:
-                from .structural_revisions import publish
+                if (proposal.get('expected_role') == 'particle' and
+                        proposal.get('operation') in ('add_particle', 'remove_particle')):
+                    from .particle_revisions import publish
+                else:
+                    from .structural_revisions import publish
                 reference = publish(self, parent, proposal, proposal['parent'])
             else:
                 candidate = derive(parent, proposal, proposal['parent'])

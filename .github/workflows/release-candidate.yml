@@ -145,6 +145,11 @@ jobs:
           set -euo pipefail
           python -m pytest -q -W error tests/test_derived_observations.py 2>&1 | tee output/release-candidate/derived-tests.log
           python tools/qualify_derived_observations.py --source output/release-candidate --output output/release-candidate/derived-001 2>&1 | tee output/release-candidate/derived-reference.log
+      - name: Independent test-particle structural revisions and physics references
+        run: |
+          set -euo pipefail
+          python tools/qualify_particle_revisions.py --output output/release-candidate/particle-revisions --render 2>&1 | tee output/release-candidate/particle-revisions.log
+          python verification/check_particle_revision_runs.py output/release-candidate/particle-revisions --report output/release-candidate/particle-revisions-reference.json 2>&1 | tee output/release-candidate/particle-revisions-reference.log
       - name: Preserve both success and failure evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
