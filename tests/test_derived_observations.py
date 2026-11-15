@@ -227,3 +227,22 @@ def test_separation_overflow_does_not_emit_infinite_measurement():
          'particle_index':0,'time_s':1.,'sample_index':5}
     idx={'a':row,'b':{**row,'value':[-1e308,0.,0.],'particle_index':1}}
     assert _separation(separation('bad','a','b'),idx)['code']=='numeric_range'
+
+
+def test_missing_actual_saved_time_is_not_reported_as_valid():
+    from emfeeld.derived_observations import _ratio, _separation
+    row={'type':'trajectory_sample','quantity':'position','unit':'m','status':'ok',
+         'particle_index':0,'value':[0.,0.,0.],'sample_index':3}
+    row2={**row,'particle_index':1,'value':[1.,0.,0.]}
+    assert _separation(separation('bad','a','b'),{'a':row,'b':row2})['code']=='invalid_saved_time'
+    speed={'type':'trajectory_sample','quantity':'speed','unit':'m/s','status':'ok',
+           'value':1.,'sample_index':3}
+    assert _ratio(ratio('bad','a','b','value','value'),{'a':speed,'b':speed})['code']=='invalid_saved_time'
+
+
+def test_request_exact_bytes_are_bound_by_hash(tmp_path):
+    spec=source_case(tmp_path)
+    spec['observations']=[ratio('valid','field_a','field_b')]
+    result=run(tmp_path,spec)
+    assert result['request_sha256']==sha256((tmp_path/'out/request.json').read_bytes())
+    assert inspect(tmp_path/'out',using=tmp_path/'sealed')==result

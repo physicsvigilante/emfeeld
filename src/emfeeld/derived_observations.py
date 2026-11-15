@@ -100,7 +100,11 @@ def _ratio(req, indexed):
     if au != bu:return _outcome(req,'incompatible_units')
     ta=a.get('type')=='trajectory_sample';tb=b.get('type')=='trajectory_sample'
     if ta != tb:return _outcome(req,'incompatible_time_context')
-    if ta and (a.get('time_s')!=b.get('time_s') or a.get('sample_index')!=b.get('sample_index')):
+    if ta and (type(a.get('sample_index')) is not int or type(b.get('sample_index')) is not int
+               or type(a.get('time_s')) not in (int, float) or type(b.get('time_s')) not in (int, float)
+               or not math.isfinite(a['time_s']) or not math.isfinite(b['time_s'])):
+        return _outcome(req,'invalid_saved_time')
+    if ta and (a['time_s']!=b['time_s'] or a['sample_index']!=b['sample_index']):
         return _outcome(req,'different_saved_times')
     if bv==0.:return _outcome(req,'zero_denominator')
     try:
@@ -137,7 +141,11 @@ def _separation(req,indexed):
         return _outcome(req,'missing_particle_identity')
     if a['particle_index']==b['particle_index']:
         return _outcome(req,'same_particle')
-    if a.get('time_s')!=b.get('time_s') or a.get('sample_index')!=b.get('sample_index'):
+    if (type(a.get('sample_index')) is not int or type(b.get('sample_index')) is not int
+        or type(a.get('time_s')) not in (int,float) or type(b.get('time_s')) not in (int,float)
+        or not math.isfinite(a['time_s']) or not math.isfinite(b['time_s'])):
+        return _outcome(req,'invalid_saved_time')
+    if a['time_s']!=b['time_s'] or a['sample_index']!=b['sample_index']:
         return _outcome(req,'different_saved_times')
     try:
         distance=math.dist(x,y)
@@ -177,7 +185,7 @@ def derive(request_path, *, using, output):
     status='complete' if all(row['status']=='ok' for row in derived) else 'partial'
     output.mkdir(parents=True,exist_ok=False)
     put(output/'request.json',raw)
-    result={'derived_version':1,'id':spec['id'],'status':status,'source_run_sha256':spec['source_run_sha256'],
+    result={'derived_version':1,'id':spec['id'],'status':status,'request_sha256':sha256(raw),'source_run_sha256':spec['source_run_sha256'],
             'source_run_id':run['run_id'],'source_reference':run['reference'],
             'native_packet_sha256':sha256((using/'native/packet.json').read_bytes()),
             'observations':derived,'qualification':'post-run arithmetic, not new solver or independent accuracy certification'}
@@ -193,7 +201,8 @@ def inspect(output,*,using):
         raise RevisionError('derived_integrity','derived output changed or has missing/extra files')
     spec=decode((output/'request.json').read_bytes());_validate(spec)
     result=decode((output/'result.json').read_bytes())
-    if result['source_run_sha256']!=spec['source_run_sha256'] or result['id']!=spec['id']:
+    if (result.get('request_sha256')!=sha256((output/'request.json').read_bytes())
+        or result['source_run_sha256']!=spec['source_run_sha256'] or result['id']!=spec['id']):
         raise RevisionError('derived_integrity','captured source binding differs')
     if sha256((using/'run.json').read_bytes())!=spec['source_run_sha256']:
         raise RevisionError('wrong_run','source run differs from captured pin')
