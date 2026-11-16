@@ -615,4 +615,3 @@ def test_review02_trajectory_authored_check_receipt_consistency_is_global(tmp_pa
         compare(spec,left=left,right=fake,output=destination)
     assert error.value.code=='invalid_native_run'
     assert not destination.exists()
-
