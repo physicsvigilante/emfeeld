@@ -363,7 +363,7 @@ def test_malformed_check_metadata_and_wrong_report_coordinates_are_hard_failures
         edit(row)
         native.write_bytes(encode(payload));_reseal(fake)
         req=write(tmp_path/('fake-'+tag+'.json'),_spec(left,fake,[_spec(left,right)['pairs'][0]]))
-        with pytest.raises(RevisionError,match='native result identity|field result location'):
+        with pytest.raises(RevisionError,match='native result identity|field result location|unexpected native check'):
             compare(req,left=left,right=fake,output=tmp_path/('not-'+tag))
 
 def test_comparison_cannot_be_written_inside_an_append_only_model_store(tmp_path):
@@ -495,3 +495,124 @@ def test_r2_f01_nearest_time_offset_must_match_saved_time_minus_requested_time(t
     with pytest.raises(RevisionError,match='invalid|selector|offset|sample'):
         compare(spec,left=corrupt,right=right,output=destination)
     assert not destination.exists()
+
+# Targeted R2 review-02 NEW-01: the presence of check.passed=True is not
+# proof that a saved measurement satisfies its immutable authored expectation.
+# These tests intentionally target copied, re-sealed native outputs; never the
+# saved original or production numerical engine.
+def _expectation_case(tmp, *, trajectory=False):
+    store, root = imported(tmp)
+    decision = revise(tmp, store, proposal(root, ident='expect-change', rev='expect-change', value=-3e-9))
+    assert decision['status'] == 'accepted'
+    runs = {}
+    for label, ref in [('left', root), ('right', decision['reference'])]:
+        inv, analysis, view = configs(ref, mode='trajectory' if trajectory else 'static')
+        inv['id'] = label + '-expectation-investigation'
+        inv['observations'] = [
+            {'id': 'E-'+label, 'type': 'field', 'position_m': POINT,
+             'expectation': {'value':[0.,0.,0.], 'atol': 100., 'rtol': 0.}},
+            {'id': 'other-'+label, 'type': 'field', 'position_m': END},
+        ]
+        if trajectory:
+            inv['observations'].append({
+                'id': 'position-'+label, 'type': 'trajectory_sample', 'particle_id':'probe',
+                'quantity': 'position', 'sample_index':10,
+                'expectation': {'value':[0.,0.,0.], 'atol':100., 'rtol':0.},
+            })
+        analysis['id']=label+'-expectation-analysis'
+        view['id']=label+'-expectation-view'
+        docs=[write(tmp/(label+'-'+kind+'-with-check.json'),v) for kind,v in zip(
+            ('ref','inv','analysis','view'), (ref,inv,analysis,view))]
+        runs[label]=tmp/(label+'-expected-native')
+        report=model_runs.execute(store.path,*docs,runs[label],run_id=label+'-expectation-run')
+        assert report['execution_complete'],report
+        model_runs.inspect_run(runs[label],expected_reference=ref)
+        native=decode((runs[label]/'native/result.json').read_bytes())
+        assert next(row for row in native['results'] if row['id']=='E-'+label)['check']['passed'] is True
+    return runs['left'],runs['right']
+
+
+def _checked_spec(left,right, *, unrelated=False, trajectory=False):
+    if trajectory:
+        return _spec(left,right,[{'id':'checked-pos','type':'particle_position','particle_id':'probe',
+                                  'left_observation_id':'position-left','right_observation_id':'position-right'}])
+    label='other' if unrelated else 'E'
+    return _spec(left,right,[{'id':'checked-field','type':'field_vector',
+                'left_observation_id':label+'-left','right_observation_id':label+'-right'}])
+
+
+def test_review02_genuine_authored_check_accepts_and_inspects(tmp_path):
+    left,right=_expectation_case(tmp_path,trajectory=True)
+    for variant,traject in [('static',False),('trajectory',True)]:
+        spec=write(tmp_path/(variant+'-source-spec.json'),_checked_spec(left,right,trajectory=traject))
+        output=tmp_path/(variant+'-source-comparison')
+        result=compare(spec,left=left,right=right,output=output)
+        assert result['status']=='complete'
+        assert inspect(output,left=left,right=right)==result
+
+
+@pytest.mark.parametrize('tamper',[
+    'truncated_true_only', 'forged_expected_value', 'forged_tolerances',
+    'wrong_criterion','wrong_meaning','invalid_result_still_passed',
+])
+@pytest.mark.parametrize('select_unrelated',[False,True])
+def test_review02_resealed_incoherent_authored_check_is_hard_source_error(tmp_path,tamper,select_unrelated):
+    left,right=_expectation_case(tmp_path)
+    fake=tmp_path/'forged-right';shutil.copytree(right,fake)
+    native=decode((fake/'native/result.json').read_bytes())
+    row=next(x for x in native['results'] if x['id']=='E-right')
+    assert row['check']['passed'] is True
+    if tamper=='truncated_true_only':
+        row['check']={'passed':True}
+    elif tamper=='forged_expected_value':
+        row['check']['expected_value']=[9999.,9999.,9999.]
+    elif tamper=='forged_tolerances':
+        row['check']['atol']=10000.
+    elif tamper=='wrong_criterion':
+        row['check']['criterion']='wrong assertion: different formula'
+    elif tamper=='wrong_meaning':
+        row['check']['meaning']='physically certified beyond evidence'
+    elif tamper=='invalid_result_still_passed':
+        row['value']=[200.,200.,200.]
+        row['magnitude']=float(np.hypot.reduce(np.asarray(row['value'])))
+    _reseal_native_results(fake,native)
+    spec=write(tmp_path/'forged-check-spec.json',_checked_spec(left,fake,unrelated=select_unrelated))
+    destination=tmp_path/'should-not-be-created'
+    with pytest.raises(RevisionError,match='check|native|expectation|complete') as error:
+        compare(spec,left=left,right=fake,output=destination)
+    assert error.value.code=='invalid_native_run'
+    assert not destination.exists()
+
+
+def test_review02_check_unattributed_to_any_original_expectation_is_invalid(tmp_path):
+    left,right=_expectation_case(tmp_path)
+    fake=tmp_path/'forged-unasked-check';shutil.copytree(right,fake)
+    native=decode((fake/'native/result.json').read_bytes())
+    row=next(x for x in native['results'] if x['id']=='other-right')
+    assert 'check' not in row
+    row['check']={'passed':True}
+    _reseal_native_results(fake,native)
+    spec=write(tmp_path/'unexpected-check-spec.json',_checked_spec(left,fake,unrelated=True))
+    destination=tmp_path/'unasked-refused'
+    with pytest.raises(RevisionError,match='check|native|expectation') as error:
+        compare(spec,left=left,right=fake,output=destination)
+    assert error.value.code=='invalid_native_run'
+    assert not destination.exists()
+
+
+def test_review02_trajectory_authored_check_receipt_consistency_is_global(tmp_path):
+    left,right=_expectation_case(tmp_path,trajectory=True)
+    fake=tmp_path/'forged-motion-check';shutil.copytree(right,fake)
+    native=decode((fake/'native/result.json').read_bytes())
+    row=next(x for x in native['results'] if x['id']=='position-right')
+    assert row['check']['passed'] is True
+    row['check']['atol']=0.
+    _reseal_native_results(fake,native)
+    # Comparison selects only a static field, not the tampered trajectory row.
+    spec=write(tmp_path/'forged-motion-spec.json',_checked_spec(left,fake))
+    destination=tmp_path/'motion-refused'
+    with pytest.raises(RevisionError,match='check|native|expectation') as error:
+        compare(spec,left=left,right=fake,output=destination)
+    assert error.value.code=='invalid_native_run'
+    assert not destination.exists()
+
