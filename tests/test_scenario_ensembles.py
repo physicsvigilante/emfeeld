@@ -546,7 +546,9 @@ def test_verified_ensemble_view_cli_requires_explicit_selector_and_preserves_oth
 ])
 def test_r1_view_screenshot_refuses_unrelated_sealed_evidence(tmp_path, monkeypatch, foreign_kind):
     from emfeeld.scenario_ensembles import view_ensemble
-    store,root,template,report,out,spec=_run(tmp_path/'selected')
+    selected_home=tmp_path/'selected'
+    selected_home.mkdir()
+    store,root,template,report,out,spec=_run(selected_home)
     foreign_home=tmp_path/'foreign'
     foreign_home.mkdir()
     other_store,other_root,other_template,other_report,other_out,other_spec=_run(foreign_home)
