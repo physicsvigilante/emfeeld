@@ -6,12 +6,15 @@ potential conventions and comparison semantics belong to existing modules.
 from __future__ import annotations
 
 import argparse
+import math
 from pathlib import Path
 import sys
 
 from . import model_runs, scenario_comparisons
 from .atomic_revisions import _OPERATIONS
 from .model_cli import _settings
+from .observations import packet_from_dict
+from .scene import strict_keys
 from .model_revisions import (ModelStore, RevisionError, check_reference, decode,
                               encode, exact_keys, identifier, put, sha256)
 
@@ -37,7 +40,103 @@ def _run_id(ensemble, member=None):
     return f'ensemble-{ensemble}-baseline' if member is None else f'ensemble-{ensemble}-{member}'
 
 
-def _validate_member(row, parent, names, proposals, revisions, added):
+
+def _finite_tree(value, path='ensemble'):
+    """Reject JSON exponent overflow before any output or revision is created.
+
+    Shared decode excludes NaN/Infinity *tokens* but JSON 1e400 is a legal
+    numeric literal parsed by Python to float infinity. Do not weaken decode
+    for old APIs; guard every nested numeric operand at this new boundary.
+    """
+    if isinstance(value, dict):
+        for key, item in value.items():
+            _finite_tree(item, f'{path}.{key}')
+    elif isinstance(value, list):
+        for i, item in enumerate(value):
+            _finite_tree(item, f'{path}[{i}]')
+    elif type(value) in (int, float):
+        try:
+            valid = math.isfinite(float(value))
+        except (ValueError, OverflowError):
+            valid = False
+        if not valid:
+            raise ValueError(f'{path}: nonfinite or non-float64 JSON numeric value')
+
+
+def _native_grammar(member, kind):
+    """Pure native V1 schema preflight, independent of sibling physics.
+
+    Use the existing presentation and observation validators on a temporary
+    schema-only, non-integrated uniform scene. This validates complete input
+    shapes, keys, units and selectors while deliberately *not* checking
+    whether a particle is present in this member's eventual physical scene.
+    Missing/removed named particle and stale presentation mappings must
+    retain their honest per-member native rejection semantics.
+    """
+    investigation = member['investigation']
+    analysis = member['analysis']
+    presentation = member['presentation']
+    exact_keys(investigation, ('investigation_version', 'id', 'model_id', 'observations'))
+    exact_keys(analysis, ('analysis_version', 'id', 'mode'),
+               ('duration_s', 'samples', 'checks'))
+    exact_keys(presentation, ('presentation_version', 'id', 'bounds_m'),
+               ('replay_seconds', 'camera', 'entity_order'))
+    if analysis['mode'] == 'static':
+        exact_keys(analysis, ('analysis_version', 'id', 'mode'))
+    elif analysis['mode'] == 'trajectory':
+        exact_keys(analysis, ('analysis_version', 'id', 'mode',
+                              'duration_s', 'samples', 'checks'))
+        exact_keys(analysis['checks'], ('position_atol_m', 'velocity_atol_m_s',
+                                        'rtol', 'max_normalized_energy_drift'))
+        for key, value in analysis['checks'].items():
+            if type(value) not in (int, float) or not math.isfinite(value) or value <= 0:
+                raise ValueError(f'analysis.checks.{key}: strictly positive finite number required')
+    else:
+        raise RevisionError('unsupported_analysis', 'unsupported native analysis mode')
+
+    # A presentation's entity_order describes a *future* sibling. Validate
+    # names/shapes but defer equality with the accepted child entity set.
+    order = presentation.get('entity_order', [])
+    if not isinstance(order, list):
+        raise ValueError('presentation.entity_order must be an array')
+    for ident in order:
+        identifier(ident)
+    model_runs._presentation(presentation, {'entities': {k: {} for k in order}})
+
+    observations = investigation['observations']
+    if not isinstance(observations, list) or not observations:
+        raise ValueError('investigation observations must be a nonempty array')
+    has_motion = any(isinstance(row, dict) and
+                     row.get('type') in ('trajectory_sample', 'trajectory_event')
+                     for row in observations)
+    lifted = []
+    for row in observations:
+        if not isinstance(row, dict):
+            raise ValueError('observation must be an object')
+        entry = dict(row)
+        if 'particle_index' in entry:
+            raise RevisionError('positional_reference', 'observation must name physical particle_id')
+        if entry.get('type') in ('trajectory_sample', 'trajectory_event'):
+            identifier(entry.pop('particle_id', None))
+            entry['particle_index'] = 0  # syntax-only placeholder, never a physical binding
+        lifted.append(entry)
+
+    # A native observation packet parser owns the exact V1 grammar, including
+    # nested expectation/event selector schemas. No dynamics are executed.
+    field_key = 'field_N_C' if kind == 'electric' else 'field_m_s2'
+    dummy_particle = {'mass_kg': 1., 'charge_C': 1. if kind == 'electric' else 0.,
+                      'position_m': [0., 0., 0.], 'velocity_m_s': [0., 0., 0.]}
+    dummy_scene = {'schema_version': 1, 'title': 'Schema-only ensemble validation',
+                   'kind': kind, 'sources': [{'type': 'uniform', field_key: [0.,0.,0.]}],
+                   'particles': [dummy_particle] if has_motion else [],
+                   'duration_s': analysis.get('duration_s', 1.),
+                   'samples': analysis.get('samples', 2),
+                   'bounds_m': presentation['bounds_m']}
+    packet_from_dict({'observation_schema_version': 1,
+                      'scene': dummy_scene, 'observations': lifted})
+
+
+def _validate_member(row, parent, kind, names, proposals, revisions, added):
     exact_keys(row, ('id','proposal','investigation','analysis','presentation','pairs'))
     name=identifier(row['id'])
     if len(name)>25:
@@ -95,6 +194,7 @@ def _validate_member(row, parent, names, proposals, revisions, added):
             raise ValueError(f'{key} version must be JSON integer 1')
     if row['investigation']['model_id']!=parent['model_id']:
         raise RevisionError('wrong_model','member investigation belongs to another physical model')
+    _native_grammar(row, kind)
     # Existing compare validator is the authority for exact pair grammar,
     # not a copied or loosened observation-matching implementation.
     scenario_comparisons._validate({
@@ -109,7 +209,10 @@ def _comparison_id(model_id,member):
     return identifier(f'comparison-{member}')
 
 
-def validate_spec(spec,store):
+def validate_spec(spec,store,*,allow_reserved=False):
+    _finite_tree(spec)
+    # Confirm the whole authored input can be serialized before any write.
+    encode(spec)
     exact_keys(spec, ('ensemble_version','id','parent','source_run_sha256','members'))
     if type(spec['ensemble_version']) is not int or spec['ensemble_version']!=1:
         raise ValueError('only ensemble_version 1 is supported')
@@ -124,18 +227,19 @@ def validate_spec(spec,store):
     members=spec['members']
     if not isinstance(members,list) or not MIN_MEMBERS<=len(members)<=MAX_MEMBERS:
         raise ValueError('ensemble requires 2..4 authored members')
-    store.read(spec['parent'])
+    parent,_=store.read(spec['parent'])
     ids=set();props=set();revs=set();added=set()
     for row in members:
-        _validate_member(row,spec['parent'],ids,props,revs,added)
+        _validate_member(row,spec['parent'],parent['kind'],ids,props,revs,added)
     # Collision check is a preflight guard, not a promise of transaction
     # isolation with concurrent writers. The model store remains authoritative.
-    for proposal_id,revision_id in zip(
+    if not allow_reserved:
+        for proposal_id,revision_id in zip(
             (m['proposal']['proposal_id'] for m in members),
             (m['proposal']['revision_id'] for m in members)):
-        if ((store.path/'proposals'/sha256(proposal_id.encode())).exists()
-                or store._directory(revision_id).exists()):
-            raise RevisionError('identity_conflict','proposal or revision identity already reserved')
+            if ((store.path/'proposals'/sha256(proposal_id.encode())).exists()
+                    or store._directory(revision_id).exists()):
+                raise RevisionError('identity_conflict','proposal or revision identity already reserved')
     return spec
 
 
@@ -272,10 +376,9 @@ def inspect_ensemble(output,*,store_path,using):
     spec_raw=(output/'inputs/ensemble.json').read_bytes()
     spec=decode(spec_raw)
     store=ModelStore(store_path)
-    # Do NOT rerun collision preflight: accepted members legitimately reserve IDs.
-    exact_keys(spec,('ensemble_version','id','parent','source_run_sha256','members'))
-    if type(spec['ensemble_version']) is not int or spec['ensemble_version']!=1:
-        raise RevisionError('ensemble_integrity','bad ensemble version')
+    # Revalidate the complete authored grammar read-only. Accepted members
+    # legitimately reserve identities, so skip only the collision preflight.
+    validate_spec(spec,store,allow_reserved=True)
     if sha256((using/'run.json').read_bytes())!=spec['source_run_sha256']:
         raise RevisionError('wrong_run','template identity no longer matches')
     captured,template=_source(store,using,spec)
@@ -308,9 +411,18 @@ def inspect_ensemble(output,*,store_path,using):
         if decode((folder/'proposal.json').read_bytes())!=member['proposal']:
             raise RevisionError('ensemble_integrity','stored V3 proposal differs from authored member')
         decision=decode((folder/'decision.json').read_bytes())
-        stored_decision=store.path/'proposals'/sha256(member['proposal']['proposal_id'].encode())/'decision.json'
+        proposal_id=member['proposal']['proposal_id']
+        stored_dir=store.path/'proposals'/sha256(proposal_id.encode())
+        stored_decision=stored_dir/'decision.json'
         if decision!=decode(stored_decision.read_bytes()):
             raise RevisionError('ensemble_integrity','decision differs from native store decision')
+        # The store's ORIGINAL raw proposal bytes, not just its decision, must
+        # match the immutable attempt and its recorded SHA even for rejections.
+        original=(stored_dir/'proposal.json').read_bytes()
+        if (decision.get('proposal_id')!=proposal_id
+                or sha256(original)!=decision.get('proposal_sha256')
+                or original!=(folder/'proposal.json').read_bytes()):
+            raise RevisionError('ensemble_integrity','native store proposal bytes differ from decision and ensemble evidence')
         row={'id':name,'index':i,'decision':decision['status'],
              'reference':decision.get('reference'),'status':'rejected'}
         if decision['status']!='accepted':
