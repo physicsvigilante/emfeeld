@@ -639,3 +639,184 @@ def test_r1_baseline_named_member_has_distinct_saved_id_and_cli_binding(tmp_path
     assert member['run_integrity_sha256']==sha256((out/'member-03/run/integrity.json').read_bytes())
     assert base['run_integrity_sha256']!=member['run_integrity_sha256']
     assert inspect_ensemble(out,store_path=store.path,using=template)==report
+
+
+# Read-only V1 measurement readout: no independent numerical relation or solver.
+def test_verified_measurements_exact_sealed_values_and_zero_writes(tmp_path):
+    from emfeeld.scenario_ensembles import read_ensemble_measurements
+    store,root,template,report,out,spec=_run(tmp_path)
+    before={label:_files_now(folder) for label,folder in
+            [('store',store.path),('template',template),('ensemble',out)]}
+    result=read_ensemble_measurements(out,store_path=store.path,using=template)
+    assert result['status']=='complete'
+    assert result['selection']=='all_members'
+    assert result['parent']==root and result['source_run_sha256']==spec['source_run_sha256']
+    assert [x['id'] for x in result['members']]==['variant-1','variant-2']
+    for i,row in enumerate(result['members'],1):
+        folder=out/f'member-{i:02d}/comparison'
+        sealed=decode((folder/'result.json').read_bytes())
+        assert row['status']=='complete' and row['decision']=='accepted'
+        assert row['comparison_status']=='complete'
+        assert row['evidence']['result_sha256']==sha256((folder/'result.json').read_bytes())
+        assert row['evidence']['request_sha256']==sha256((folder/'request.json').read_bytes())
+        assert row['evidence']['integrity_sha256']==sha256((folder/'integrity.json').read_bytes())
+        assert len(row['measurements'])==len(sealed['comparisons'])==2
+        for projection,original in zip(row['measurements'],sealed['comparisons']):
+            for key,value in projection.items():
+                assert value==original.get(key)
+            assert projection['status']=='ok'
+            assert projection['value']==original['value']
+            assert projection['unit']==original['unit']
+            assert projection['type']==original['type']
+    assert {label:_files_now(folder) for label,folder in
+            [('store',store.path),('template',template),('ensemble',out)]}==before
+
+
+def test_verified_measurements_member_named_baseline_is_exact_filtered_member(tmp_path):
+    from emfeeld.scenario_ensembles import read_ensemble_measurements
+    store,root=imported(tmp_path)
+    template,inv,analysis,view=_native_root(tmp_path,store,root)
+    spec=_spec(root,template,inv,analysis,view)
+    spec['members'].extend([_member(root,3,inv,analysis,view),
+                            _member(root,4,inv,analysis,view)])
+    spec['members'][2]['id']='baseline'
+    out=tmp_path/'four-ensemble'
+    run_ensemble(write(tmp_path/'four-measurements.json',spec),store_path=store.path,
+                 using=template,output=out)
+    all_result=read_ensemble_measurements(out,store_path=store.path,using=template)
+    selected=read_ensemble_measurements(out,store_path=store.path,
+                                        using=template,member_id='baseline')
+    assert len(all_result['members'])==4
+    assert selected['selection']=='member:baseline'
+    assert selected['members']==[all_result['members'][2]]
+    assert selected['members'][0]['index']==3
+    assert selected['members'][0]['reference'] != root
+    assert selected['baseline']['reference']==root
+
+
+def test_verified_measurements_partial_comparison_keeps_native_unit_and_no_fake_zero(tmp_path):
+    from emfeeld.scenario_ensembles import read_ensemble_measurements
+    store,root=imported(tmp_path)
+    template,inv,analysis,view=_native_root(tmp_path,store,root)
+    spec=_spec(root,template,inv,analysis,view)
+    spec['members'][1]['pairs'][0]['left_observation_id']='missing-parent'
+    out=tmp_path/'partial-measurements'
+    saved=run_ensemble(write(tmp_path/'partial-measurements.json',spec),
+                       store_path=store.path,using=template,output=out)
+    assert saved['status']=='partial'
+    result=read_ensemble_measurements(out,store_path=store.path,using=template)
+    assert result['status']=='partial'
+    assert result['members'][0]['status']=='complete'
+    second=result['members'][1]
+    assert second['run_status']=='complete'
+    assert second['status']=='partial' and second['comparison_status']=='partial'
+    original=decode((out/'member-02/comparison/result.json').read_bytes())['comparisons']
+    assert [x['status'] for x in second['measurements']]==[x['status'] for x in original]
+    missing=next(x for x in second['measurements'] if x['status']=='unavailable')
+    assert missing['code']=='unknown_operand'
+    assert missing['value'] is None  # Never silently replace unavailable with zero.
+    assert missing['reason']==next(x for x in original if x['status']=='unavailable')['reason']
+    assert any(x['status']=='ok' for x in second['measurements'])
+    assert 'physical transition' in result['meaning']
+
+
+@pytest.mark.parametrize('kind',['rejected_revision','partial_native'])
+def test_verified_measurements_preserve_unattempted_comparison_reason(tmp_path,kind):
+    from emfeeld.scenario_ensembles import read_ensemble_measurements
+    store,root=imported(tmp_path)
+    template,inv,analysis,view=_native_root(tmp_path,store,root)
+    spec=_spec(root,template,inv,analysis,view,bad_second=(kind=='rejected_revision'))
+    if kind=='partial_native':
+        spec['members'][1]['presentation']['entity_order'].append('ghost')
+    out=tmp_path/'unavailable-readout'
+    report=run_ensemble(write(tmp_path/'unavailable-readout.json',spec),
+                        store_path=store.path,using=template,output=out)
+    assert report['status']=='partial'
+    result=read_ensemble_measurements(out,store_path=store.path,using=template)
+    first,second=result['members']
+    assert first['status']=='complete' and first['measurements']
+    assert second['status'] in ('rejected','partial')
+    assert second['measurements']==[] and second['evidence'] is None
+    assert second['comparison_status'] is None and second['reason']
+    assert second['decision']==('rejected' if kind=='rejected_revision' else 'accepted')
+
+
+@pytest.mark.parametrize('which',['summary','comparison','store_proposal','template','run_input'])
+def test_verified_measurements_fail_closed_on_tampered_original_evidence(tmp_path,which):
+    from emfeeld.scenario_ensembles import read_ensemble_measurements
+    store,root,template,report,out,spec=_run(tmp_path)
+    if which=='summary': path=out/'summary.json'
+    elif which=='comparison':path=out/'member-02/comparison/result.json'
+    elif which=='template':path=template/'run.json'
+    elif which=='run_input':path=out/'member-01/run/investigation.json'
+    else:
+        proposal_id=spec['members'][0]['proposal']['proposal_id']
+        path=store.path/'proposals'/sha256(proposal_id.encode())/'proposal.json'
+    old=path.read_bytes()
+    path.write_bytes(old+b' ')
+    before={label:_files_now(folder) for label,folder in
+            [('store',store.path),('template',template),('ensemble',out)]}
+    with pytest.raises((ValueError,RevisionError)):
+        read_ensemble_measurements(out,store_path=store.path,using=template,
+                                   member_id='variant-2')
+    assert {label:_files_now(folder) for label,folder in
+            [('store',store.path),('template',template),('ensemble',out)]}==before
+
+
+@pytest.mark.parametrize('bad_id',['ghost','',123,True,False])
+def test_verified_measurements_unknown_member_filter_refuses_without_writes(tmp_path,bad_id):
+    from emfeeld.scenario_ensembles import read_ensemble_measurements
+    store,root,template,report,out,spec=_run(tmp_path)
+    before=_files_now(out)
+    with pytest.raises((ValueError,RevisionError)):
+        read_ensemble_measurements(out,store_path=store.path,using=template,
+                                   member_id=bad_id)
+    assert _files_now(out)==before
+
+
+def test_verified_measurements_cli_global_partial_and_declared_member_flags(tmp_path,capsys):
+    from emfeeld import scenario_ensembles as module
+    store,root=imported(tmp_path)
+    template,inv,analysis,view=_native_root(tmp_path,store,root)
+    spec=_spec(root,template,inv,analysis,view)
+    spec['members'][1]['pairs'][0]['left_observation_id']='not-in-parent'
+    out=tmp_path/'cli-measurements'
+    report=run_ensemble(write(tmp_path/'cli-measurements.json',spec),
+                        store_path=store.path,using=template,output=out)
+    assert report['status']=='partial'
+    common=[str(out),'--store',str(store.path),'--using',str(template)]
+    before=_files_now(out)
+    assert module.main(['measurements',*common,'--member','variant-1'])==1
+    result=decode(capsys.readouterr().out.encode())
+    assert result['status']=='partial'  # Full ensemble, not falsely filtered to complete.
+    assert result['selection']=='member:variant-1'
+    assert len(result['members'])==1 and result['members'][0]['status']=='complete'
+    assert result['members'][0]['measurements']
+    for args in (['--output',str(tmp_path/'writes')],['--baseline'],['--sample-index','0']):
+        assert module.main(['measurements',*common,*args])==2
+        assert 'accepts only' in capsys.readouterr().err
+    assert module.main(['inspect',*common])==1
+    assert decode(capsys.readouterr().out.encode())==report
+    assert not (tmp_path/'writes').exists()
+    assert _files_now(out)==before
+
+
+def test_verified_measurements_refuses_changed_result_after_inspection(tmp_path,monkeypatch):
+    from emfeeld import scenario_ensembles as module
+    store,root,template,report,out,spec=_run(tmp_path)
+    target=out/'member-01/comparison/result.json'
+    before_store=_files_now(store.path)
+    real_inspect=module.scenario_comparisons.inspect
+    calls=[]
+    def changed_after_inspection(folder,**kwargs):
+        result=real_inspect(folder,**kwargs)
+        if folder==target.parent:
+            calls.append(folder)
+            if len(calls)==2:  # once inside ensemble inspect, once for readout
+                target.write_bytes(target.read_bytes()+b' ')
+        return result
+    monkeypatch.setattr(module.scenario_comparisons,'inspect',changed_after_inspection)
+    with pytest.raises(RevisionError,match='changed during readout'):
+        module.read_ensemble_measurements(out,store_path=store.path,using=template)
+    assert _files_now(store.path)==before_store
+    assert target.read_bytes().endswith(b' ')

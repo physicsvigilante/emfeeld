@@ -511,6 +511,85 @@ def _checked_view_screenshot(output, store_path, using, requested):
     return screenshot
 
 
+
+def read_ensemble_measurements(output, *, store_path, using, member_id=None):
+    """Return a read-only projection of exact, already-sealed comparison results.
+
+    This is not another comparator: inspect_ensemble checks the entire original
+    store/template/ensemble first, and scenario_comparisons.inspect remains the
+    sole authority for each native value, physical unit and unavailable reason.
+    No new field evaluations, derived numbers or output files are permitted.
+    """
+    if member_id is not None and (type(member_id) is not str or not member_id):
+        raise ValueError('member filter requires an exact declared member ID')
+    output = Path(output)
+    # Validates every sibling and every original source before any selection.
+    summary = inspect_ensemble(output, store_path=store_path, using=using)
+    members = summary['members']
+    if member_id is not None:
+        members = [m for m in members if m['id'] == member_id]
+        if not members:
+            raise RevisionError('unknown_member', 'selected member ID is not declared by this ensemble')
+    rows = []
+    fields = ('id', 'type', 'status', 'unit', 'value', 'code', 'reason',
+              'error_bound', 'context', 'left_observation_id',
+              'right_observation_id', 'particle_id')
+    for member in members:
+        row = {'id':member['id'], 'index':member['index'],
+               'status':member['status'], 'decision':member['decision'],
+               'reference':member.get('reference'),
+               'run_status':member.get('run_status'),
+               'comparison_status':member.get('comparison_status'),
+               'reason':member.get('reason'),
+               'measurements':[], 'evidence':None}
+        if member.get('comparison_status') is not None:
+            folder = _member_dir(output, member['index'])
+            cmp_path = folder/'comparison'
+            # Re-run the EXISTING sealed, source-bound inspector rather than
+            # reading an unaudited result, or recomputing a new measurement.
+            original = scenario_comparisons.inspect(
+                cmp_path, left=output/'baseline', right=folder/'run')
+            if original['status'] != member['comparison_status']:
+                raise RevisionError('ensemble_integrity',
+                                    'member comparison status changed during readout')
+            # Bind the exported receipt to the SAME bytes the authoritative
+            # comparison inspector accepts; fail if an ordinary intervening
+            # file change appears during this read-only projection.
+            request_raw = (cmp_path/'request.json').read_bytes()
+            result_raw = (cmp_path/'result.json').read_bytes()
+            integrity_raw = (cmp_path/'integrity.json').read_bytes()
+            inventory = decode(integrity_raw).get('files', {})
+            if (inventory.get('request.json') != sha256(request_raw)
+                    or inventory.get('result.json') != sha256(result_raw)
+                    or decode(result_raw) != original):
+                raise RevisionError('comparison_integrity',
+                                    'sealed comparison changed during readout')
+            request = decode(request_raw)
+            row['evidence'] = {
+                'request_sha256':sha256(request_raw),
+                'result_sha256':sha256(result_raw),
+                'integrity_sha256':sha256(integrity_raw),
+                'left_run_sha256':request['left_run_sha256'],
+                'right_run_sha256':request['right_run_sha256'],
+            }
+            # Preserve native JSON numbers and typed unavailability. There is
+            # no rounding, signed-value transformation or zero substitution.
+            row['measurements'] = [
+                {key:measurement.get(key) for key in fields}
+                for measurement in original['comparisons']
+            ]
+        rows.append(row)
+    return {'readout_version':1, 'id':summary['id'],
+            'status':summary['status'],  # global status even after a member filter
+            'parent':summary['parent'],
+            'source_run_sha256':summary['source_run_sha256'],
+            'baseline':summary['baseline'],
+            'selection':'all_members' if member_id is None else 'member:'+member_id,
+            'members':rows, 'meaning':MEANING,
+            'qualification':'read-only projection of verified native comparisons; '
+                            'no new physics, no inferred time transition, '
+                            'not teacher acceptance'}
+
 def view_ensemble(output, *, store_path, using, member_id=None, baseline=False,
                   sample_index=0, screenshot_output=None):
     """Present exactly one integrity-checked recorded native run, never an inferred scenario transition."""
@@ -566,7 +645,7 @@ def view_ensemble(output, *, store_path, using, member_id=None, baseline=False,
 
 def main(argv=None):
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command',choices=('run','inspect','view'))
+    parser.add_argument('command',choices=('run','inspect','view','measurements'))
     parser.add_argument('spec_or_output')
     parser.add_argument('--store',required=True)
     parser.add_argument('--using',required=True)
@@ -591,11 +670,16 @@ def main(argv=None):
                 raise ValueError('inspect does not accept view selection or sample-index flags')
             result=inspect_ensemble(args.spec_or_output,store_path=args.store,
                                     using=args.using)
-        else:
+        elif args.command=='view':
             result=view_ensemble(args.spec_or_output,store_path=args.store,
                                  using=args.using,member_id=args.member,baseline=args.baseline,
                                  sample_index=0 if args.sample_index is None else args.sample_index,
                                  screenshot_output=args.output)
+        else:
+            if args.output is not None or args.baseline or args.sample_index is not None:
+                raise ValueError('measurements accepts only an optional --member filter')
+            result=read_ensemble_measurements(args.spec_or_output,store_path=args.store,
+                                              using=args.using,member_id=args.member)
         print(encode(result).decode(),end='')
         return 0 if result['status']=='complete' else 1
     except (OSError,ValueError,KeyError,TypeError) as exc:

@@ -168,6 +168,34 @@ jobs:
           python -m pytest -q -W error tests/test_scenario_ensembles.py 2>&1 | tee output/release-candidate/scenario-ensemble-tests.log
           python tools/qualify_scenario_ensembles.py --output output/release-candidate/scenario-ensembles 2>&1 | tee output/release-candidate/scenario-ensembles.log
           python verification/check_scenario_ensemble_runs.py output/release-candidate/scenario-ensembles --report output/release-candidate/scenario-ensemble-reference.json 2>&1 | tee output/release-candidate/scenario-ensemble-reference.log
+      - name: Project verified signed ensemble measurements without new physics or writes
+        run: |
+          set -euo pipefail
+          python -m emfeeld.scenario_ensembles measurements output/release-candidate/scenario-ensembles/E1/ensemble --store output/release-candidate/scenario-ensembles/E1/store --using output/release-candidate/scenario-ensembles/E1/parent-template > output/release-candidate/ensemble-measurements-E1.json
+          if python -m emfeeld.scenario_ensembles measurements output/release-candidate/scenario-ensembles/G1/ensemble --store output/release-candidate/scenario-ensembles/G1/store --using output/release-candidate/scenario-ensembles/G1/parent-template --member hypothesis-B > output/release-candidate/ensemble-measurements-G1.json; then
+            echo 'G1 readout incorrectly returned complete'; exit 1
+          else
+            test "$?" -eq 1
+          fi
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path('output/release-candidate')
+          e=json.loads((root/'ensemble-measurements-E1.json').read_bytes())
+          g=json.loads((root/'ensemble-measurements-G1.json').read_bytes())
+          assert e['status']=='complete' and len(e['members'])==2
+          assert all(m['comparison_status']=='complete' for m in e['members'])
+          assert all(m['measurements'] and all(v['status']=='ok' for v in m['measurements']) for m in e['members'])
+          assert g['status']=='partial' and g['selection']=='member:hypothesis-B'
+          assert len(g['members'])==1 and g['members'][0]['run_status']=='complete'
+          assert g['members'][0]['comparison_status']=='partial'
+          assert sum(v['status']=='unavailable' for v in g['members'][0]['measurements'])==1
+          assert all(v['value'] is None and v['code']=='unknown_operand'
+                     for v in g['members'][0]['measurements'] if v['status']=='unavailable')
+          assert all(m['evidence']['result_sha256'] and m['evidence']['request_sha256']
+                     for m in e['members']+g['members'])
+          print('verified E1 complete and G1 honest partial readouts from sealed native records')
+          PY
       - name: Verify native view delegation for sealed ensemble baseline and partial comparison member
         run: |
           set -euo pipefail

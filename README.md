@@ -233,3 +233,38 @@ ensemble attempts, and existing model stores, even through a symlinked parent.
 A normal fresh external destination remains supported. As with other local
 preflight path checks, this cannot provide distributed locking or a hostile
 concurrent-writer / filesystem TOCTOU guarantee; do not treat it as one.
+
+
+## Verified ensemble measurement readout (R1 candidate)
+
+The ensemble's existing inspector establishes complete/partial status; this new
+read-only convenience exposes already verified per-member **signed right-minus-left
+measurement values, units, typed unavailable reasons and exact saved-source hashes**
+without opening or guessing nested comparison paths:
+
+```text
+python -m emfeeld.scenario_ensembles measurements ENSEMBLE_OUTPUT --store EXACT_STORE --using ORIGINAL_PARENT_RUN
+python -m emfeeld.scenario_ensembles measurements ENSEMBLE_OUTPUT --store EXACT_STORE --using ORIGINAL_PARENT_RUN --member hypothesis-B
+```
+
+The command verifies **all** original ensemble and model-store evidence with the
+existing native inspectors *before* selecting a member, then projects only fields
+from the sealed cross-scenario comparison results. It performs no new physical
+calculation, numeric rounding, unit conversion or file write. Member filtering
+never changes the **global** reported ensemble status; a complete selected
+member does not turn a legitimately partial ensemble into a complete one.
+Rejected or native-incomplete members remain explicit with no synthetic zero
+measurements. A genuinely unavailable G1 baseline body keeps its original
+`unknown_operand` code and `null` value. A member literally named `baseline`
+is selected by `--member baseline`, not confused with the fresh left baseline.
+
+As in the existing inspector, the CLI exits `0` for globally complete evidence,
+`1` for honest globally partial evidence, and `2` for invalid inputs, unknown
+members or detected integrity failures. The JSON fields include source `run.json`
+SHA256 pins and the exact sealed request/result/integrity SHA256 receipts. This
+is an evidence *presentation*, not another comparator or a claim of physical
+time evolution, independent physics certification or teacher acceptance.
+
+This is a new unmerged source candidate requiring its own focused independent
+R1 presentation-integrity review and Linux/Windows plus real-PyVista CI.
+See [the bounded readout contract](docs/VERIFIED_ENSEMBLE_MEASUREMENT_READOUT_V1.md).
