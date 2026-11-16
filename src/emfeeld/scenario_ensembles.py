@@ -482,25 +482,90 @@ def inspect_ensemble(output,*,store_path,using):
     return saved
 
 
+def view_ensemble(output, *, store_path, using, member_id=None, baseline=False,
+                  sample_index=0, screenshot_output=None):
+    """Present exactly one integrity-checked recorded native run, never an inferred scenario transition."""
+    if baseline == (member_id is not None):
+        raise ValueError('select exactly one of baseline or a named ensemble member')
+    if member_id is not None and (type(member_id) is not str or not member_id):
+        raise ValueError('member selection requires one exact declared member ID')
+    if type(sample_index) is not int or sample_index < 0:
+        raise ValueError('sample index must be a nonnegative recorded sample integer')
+    output, store_path, using = map(Path, (output, store_path, using))
+    # Check all ensemble/source/model evidence before resolving a selection or
+    # constructing any interactive viewer or screenshot directory.
+    summary = inspect_ensemble(output, store_path=store_path, using=using)
+    if baseline:
+        if summary['baseline']['status'] != 'complete' or not summary['baseline']['execution_complete']:
+            raise RevisionError('preview_unavailable', 'fresh baseline native run is incomplete')
+        selected = output/'baseline'
+        reference = summary['parent']
+        selection = 'baseline'
+    else:
+        row = next((item for item in summary['members'] if item['id'] == member_id), None)
+        if row is None:
+            raise RevisionError('unknown_member', 'selected member ID is not declared by this ensemble')
+        # A comparison can legitimately be partial because the baseline has no
+        # physical counterpart; a complete native member run is still viewable.
+        if row.get('decision') != 'accepted' or row.get('run_status') != 'complete':
+            raise RevisionError('preview_unavailable', 'selected member has no complete native run')
+        selected = _member_dir(output, row['index'])/'run'
+        reference = row['reference']
+        selection = member_id
+    screenshot = None
+    if screenshot_output is not None:
+        screenshot = Path(screenshot_output)
+        if screenshot.exists() or screenshot.is_symlink():
+            raise FileExistsError('presentation output must be a fresh directory')
+        dest = screenshot.resolve()
+        if any(dest.is_relative_to(root.resolve()) for root in (output,store_path,using)):
+            raise ValueError('presentation output must be outside the sealed ensemble, store and template')
+    # Reuse the existing sealed native presentation and sample guards; no new
+    # field evaluation, interpolation, physical mutation or renderer dispatch.
+    run, _, native, _ = model_runs.inspect_run(selected, expected_reference=reference)
+    if native['status'] != 'complete' or not native['execution_complete']:
+        raise RevisionError('preview_unavailable','selected run is not complete')
+    if native['mode'] == 'static' and sample_index != 0:
+        raise ValueError('static field presentation has no physical sample evolution')
+    model_runs.present_run(selected, sample_index=sample_index, screenshot_directory=screenshot)
+    return {'status':'complete', 'ensemble_id':summary['id'],
+            'ensemble_status':summary['status'], 'selection':selection,
+            'run_id':run['run_id'], 'reference':reference,
+            'presentation':'recorded native run only; not teacher acceptance',
+            'meaning':MEANING}
+
 def main(argv=None):
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command',choices=('run','inspect'))
+    parser.add_argument('command',choices=('run','inspect','view'))
     parser.add_argument('spec_or_output')
     parser.add_argument('--store',required=True)
     parser.add_argument('--using',required=True)
     parser.add_argument('--output')
+    selector=parser.add_mutually_exclusive_group()
+    selector.add_argument('--baseline',action='store_true')
+    selector.add_argument('--member')
+    parser.add_argument('--sample-index',type=int)
     args=parser.parse_args(argv)
     try:
         if args.command=='run':
             if args.output is None:
                 raise ValueError('run requires --output')
+            if args.baseline or args.member is not None or args.sample_index is not None:
+                raise ValueError('run does not accept view selection or sample-index flags')
             result=run_ensemble(args.spec_or_output,store_path=args.store,
                                 using=args.using,output=args.output)
-        else:
+        elif args.command=='inspect':
             if args.output is not None:
                 raise ValueError('inspect does not accept --output')
+            if args.baseline or args.member is not None or args.sample_index is not None:
+                raise ValueError('inspect does not accept view selection or sample-index flags')
             result=inspect_ensemble(args.spec_or_output,store_path=args.store,
                                     using=args.using)
+        else:
+            result=view_ensemble(args.spec_or_output,store_path=args.store,
+                                 using=args.using,member_id=args.member,baseline=args.baseline,
+                                 sample_index=0 if args.sample_index is None else args.sample_index,
+                                 screenshot_output=args.output)
         print(encode(result).decode(),end='')
         return 0 if result['status']=='complete' else 1
     except (OSError,ValueError,KeyError,TypeError) as exc:
