@@ -184,3 +184,32 @@ pinned-parent proposal and compute fresh checked results before opening its reco
 preview. No physics or source facts are silently changed. See
 [the native workflow guide](docs/NATIVE_MODEL_WORKFLOW.md), including the explicit
 import requirement for older portable handoff stores. Existing commands remain supported.
+
+## Verified bounded ensemble native viewing (R1 candidate)
+
+After creating a sealed Bounded Scenario Ensemble V1 with separately authored
+V3 siblings and complete/partial evidence, the new *candidate* CLI can route a
+selected saved run to the existing native PyVista viewer without guessing the
+internal member-directory index:
+
+```text
+python -m emfeeld.scenario_ensembles view ENSEMBLE_OUTPUT --store EXACT_STORE --using ORIGINAL_PARENT_RUN --baseline
+python -m emfeeld.scenario_ensembles view ENSEMBLE_OUTPUT --store EXACT_STORE --using ORIGINAL_PARENT_RUN --member hypothesis-A --sample-index 0
+python -m emfeeld.scenario_ensembles view ENSEMBLE_OUTPUT --store EXACT_STORE --using ORIGINAL_PARENT_RUN --member hypothesis-B --output NEW_SCREENSHOT_DIRECTORY
+```
+
+Exactly one of `--baseline` and `--member EXACT_DECLARED_ID` is required;
+these are deliberately separate because a member may literally be named
+`baseline`. The command first verifies the complete saved ensemble, original
+model-store proposals and sealed parent template, then selects the **actual
+complete native run** and delegates to `model_runs.present_run`. A legitimate
+partial *comparison* may coexist with a fully viewable native member run; a
+rejected or incomplete selected run never opens. Static runs have only
+sample index zero; motion playback and screenshots use recorded native states,
+not interpolation or a new solver. Screenshot output must be fresh and outside
+the ensemble, model store and sealed parent run. Neither scene presentation
+nor saved comparisons model physical transitions, certify teacher outcomes or
+qualify manual Windows mouse interaction.
+
+This capability is a source candidate pending its focused R1 review and
+exact-head Linux/Windows/real-PyVista qualification, not a merged-release claim.
