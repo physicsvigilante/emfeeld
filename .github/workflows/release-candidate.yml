@@ -156,6 +156,12 @@ jobs:
           python -m pytest -q -W error tests/test_atomic_revisions.py 2>&1 | tee output/release-candidate/atomic-tests.log
           python tools/qualify_atomic_revisions.py --output output/release-candidate/atomic-revisions --render 2>&1 | tee output/release-candidate/atomic-revisions.log
           python verification/check_atomic_revision_runs.py output/release-candidate/atomic-revisions --report output/release-candidate/atomic-revisions-reference.json 2>&1 | tee output/release-candidate/atomic-revisions-reference.log
+      - name: Sealed cross-scenario comparisons and separate physical references
+        run: |
+          set -euo pipefail
+          python -m pytest -q -W error tests/test_scenario_comparisons.py 2>&1 | tee output/release-candidate/scenario-comparison-tests.log
+          python tools/qualify_scenario_comparisons.py --output output/release-candidate/scenario-comparisons 2>&1 | tee output/release-candidate/scenario-comparisons.log
+          python verification/check_scenario_comparison_runs.py output/release-candidate/scenario-comparisons --report output/release-candidate/scenario-comparison-reference.json 2>&1 | tee output/release-candidate/scenario-comparison-reference.log
       - name: Preserve both success and failure evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
