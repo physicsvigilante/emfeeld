@@ -372,16 +372,25 @@ def compare(request_path,*,left,right,output):
     for protected in (left,right):
         if output.resolve().is_relative_to(protected.resolve()):
             raise ValueError('comparison output must stay outside either source run')
+    # Native runs can reside outside their append-only model store. Do not
+    # allow a fresh comparison directory to be written into a known store.
+    for ancestor in (output.resolve(), *output.resolve().parents):
+        if ((ancestor/'model.json').is_file()
+                and (ancestor/'revisions').is_dir()
+                and (ancestor/'proposals').is_dir()):
+            raise ValueError('comparison output must be outside model stores')
     raw=request_path.read_bytes()
     spec=decode(raw)
     _validate(spec)
     a,b=_sources(left,right,spec)
-    # All compatibility decisions precede output directory creation.
+    # Check all selected saved samples and comparison arithmetic before
+    # publishing any output. Re-sealed contradictory native evidence is a
+    # source preflight error, never an apparently usable pending result.
+    result=_build(spec,raw,a,b)
     output.mkdir(parents=True,exist_ok=False)
     put(output/'request.json',raw)
     put(output/'started.json',encode({'comparison_version':1,'id':spec['id'],
                                      'status':'pending','request_sha256':sha256(raw)}))
-    result=_build(spec,raw,a,b)
     put(output/'result.json',encode(result))
     put(output/'integrity.json',encode({'files':_inventory(output)}))
     return result
