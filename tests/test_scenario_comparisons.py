@@ -377,3 +377,121 @@ def test_comparison_cannot_be_written_inside_an_append_only_model_store(tmp_path
     assert not protected.exists()
     for rel,data in baseline.items():
         assert (store.path/rel).read_bytes()==data
+
+
+# Targeted independent R2 findings F-01..F-03, retained against exact pre-fix
+# source SHA 4b51a833c0ed5ef189becf5881064d1b516df21b.
+def _reseal_native_results(folder, payload):
+    native = folder/'native'
+    result = native/'result.json'
+    result.write_bytes(encode(payload))
+    nested = native/'integrity.json'
+    if nested.is_file():
+        inside = decode(nested.read_bytes())
+        inside['files']['result.json'] = sha256(result.read_bytes())
+        nested.write_bytes(encode(inside))
+    _reseal(folder)
+
+
+def _replace_all_saved_samples_with_index_zero(folder):
+    native = folder/'native'
+    payload = decode((native/'result.json').read_bytes())
+    with np.load(native/'trajectories.npz',allow_pickle=False) as npz:
+        for row in payload['results']:
+            if row['type'] != 'trajectory_sample':
+                continue
+            index = row['particle_index']
+            quantity = {'position':'position_m','velocity':'velocity_m_s'}[row['quantity']]
+            row['sample_index'] = 0
+            row['time_s'] = float(npz[f'p{index}_time_s'][0])
+            row['value'] = [float(v) for v in npz[f'p{index}_{quantity}'][0]]
+            # Keep the original selection receipt and packet intact.
+    _reseal_native_results(folder,payload)
+
+
+@pytest.mark.parametrize('sides', [('right',), ('left','right')])
+def test_r2_f01_resigned_npz_row_at_wrong_requested_index_fails_before_output(tmp_path, sides):
+    store, root, child, left, right = _case(tmp_path)
+    folders = {}
+    for side,original in [('left',left),('right',right)]:
+        copy = tmp_path/('R2-'+side)
+        shutil.copytree(original,copy)
+        if side in sides:
+            _replace_all_saved_samples_with_index_zero(copy)
+        folders[side]=copy
+    specimen = _spec(folders['left'],folders['right'],[_spec(left,right)['pairs'][3]])
+    spec = write(tmp_path/'R2-index-request.json', specimen)
+    destination = tmp_path/'R2-should-not-exist'
+    with pytest.raises(RevisionError,match='invalid|selector|sample|request'):
+        compare(spec,left=folders['left'],right=folders['right'],output=destination)
+    assert not destination.exists()
+
+
+@pytest.mark.parametrize('mutation', ['unselected_trajectory','field_magnitude'])
+def test_r2_f02_complete_source_preflight_checks_unselected_trajectory_and_field_magnitudes(tmp_path,mutation):
+    store,root,child,left,right=_case(tmp_path)
+    corrupt=tmp_path/'R2-corrupt'
+    shutil.copytree(right,corrupt)
+    payload=decode((corrupt/'native/result.json').read_bytes())
+    if mutation=='unselected_trajectory':
+        original = next(r for r in payload['results'] if r['id']=='position-right')
+        original['value'][0] += 100.
+    else:
+        original = next(r for r in payload['results'] if r['id']=='E-right')
+        original['magnitude'] *= 20.
+    _reseal_native_results(corrupt,payload)
+    selected=[_spec(left,right)['pairs'][0]]  # Field VECTOR only; never the tampered sample/magnitude.
+    spec=write(tmp_path/(mutation+'.json'),_spec(left,corrupt,selected))
+    destination=tmp_path/('R2-'+mutation+'-rejected')
+    with pytest.raises(RevisionError,match='invalid|native|magnitude|sample'):
+        compare(spec,left=left,right=corrupt,output=destination)
+    assert not destination.exists()
+
+
+@pytest.mark.parametrize('flag',[0,1,'true',None,False])
+def test_r2_f03_malformed_native_check_flag_is_hard_invalid_native_run(tmp_path,flag):
+    store,root,child,left,right=_case(tmp_path,mode='static')
+    corrupt=tmp_path/'R2-check'
+    shutil.copytree(right,corrupt)
+    payload=decode((corrupt/'native/result.json').read_bytes())
+    row=next(r for r in payload['results'] if r['id']=='E-right')
+    row['check']={'passed':flag}
+    _reseal_native_results(corrupt,payload)
+    spec=write(tmp_path/'R2-check.json',_spec(left,corrupt,[_spec(left,right)['pairs'][0]]))
+    destination=tmp_path/'R2-check-refused'
+    with pytest.raises(RevisionError,match='invalid|check|native'):
+        compare(spec,left=left,right=corrupt,output=destination)
+    assert not destination.exists()
+
+
+@pytest.mark.parametrize('selection',[
+    {'time_s':.5,'time_selection':'exact'},
+    {'time_s':.501,'time_selection':'nearest','max_time_error_s':.002},
+])
+def test_r2_f01_exact_or_nearest_time_selector_must_bind_to_actual_npz_row(tmp_path,selection):
+    store,root,child,left,right=_case(tmp_path,l_selection=selection)
+    corrupt=tmp_path/'R2-selected'
+    shutil.copytree(left,corrupt)
+    _replace_all_saved_samples_with_index_zero(corrupt)
+    spec=write(tmp_path/'R2-selected.json',_spec(corrupt,right,[_spec(left,right)['pairs'][3]]))
+    destination=tmp_path/'R2-selected-rejected'
+    with pytest.raises(RevisionError,match='invalid|selector|sample|request'):
+        compare(spec,left=corrupt,right=right,output=destination)
+    assert not destination.exists()
+
+
+def test_r2_f01_nearest_time_offset_must_match_saved_time_minus_requested_time(tmp_path):
+    store,root,child,left,right=_case(tmp_path,l_selection={
+        'time_s':.501,'time_selection':'nearest','max_time_error_s':.002})
+    corrupt=tmp_path/'R2-offset'
+    shutil.copytree(left,corrupt)
+    payload=decode((corrupt/'native/result.json').read_bytes())
+    row=next(r for r in payload['results'] if r['id']=='position-left')
+    assert row['time_offset_s'] != 0
+    row['time_offset_s']=0.0
+    _reseal_native_results(corrupt,payload)
+    spec=write(tmp_path/'R2-offset.json',_spec(corrupt,right,[_spec(left,right)['pairs'][3]]))
+    destination=tmp_path/'R2-offset-rejected'
+    with pytest.raises(RevisionError,match='invalid|selector|offset|sample'):
+        compare(spec,left=corrupt,right=right,output=destination)
+    assert not destination.exists()
