@@ -261,8 +261,10 @@ def test_malicious_resign_native_report_sample_contradicts_saved_npz(tmp_path):
     nested=fake/'native/integrity.json';files=decode(nested.read_bytes());files['files']['result.json']=sha256(path.read_bytes())
     nested.write_bytes(encode(files));_reseal(fake)
     doc=write(tmp_path/'incoherent.json',_spec(left,fake,[_spec(left,right)['pairs'][3]]))
+    refused=tmp_path/'refuse-fake'
     with pytest.raises(RevisionError,match='NPZ'):
-        compare(doc,left=left,right=fake,output=tmp_path/'refuse-fake')
+        compare(doc,left=left,right=fake,output=refused)
+    assert not refused.exists()  # Invalid saved native evidence fails preflight.
 
 
 def test_result_resealed_inconsistent_with_sources_fails_inspection(tmp_path):
@@ -363,3 +365,15 @@ def test_malformed_check_metadata_and_wrong_report_coordinates_are_hard_failures
         req=write(tmp_path/('fake-'+tag+'.json'),_spec(left,fake,[_spec(left,right)['pairs'][0]]))
         with pytest.raises(RevisionError,match='native result identity|field result location'):
             compare(req,left=left,right=fake,output=tmp_path/('not-'+tag))
+
+def test_comparison_cannot_be_written_inside_an_append_only_model_store(tmp_path):
+    store, root, child, left, right = _case(tmp_path, mode='static')
+    spec=write(tmp_path/'store-protection.json',_spec(left,right,[_spec(left,right)['pairs'][0]]))
+    protected=store.path/'user-comparison'
+    baseline={p.relative_to(store.path).as_posix():p.read_bytes()
+              for p in store.path.rglob('*') if p.is_file()}
+    with pytest.raises(ValueError, match='outside model stores'):
+        compare(spec,left=left,right=right,output=protected)
+    assert not protected.exists()
+    for rel,data in baseline.items():
+        assert (store.path/rel).read_bytes()==data
