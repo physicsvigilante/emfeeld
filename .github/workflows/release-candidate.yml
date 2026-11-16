@@ -162,6 +162,12 @@ jobs:
           python -m pytest -q -W error tests/test_scenario_comparisons.py 2>&1 | tee output/release-candidate/scenario-comparison-tests.log
           python tools/qualify_scenario_comparisons.py --output output/release-candidate/scenario-comparisons 2>&1 | tee output/release-candidate/scenario-comparisons.log
           python verification/check_scenario_comparison_runs.py output/release-candidate/scenario-comparisons --report output/release-candidate/scenario-comparison-reference.json 2>&1 | tee output/release-candidate/scenario-comparison-reference.log
+      - name: Bounded scenario ensembles and separate physical references
+        run: |
+          set -euo pipefail
+          python -m pytest -q -W error tests/test_scenario_ensembles.py 2>&1 | tee output/release-candidate/scenario-ensemble-tests.log
+          python tools/qualify_scenario_ensembles.py --output output/release-candidate/scenario-ensembles 2>&1 | tee output/release-candidate/scenario-ensembles.log
+          python verification/check_scenario_ensemble_runs.py output/release-candidate/scenario-ensembles --report output/release-candidate/scenario-ensemble-reference.json 2>&1 | tee output/release-candidate/scenario-ensemble-reference.log
       - name: Preserve both success and failure evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
