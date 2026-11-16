@@ -36,8 +36,8 @@ def reference(root, request, result):
     with np.load(root/'native/trajectories.npz',allow_pickle=False) as data:
         t=data[f'p{index}_time_s']
         trajectory=np.column_stack((data[f'p{index}_position_m'],data[f'p{index}_velocity_m_s']))
-    fine=rk4(scene,particle,t,40)
-    coarse=rk4(scene,particle,t,20)
+    fine=rk4(scene,particle,t,80)
+    coarse=rk4(scene,particle,t,40)
     np.testing.assert_allclose(trajectory,fine,atol=2e-7,rtol=2e-7)
     np.testing.assert_allclose(coarse,fine,atol=2e-7,rtol=2e-7)
     if result['sample_index']!=request['sample_index'] or result['time_s']!=float(t[result['sample_index']]):
