@@ -268,3 +268,29 @@ time evolution, independent physics certification or teacher acceptance.
 This is a new unmerged source candidate requiring its own focused independent
 R1 presentation-integrity review and Linux/Windows plus real-PyVista CI.
 See [the bounded readout contract](docs/VERIFIED_ENSEMBLE_MEASUREMENT_READOUT_V1.md).
+
+
+## Verified ensemble evidence table (R1 candidate)
+
+The new *candidate* stdout-only table command displays the existing sealed
+comparison results without path guessing or another solver. It calls the fully
+integrity-checked `measurements` readout and formats only its source-bound values:
+
+```text
+python -m emfeeld.scenario_ensembles table ENSEMBLE_OUTPUT --store EXACT_STORE --using ORIGINAL_PARENT_RUN
+python -m emfeeld.scenario_ensembles table ENSEMBLE_OUTPUT --store EXACT_STORE --using ORIGINAL_PARENT_RUN --member hypothesis-B
+```
+
+The table retains signed member-minus-fresh-baseline measurements and original
+SI units, context/observation IDs, genuine missing-operand reasons and full saved
+SHA256 comparison/run receipts. A globally partial ensemble remains partial even
+when filtering to a complete sibling. A member literally named `baseline` is not
+confused with the independent fresh baseline. The command creates **no saved
+files**; untrusted source text is escaped so it cannot insert Markdown rows or
+links. Existing native `run`, `inspect`, `view` and `measurements` remain the
+scientific source and guardrails. No new numerical laws, integration, unit
+conversions, teacher outcome claims or physical time evolution are implied.
+
+This is an unmerged feature candidate subject to exact-head Linux/Windows,
+real-PyVista and focused independent R1 source/presentation review. See the
+[frozen table contract](docs/VERIFIED_ENSEMBLE_EVIDENCE_TABLE_V1.md).

@@ -894,3 +894,187 @@ def test_r1_readout_refuses_changed_outer_seal_after_original_inspection(tmp_pat
     assert _files_now(store.path) == before_store
     assert _files_now(template) == before_template
     assert {**before_out, 'integrity.json': original + b' '} == _files_now(out)
+
+# R1 Verified Ensemble Evidence Table V1: pure presentation of sealed readout.
+
+def test_evidence_table_source_bound_values_and_no_writes(tmp_path, capsys):
+    from emfeeld import scenario_ensembles as module
+    import json
+    store, root, template, report, out, spec = _run(tmp_path)
+    before = {label:_files_now(folder) for label,folder in
+              [('store',store.path),('template',template),('ensemble',out)]}
+    original = module.read_ensemble_measurements(out,store_path=store.path,using=template)
+    common=[str(out),'--store',str(store.path),'--using',str(template)]
+    assert module.main(['table',*common]) == 0
+    table=capsys.readouterr().out
+    assert table.startswith('# Verified Ensemble Evidence Table V1\n')
+    assert 'Global ensemble status: **complete**' in table
+    assert 'member (right) minus freshly computed baseline (left)' in table
+    for member in original['members']:
+        evidence = member['evidence']
+        assert evidence
+        for key in ('request_sha256','result_sha256','integrity_sha256',
+                    'left_run_sha256','right_run_sha256'):
+            assert evidence[key] in table
+        for measurement in member['measurements']:
+            assert module._markdown_table_cell(measurement['value']) in table
+            assert module._markdown_table_cell(measurement['unit']) in table
+            assert module._markdown_table_cell(measurement['context']) in table
+            assert module._markdown_table_cell(measurement['id']) in table
+            assert measurement['status']=='ok'
+    assert len([ln for ln in table.splitlines() if ln.startswith('| ')]) == (
+        2+sum(len(m['measurements']) for m in original['members'])+2+len(original['members']))
+    assert table==module._ensemble_measurement_table(original)
+    assert {label:_files_now(folder) for label,folder in
+            [('store',store.path),('template',template),('ensemble',out)]}==before
+
+
+def test_evidence_table_preserves_global_partial_and_unknown_operand(tmp_path,capsys):
+    from emfeeld import scenario_ensembles as module
+    store,root=imported(tmp_path)
+    template,inv,analysis,view=_native_root(tmp_path,store,root)
+    spec=_spec(root,template,inv,analysis,view)
+    spec['members'][1]['pairs'][0]['left_observation_id']='genuinely-missing-parent'
+    out=tmp_path/'partial-evidence-table'
+    run_ensemble(write(tmp_path/'partial-evidence-table.json',spec),
+                 store_path=store.path,using=template,output=out)
+    before={label:_files_now(folder) for label,folder in
+            [('store',store.path),('template',template),('ensemble',out)]}
+    common=[str(out),'--store',str(store.path),'--using',str(template)]
+    assert module.main(['table',*common,'--member','variant-1'])==1
+    first=capsys.readouterr().out
+    assert 'Global ensemble status: **partial**' in first
+    assert 'Selection: member&#58;variant-1' in first
+    assert 'variant-1' in first and 'variant-2' not in first
+    assert module.main(['table',*common,'--member','variant-2'])==1
+    second=capsys.readouterr().out
+    assert 'Global ensemble status: **partial**' in second
+    assert 'unknown&#95;operand' in second
+    assert 'unavailable (no numeric value)' in second
+    assert 'genuinely-missing-parent' in second  # Preserve authored missing left observation ID.
+    assert '| ' in second
+    assert {label:_files_now(folder) for label,folder in
+            [('store',store.path),('template',template),('ensemble',out)]}==before
+
+
+def test_evidence_table_legal_member_named_baseline_is_distinct(tmp_path,capsys):
+    from emfeeld import scenario_ensembles as module
+    store,root=imported(tmp_path)
+    template,inv,analysis,view=_native_root(tmp_path,store,root)
+    spec=_spec(root,template,inv,analysis,view)
+    spec['members'].extend([_member(root,3,inv,analysis,view),
+                            _member(root,4,inv,analysis,view)])
+    spec['members'][2]['id']='baseline'
+    out=tmp_path/'four-evidence-table'
+    run_ensemble(write(tmp_path/'four-evidence-table.json',spec),
+                 store_path=store.path,using=template,output=out)
+    original=module.read_ensemble_measurements(out,store_path=store.path,
+                                               using=template,member_id='baseline')
+    assert original['selection']=='member:baseline'
+    assert original['members'][0]['index']==3
+    common=[str(out),'--store',str(store.path),'--using',str(template)]
+    assert module.main(['table',*common,'--member','baseline'])==0
+    table=capsys.readouterr().out
+    assert 'Selection: member&#58;baseline' in table
+    assert 'baseline (#3)' in table
+    assert 'variant-1 (#1)' not in table
+    assert original['members'][0]['evidence']['integrity_sha256'] in table
+
+
+@pytest.mark.parametrize('kind',['rejected','native_partial'])
+def test_evidence_table_unattempted_member_never_invents_zero(tmp_path,capsys,kind):
+    from emfeeld import scenario_ensembles as module
+    store,root=imported(tmp_path)
+    template,inv,analysis,view=_native_root(tmp_path,store,root)
+    spec=_spec(root,template,inv,analysis,view,bad_second=(kind=='rejected'))
+    if kind=='native_partial':
+        spec['members'][1]['presentation']['entity_order'].append('ghost')
+    out=tmp_path/'unattempted-table'
+    run_ensemble(write(tmp_path/'unattempted-table.json',spec),
+                 store_path=store.path,using=template,output=out)
+    original=module.read_ensemble_measurements(out,store_path=store.path,using=template)
+    assert original['members'][1]['measurements']==[]
+    assert original['members'][1]['evidence'] is None
+    common=[str(out),'--store',str(store.path),'--using',str(template)]
+    assert module.main(['table',*common])==1
+    table=capsys.readouterr().out
+    nonresult=next(x for x in table.splitlines() if x.startswith('| variant-2 (#2) |'))
+    assert 'not measured:' in nonresult and ' | — | ' in nonresult
+    assert ' | 0 | ' not in nonresult
+    assert 'Global ensemble status: **partial**' in table
+
+
+@pytest.mark.parametrize('case',['invalid-member','output','baseline','sample-index','tampered-unselected','late-comparison-integrity'])
+def test_evidence_table_refusal_before_any_stdout_or_writes(tmp_path,capsys,monkeypatch,case):
+    from emfeeld import scenario_ensembles as module
+    store,root,template,report,out,spec=_run(tmp_path)
+    common=[str(out),'--store',str(store.path),'--using',str(template)]
+    args=['table',*common]
+    if case=='invalid-member':
+        args+=['--member','no-member']
+    elif case=='output':
+        args+=['--output',str(tmp_path/'unsafe-output')]
+    elif case=='baseline':
+        args+=['--baseline']
+    elif case=='sample-index':
+        args+=['--sample-index','0']
+    elif case=='tampered-unselected':
+        target=out/'member-02/comparison/integrity.json'
+        target.write_bytes(target.read_bytes()+b' ')
+        args+=['--member','variant-1']
+    elif case=='late-comparison-integrity':
+        target=out/'member-01/comparison/integrity.json'
+        original=target.read_bytes()
+        real=module.scenario_comparisons.inspect
+        calls=[]
+        def after_inspection(folder,**kwargs):
+            saved=real(folder,**kwargs)
+            if folder==target.parent:
+                calls.append(folder)
+                if len(calls)==2:
+                    target.write_bytes(original+b' ')
+            return saved
+        monkeypatch.setattr(module.scenario_comparisons,'inspect',after_inspection)
+        args+=['--member','variant-1']
+    before={label:_files_now(folder) for label,folder in
+            [('store',store.path),('template',template),('ensemble',out)]}
+    assert module.main(args)==2
+    captured=capsys.readouterr()
+    assert captured.out=='' and 'emfeeld scenario ensemble:' in captured.err
+    assert not (tmp_path/'unsafe-output').exists()
+    if case=='late-comparison-integrity':
+        assert len(calls)==2
+        expected=dict(before['ensemble']);expected['member-01/comparison/integrity.json']=original+b' '
+        assert _files_now(out)==expected
+    else:
+        assert {label:_files_now(folder) for label,folder in
+                [('store',store.path),('template',template),('ensemble',out)]}==before
+
+
+def test_evidence_table_escapes_untrusted_markdown_and_lossless_numbers(tmp_path):
+    from emfeeld import scenario_ensembles as module
+    store,root,template,report,out,spec=_run(tmp_path)
+    readout=module.read_ensemble_measurements(out,store_path=store.path,using=template)
+    # Injection is into the presentation-only copy, not any sealed saved input.
+    sample=readout['members'][0]['measurements'][0]
+    sample['id']='x | fake row\n| forged | [click](javascript:alert(1)) <img src=x onerror=bad()> www.evil.example'
+    sample['context']={'noted':'a|b\n[spoof](https://evil.example)'}
+    sample['value']=[-0.0,1e-250,-1.2345678901234567]
+    assert module._markdown_table_cell(-0.0)=='-0.0'
+    assert module._markdown_table_cell(1e-250)=='1e-250'
+    table=module._ensemble_measurement_table(readout)
+    assert 'forged |' not in table
+    assert '| forged |' not in table
+    assert '[click](javascript' not in table
+    assert '<img' not in table
+    assert 'www.evil' not in table
+    assert 'www&#46;evil' in table
+    assert 'a&#124;b' in table
+    assert 'evil&#46;' not in table  # no gratuitous change to decimal display
+    assert '-0.0' in table and '1e-250' in table and '-1.2345678901234567' in table
+    measurement_section=table.split('## Original sealed measurement values')[1].split('## Original comparison and native-run SHA256 bindings')[0]
+    measurement_rows=[x for x in measurement_section.splitlines() if x.startswith('| variant-')]
+    assert measurement_rows
+    assert all(len(row.split('|'))==14 for row in measurement_rows)
+    # The formatter never writes files, even with malicious-looking input text.
+    assert len(list(tmp_path.glob('*')))>0
