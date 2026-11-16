@@ -820,3 +820,77 @@ def test_verified_measurements_refuses_changed_result_after_inspection(tmp_path,
         module.read_ensemble_measurements(out,store_path=store.path,using=template)
     assert _files_now(store.path)==before_store
     assert target.read_bytes().endswith(b' ')
+
+
+@pytest.mark.parametrize('window', ['after_ensemble_inspect', 'after_comparison_inspect'])
+def test_r1_original_ensemble_seal_binds_comparison_integrity_during_readout(tmp_path, monkeypatch, window):
+    """Reviewer B1: whitespace-only late integrity drift must not forge a receipt."""
+    from emfeeld import scenario_ensembles as module
+    store, root, template, report, out, spec = _run(tmp_path)
+    target = out/'member-02/comparison/integrity.json'
+    relative = target.relative_to(out).as_posix()
+    original = target.read_bytes()
+    seal = decode((out/'integrity.json').read_bytes())
+    assert seal['files'][relative] == sha256(original)
+    assert module.inspect_ensemble(out, store_path=store.path, using=template) == report
+    before_store = _files_now(store.path)
+    before_template = _files_now(template)
+    before_out = _files_now(out)
+    changed = []
+    if window == 'after_ensemble_inspect':
+        real_inspect = module.inspect_ensemble
+        def later_inspect(*args, **kwargs):
+            result = real_inspect(*args, **kwargs)
+            if not changed:
+                target.write_bytes(original + b' ')
+                changed.append('after_ensemble_inspect')
+            return result
+        monkeypatch.setattr(module, 'inspect_ensemble', later_inspect)
+    else:
+        real_cmp_inspect = module.scenario_comparisons.inspect
+        calls = []
+        def later_comparison(folder, **kwargs):
+            result = real_cmp_inspect(folder, **kwargs)
+            if folder == target.parent:
+                calls.append(folder)
+                if len(calls) == 2:
+                    target.write_bytes(original + b' ')
+                    changed.append('after_comparison_inspect')
+            return result
+        monkeypatch.setattr(module.scenario_comparisons, 'inspect', later_comparison)
+    with pytest.raises(RevisionError, match='integrity|changed during readout') as exc:
+        module.read_ensemble_measurements(out, store_path=store.path,
+                                          using=template, member_id='variant-2')
+    assert exc.value.code in ('comparison_integrity', 'ensemble_integrity')
+    assert changed == [window]
+    assert target.read_bytes() == original + b' '
+    assert _files_now(store.path) == before_store
+    assert _files_now(template) == before_template
+    assert {**before_out, relative: original + b' '} == _files_now(out)
+
+
+def test_r1_readout_refuses_changed_outer_seal_after_original_inspection(tmp_path, monkeypatch):
+    """The manifest used for exact receipts cannot change after its preflight."""
+    from emfeeld import scenario_ensembles as module
+    store, root, template, report, out, spec = _run(tmp_path)
+    target = out/'integrity.json'
+    original = target.read_bytes()
+    before_store = _files_now(store.path)
+    before_template = _files_now(template)
+    before_out = _files_now(out)
+    real_inspect = module.inspect_ensemble
+    calls = []
+    def changed_after_inspection(*args, **kwargs):
+        saved = real_inspect(*args, **kwargs)
+        target.write_bytes(original + b' ')
+        calls.append('modified_ensemble_seal_after_preflight')
+        return saved
+    monkeypatch.setattr(module, 'inspect_ensemble', changed_after_inspection)
+    with pytest.raises(RevisionError, match='ensemble inventory changed during readout') as exc:
+        module.read_ensemble_measurements(out, store_path=store.path,
+                                          using=template, member_id='variant-1')
+    assert exc.value.code == 'ensemble_integrity'
+    assert calls == ['modified_ensemble_seal_after_preflight']
+    assert _files_now(store.path) == before_store
+    assert _files_now(template) == before_template
+    assert {**before_out, 'integrity.json': original + b' '} == _files_now(out)

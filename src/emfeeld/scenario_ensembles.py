@@ -523,8 +523,16 @@ def read_ensemble_measurements(output, *, store_path, using, member_id=None):
     if member_id is not None and (type(member_id) is not str or not member_id):
         raise ValueError('member filter requires an exact declared member ID')
     output = Path(output)
+    # Retain the original OUTER inventory bytes before whole-ensemble preflight.
+    # The inspector checks that inventory against every saved source file; a
+    # later comparison receipt must still be the exact byte hash it checked.
+    # This is a local read-time consistency guard, not concurrent-writer ACID.
+    outer_raw = (output/'integrity.json').read_bytes()
+    outer_files = decode(outer_raw)['files']
     # Validates every sibling and every original source before any selection.
     summary = inspect_ensemble(output, store_path=store_path, using=using)
+    if (output/'integrity.json').read_bytes() != outer_raw:
+        raise RevisionError('ensemble_integrity', 'ensemble inventory changed during readout')
     members = summary['members']
     if member_id is not None:
         members = [m for m in members if m['id'] == member_id]
@@ -558,6 +566,13 @@ def read_ensemble_measurements(output, *, store_path, using, member_id=None):
             request_raw = (cmp_path/'request.json').read_bytes()
             result_raw = (cmp_path/'result.json').read_bytes()
             integrity_raw = (cmp_path/'integrity.json').read_bytes()
+            # The nested inspector accepts semantically unchanged integrity
+            # JSON; bind its RAW bytes to the outer inventory checked earlier.
+            # Otherwise even trailing whitespace could forge a new receipt.
+            integrity_key = (cmp_path/'integrity.json').relative_to(output).as_posix()
+            if outer_files.get(integrity_key) != sha256(integrity_raw):
+                raise RevisionError('comparison_integrity',
+                                    'original comparison integrity changed during readout')
             inventory = decode(integrity_raw).get('files', {})
             if (inventory.get('request.json') != sha256(request_raw)
                     or inventory.get('result.json') != sha256(result_raw)
@@ -579,6 +594,8 @@ def read_ensemble_measurements(output, *, store_path, using, member_id=None):
                 for measurement in original['comparisons']
             ]
         rows.append(row)
+    if (output/'integrity.json').read_bytes() != outer_raw:
+        raise RevisionError('ensemble_integrity', 'ensemble inventory changed during readout')
     return {'readout_version':1, 'id':summary['id'],
             'status':summary['status'],  # global status even after a member filter
             'parent':summary['parent'],
