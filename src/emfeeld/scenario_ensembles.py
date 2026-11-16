@@ -817,7 +817,14 @@ def main(argv=None):
                                               using=args.using,member_id=args.member)
             if args.command=='table':
                 # Only render after complete original sealed readout; no new IO.
-                print(_ensemble_measurement_table(result),end='')
+                # UTF-8 table bytes must be stable even when Windows redirects
+                # stdout through a legacy locale codec (for example cp1252).
+                # Preserve Unicode signs/dashes and the exact Markdown output.
+                rendered = _ensemble_measurement_table(result)
+                if getattr(sys.stdout, 'buffer', None) is not None:
+                    sys.stdout.buffer.write(rendered.encode('utf-8'))
+                else:
+                    sys.stdout.write(rendered)  # e.g. test StringIO captures
                 return 0 if result['status']=='complete' else 1
         print(encode(result).decode(),end='')
         return 0 if result['status']=='complete' else 1

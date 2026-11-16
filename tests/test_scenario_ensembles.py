@@ -1078,3 +1078,50 @@ def test_evidence_table_escapes_untrusted_markdown_and_lossless_numbers(tmp_path
     assert all(len(row.split('|'))==14 for row in measurement_rows)
     # The formatter never writes files, even with malicious-looking input text.
     assert len(list(tmp_path.glob('*')))>0
+
+
+def test_evidence_table_utf8_stdout_under_legacy_windows_codepage(tmp_path, monkeypatch):
+    """The real CLI must not fail on a cp1252 redirected stdout stream."""
+    import io
+    import sys
+    from emfeeld import scenario_ensembles as module
+    store, root, template, report, out, spec = _run(tmp_path)
+    original = module.read_ensemble_measurements(out, store_path=store.path, using=template)
+    source_before = _files_now(store.path)
+    template_before = _files_now(template)
+    ensemble_before = _files_now(out)
+    byte_stream = io.BytesIO()
+    text_stream = io.TextIOWrapper(byte_stream, encoding='cp1252', errors='strict',
+                                   write_through=True)
+    monkeypatch.setattr(sys, 'stdout', text_stream)
+    common = [str(out), '--store', str(store.path), '--using', str(template)]
+    assert module.main(['table', *common]) == 0
+    actual = byte_stream.getvalue().decode('utf-8')
+    assert actual == module._ensemble_measurement_table(original)
+    assert 'right − left' in actual and '—' in actual
+    assert _files_now(store.path) == source_before
+    assert _files_now(template) == template_before
+    assert _files_now(out) == ensemble_before
+
+
+def test_evidence_table_utf8_pipe_with_pythonioencoding_cp1252(tmp_path):
+    """Exercise a real redirected Python process, as on Windows Actions."""
+    import os
+    import subprocess
+    import sys
+    from emfeeld import scenario_ensembles as module
+    store, root, template, report, out, spec = _run(tmp_path)
+    before_store, before_template, before_out = (
+        _files_now(store.path), _files_now(template), _files_now(out))
+    cmd = [sys.executable, '-m', 'emfeeld.scenario_ensembles', 'table',
+           str(out), '--store', str(store.path), '--using', str(template)]
+    env = os.environ.copy()
+    env['PYTHONIOENCODING'] = 'cp1252'
+    result = subprocess.run(cmd, capture_output=True, env=env, check=False)
+    assert result.returncode == 0, result.stderr.decode('utf-8', errors='replace')
+    expected = module._ensemble_measurement_table(
+        module.read_ensemble_measurements(out, store_path=store.path, using=template))
+    assert result.stdout.decode('utf-8') == expected
+    assert 'right − left' in expected
+    assert (_files_now(store.path), _files_now(template), _files_now(out)) == (
+        before_store, before_template, before_out)
