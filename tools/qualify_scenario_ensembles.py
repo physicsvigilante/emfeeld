@@ -52,6 +52,7 @@ def run_case(folder,case,scene,root,store):
     base_inv,base_ana,base_pre=inputs(case,scene,cfg['sources']+cfg['particles'],
                                      side='L',particles=cfg['particles'],
                                      samples=scene.get('samples',2))
+    base_inv['model_id']=root['model_id']
     templatepaths=[save(folder/f'template-{n}.json',val)
                    for n,val in zip(('ref','inv','analysis','view'),
                                     (root,base_inv,base_ana,base_pre))]
@@ -67,6 +68,7 @@ def run_case(folder,case,scene,root,store):
         inv,analysis,pres=inputs(case,scene,source_ids+particle_ids,
                                  side=letter,particles=particle_ids,
                                  samples=51 if cfg['mode']=='trajectory' else 2)
+        inv['model_id']=root['model_id']
         reqs=deepcopy(pairs(case,cfg['particles'],particle_ids))
         for p in reqs:
             p['right_observation_id']=p['right_observation_id'].replace('R-',letter+'-',1)
