@@ -16,6 +16,7 @@ import numpy as np
 
 from .model_revisions import RevisionError, decode, encode, identifier, put, sha256
 from .model_runs import inspect_run
+from .observations import Expectation, _comparison
 
 MAX_PAIRS = 16
 TYPES = ('field_vector', 'field_magnitude', 'potential_difference',
@@ -189,6 +190,58 @@ def _verify_field_magnitude(row, kind):
 
 
 
+
+def _verify_authored_check(request, row):
+    """Recompute the native authored expectation receipt without evaluating fields.
+
+    A run claiming complete cannot pass on an internally false or truncated
+    check, including one belonging to an observation not selected in a pair.
+    The existing observer's Decimal-backed pure comparison implements the
+    unchanged componentwise native criterion (no new tolerance or solver).
+    """
+    supplied = request.get('expectation')
+    check = row.get('check')
+    if supplied is None:
+        # The current native event requests have no authored measurement
+        # expectation and do not produce a check receipt. A forged check on
+        # *any* unrequested native observation has no attributable meaning.
+        if 'check' in row:
+            raise RevisionError('invalid_native_run',
+                                'unexpected native check without an authored expectation')
+        return
+    if (not isinstance(supplied,dict) or set(supplied) != {'value','atol','rtol'}
+            or not isinstance(check,dict)
+            or set(check) != {'passed','expected_value','atol','rtol','criterion','meaning'}
+            or check.get('passed') is not True):
+        raise RevisionError('invalid_native_run', 'authored native check receipt is missing or malformed')
+    try:
+        typ = row.get('type')
+        if typ in ('field','force') or (typ == 'trajectory_sample' and
+                request.get('quantity') in ('position','velocity')):
+            observed = _vector(row.get('value'))
+            target = tuple(_vector(supplied['value']))
+        elif typ in ('potential','potential_difference','trajectory_sample'):
+            observed = _number(row.get('value'))
+            target = _number(supplied['value'])
+        else:
+            raise ValueError('this observation type has no native authored expectation')
+        atol,rtol = _number(supplied['atol']), _number(supplied['rtol'])
+        if atol < 0 or rtol < 0:
+            raise ValueError('authored numerical check tolerance cannot be negative')
+        recalculated = _comparison(np.asarray(observed,dtype=float),Expectation(target,atol,rtol))
+        # JSON's numeric representations are not silently coerced to a
+        # different native receipt. The actual recorded value is authoritative
+        # only as a calculation operand, never as evidence the check passed.
+        if recalculated['passed'] is not True or encode(check) != encode(recalculated):
+            raise RevisionError('invalid_native_run',
+                                'saved authored check contradicts request, value or tolerance')
+    except RevisionError:
+        raise
+    except (ValueError,TypeError,KeyError,OverflowError,FloatingPointError) as exc:
+        raise RevisionError('invalid_native_run',
+                            'authored numerical check cannot be revalidated')
+
+
 def _run_record(folder, expected_sha):
     """Verify source run, extra native metadata and captured named identity.
 
@@ -260,15 +313,13 @@ def _run_record(folder, expected_sha):
     for req, row, original in zip(requests, rows, authored):
         if not isinstance(row,dict) or not isinstance(req,dict) or not isinstance(original,dict):
             raise RevisionError('invalid_native_run', 'malformed native result/request')
-        check = row.get('check')
-        # A present check is a native evidence receipt, not a truthy flag.
-        # In particular, integer 0/1, strings and None must never pass.
-        if (('check' in row and (not isinstance(check,dict) or check.get('passed') is not True))
-                or ('expectation' in req and check is None)
-                or req.get('id') != row.get('id') or row.get('id') != original.get('id')
+        if (req.get('id') != row.get('id') or row.get('id') != original.get('id')
                 or row.get('type') != req.get('type') or row.get('type') != original.get('type')
                 or row.get('kind') != revision['kind'] or row.get('status') != 'ok'):
-            raise RevisionError('invalid_native_run', 'native result identity/check/status contradicts request or completion')
+            raise RevisionError('invalid_native_run', 'native result identity/status contradicts request or completion')
+        # Validate every authored check against the original native request,
+        # including unselected observations, before publishing any output.
+        _verify_authored_check(req, row)
         typ = row['type']
         if typ == 'trajectory_sample':
             ident = original.get('particle_id')
