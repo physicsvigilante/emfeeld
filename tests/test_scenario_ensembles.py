@@ -322,3 +322,47 @@ def test_r2_inspector_binds_native_store_proposal_bytes_even_for_rejections(tmp_
         inspect_ensemble(output,store_path=store.path,using=template)
     path.write_bytes(original)
     assert inspect_ensemble(output,store_path=store.path,using=template)==report
+
+
+# Independent R2 review-02 cross-field preflight blocker on original head
+# 5738fec0d22deb59d0f146dc75b8a9b33db64486.
+def _r2_plane_event():
+    return {'id':'cross-mode-event','type':'trajectory_event',
+            'particle_id':'probe',
+            'condition':{'type':'plane','point_m':[0,0,0],
+                         'normal':[0,1,0],'direction':'either'},
+            'occurrence':'first','max_step_s':0.1,
+            'min_normal_speed_m_s':1e-7,
+            'accuracy':{'time_atol_s':1e-5,'position_atol_m':1e-5,
+                        'velocity_atol_m_s':1e-5,'rtol':1e-8}}
+
+
+@pytest.mark.parametrize('motion', [
+    {'id':'cross-mode-sample','type':'trajectory_sample',
+     'particle_id':'probe','quantity':'position','sample_index':0},
+    _r2_plane_event(),
+],ids=['valid-index0-sample','complete-valid-plane-event'])
+def test_r2_static_motion_grammar_refuses_before_sibling_acceptance(tmp_path,motion):
+    store,root=imported(tmp_path)
+    template,inv,analysis,view=_native_root(tmp_path,store,root)
+    spec=_spec(root,template,inv,analysis,view)
+    # Second member is the bad one: even the first valid sibling must not
+    # publish a revision during the global schema preflight.
+    assert spec['members'][0]['analysis']['mode']=='static'
+    spec['members'][1]['analysis']={'analysis_version':1,
+                                    'id':'variant-2-analysis','mode':'static'}
+    spec['members'][1]['investigation']['observations'].append(deepcopy(motion))
+    req=write(tmp_path/'cross-mode-spec.json',spec)
+    before_store={p.relative_to(store.path).as_posix():p.read_bytes()
+                  for p in store.path.rglob('*') if p.is_file()}
+    before_native={p.relative_to(template).as_posix():p.read_bytes()
+                   for p in template.rglob('*') if p.is_file()}
+    out=tmp_path/'cross-mode-refused'
+    with pytest.raises(RevisionError,match='trajectory|analysis') as exc:
+        run_ensemble(req,store_path=store.path,using=template,output=out)
+    assert exc.value.code=='unsupported_analysis'
+    assert not out.exists()
+    assert len(list((store.path/'revisions').iterdir()))==1
+    assert not list((store.path/'proposals').iterdir())
+    assert {p.relative_to(store.path).as_posix():p.read_bytes() for p in store.path.rglob('*') if p.is_file()}==before_store
+    assert {p.relative_to(template).as_posix():p.read_bytes() for p in template.rglob('*') if p.is_file()}==before_native
