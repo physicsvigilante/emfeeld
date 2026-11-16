@@ -239,7 +239,7 @@ def _verify_authored_check(request, row):
         raise
     except (ValueError,TypeError,KeyError,OverflowError,FloatingPointError) as exc:
         raise RevisionError('invalid_native_run',
-                            'authored numerical check cannot be revalidated')
+                            'authored numerical check cannot be revalidated') from exc
 
 
 def _run_record(folder, expected_sha):
