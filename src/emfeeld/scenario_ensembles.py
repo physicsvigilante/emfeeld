@@ -109,6 +109,14 @@ def _native_grammar(member, kind):
     has_motion = any(isinstance(row, dict) and
                      row.get('type') in ('trajectory_sample', 'trajectory_event')
                      for row in observations)
+    # Native lower() rejects a motion request in static mode before attempting
+    # any physical calculation. Enforce that same cross-field V1 grammar here,
+    # *before* creating the ensemble or reserving either sibling revision.
+    # The dummy packet parser validates each request's shape but cannot enforce
+    # the investigation-vs-analysis relationship on its own.
+    if has_motion and analysis['mode'] != 'trajectory':
+        raise RevisionError('unsupported_analysis',
+                            'trajectory requests require a trajectory analysis')
     lifted = []
     for row in observations:
         if not isinstance(row, dict):
