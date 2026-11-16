@@ -366,3 +366,169 @@ def test_r2_static_motion_grammar_refuses_before_sibling_acceptance(tmp_path,mot
     assert not list((store.path/'proposals').iterdir())
     assert {p.relative_to(store.path).as_posix():p.read_bytes() for p in store.path.rglob('*') if p.is_file()}==before_store
     assert {p.relative_to(template).as_posix():p.read_bytes() for p in template.rglob('*') if p.is_file()}==before_native
+
+
+# R1 convenience: verified selection of an existing sealed native run for viewing.
+def _files_now(root):
+    return {p.relative_to(root).as_posix():p.read_bytes()
+            for p in root.rglob('*') if p.is_file()}
+
+
+@pytest.mark.parametrize(('choice','expected'),[
+    ('baseline','baseline'),
+    ('variant-1','member-01/run'),
+    ('variant-2','member-02/run'),
+])
+def test_verified_ensemble_view_selects_only_saved_native_runs(tmp_path,monkeypatch,choice,expected):
+    from emfeeld.scenario_ensembles import view_ensemble
+    store,root,template,report,out,spec=_run(tmp_path)
+    recorded=[]
+    monkeypatch.setattr(model_runs,'present_run',lambda run,**kw:recorded.append((run,kw)))
+    before={label:_files_now(folder) for label,folder in [('store',store.path),('template',template),('ensemble',out)]}
+    kwargs={'baseline':True} if choice=='baseline' else {'member_id':choice}
+    result=view_ensemble(out,store_path=store.path,using=template,**kwargs)
+    assert result['status']=='complete'
+    assert result['selection']==choice
+    assert result['ensemble_id']==report['id']
+    assert 'not teacher acceptance' in result['presentation']
+    assert 'physical transition' in result['meaning']
+    assert recorded==[(out/expected,{'sample_index':0,'screenshot_directory':None})]
+    assert {label:_files_now(folder) for label,folder in [('store',store.path),('template',template),('ensemble',out)]}==before
+
+
+def test_verified_ensemble_view_allows_complete_native_member_with_partial_comparison(tmp_path,monkeypatch):
+    from emfeeld.scenario_ensembles import view_ensemble
+    store,root=imported(tmp_path)
+    template,inv,analysis,view=_native_root(tmp_path,store,root)
+    spec=_spec(root,template,inv,analysis,view)
+    spec['members'][1]['pairs'][0]['left_observation_id']='missing-baseline-observation'
+    req=write(tmp_path/'partial-comparison.json',spec)
+    out=tmp_path/'partial-comparison-ensemble'
+    report=run_ensemble(req,store_path=store.path,using=template,output=out)
+    assert report['status']=='partial'
+    assert report['members'][1]['run_status']=='complete'
+    assert report['members'][1]['comparison_status']=='partial'
+    called=[]
+    monkeypatch.setattr(model_runs,'present_run',lambda run,**kw:called.append(run))
+    result=view_ensemble(out,store_path=store.path,using=template,member_id='variant-2')
+    assert result['ensemble_status']=='partial'
+    assert called==[out/'member-02/run']
+
+
+def test_verified_ensemble_view_rejects_physically_rejected_member_but_keeps_accepted_sibling(tmp_path,monkeypatch):
+    from emfeeld.scenario_ensembles import view_ensemble
+    store,root,template,report,out,spec=_run(tmp_path,bad_second=True)
+    called=[]
+    monkeypatch.setattr(model_runs,'present_run',lambda run,**kw:called.append(run))
+    with pytest.raises(RevisionError,match='complete native run') as err:
+        view_ensemble(out,store_path=store.path,using=template,member_id='variant-2')
+    assert err.value.code=='preview_unavailable'
+    assert called==[]
+    row=view_ensemble(out,store_path=store.path,using=template,member_id='variant-1')
+    assert row['ensemble_status']=='partial' and row['status']=='complete'
+    assert called==[out/'member-01/run']
+
+
+@pytest.mark.parametrize('cause',['unknown','missing_selector','double_selector','invalid_sample','static_sample'])
+def test_verified_ensemble_view_invalid_selection_refuses_without_render(tmp_path,monkeypatch,cause):
+    from emfeeld.scenario_ensembles import view_ensemble
+    store,root,template,report,out,spec=_run(tmp_path)
+    called=[]
+    monkeypatch.setattr(model_runs,'present_run',lambda run,**kw:called.append(run))
+    kwargs={
+        'unknown':{'member_id':'not-a-real-member'},
+        'missing_selector':{},
+        'double_selector':{'baseline':True,'member_id':'variant-1'},
+        'invalid_sample':{'baseline':True,'sample_index':-1},
+        'static_sample':{'baseline':True,'sample_index':1},
+    }[cause]
+    with pytest.raises((RevisionError,ValueError)):
+        view_ensemble(out,store_path=store.path,using=template,**kwargs)
+    assert called==[]
+
+
+@pytest.mark.parametrize('target',['ensemble','store','template','existing','symlink_alias'])
+def test_verified_ensemble_view_rejects_protected_screenshot_destination(tmp_path,monkeypatch,target):
+    from emfeeld.scenario_ensembles import view_ensemble
+    store,root,template,report,out,spec=_run(tmp_path)
+    called=[]
+    monkeypatch.setattr(model_runs,'present_run',lambda run,**kw:called.append(run))
+    if target=='ensemble': destination=out/'screens'
+    elif target=='store':destination=store.path/'screens'
+    elif target=='template':destination=template/'screens'
+    elif target=='existing':
+        destination=tmp_path/'screens';destination.mkdir()
+    else:
+        symlink=tmp_path/'out-alias';symlink.symlink_to(out,target_is_directory=True)
+        destination=symlink/'screens'
+    with pytest.raises((ValueError,FileExistsError)):
+        view_ensemble(out,store_path=store.path,using=template,baseline=True,
+                      screenshot_output=destination)
+    assert called==[]
+    assert destination.exists() is (target=='existing')
+
+
+def test_verified_ensemble_view_external_screenshot_delegates_to_existing_viewer(tmp_path,monkeypatch):
+    from emfeeld.scenario_ensembles import view_ensemble
+    store,root,template,report,out,spec=_run(tmp_path)
+    seen=[]
+    monkeypatch.setattr(model_runs,'present_run',lambda run,**kw:seen.append((run,kw)))
+    dest=tmp_path/'new-screens'
+    result=view_ensemble(out,store_path=store.path,using=template,
+                         member_id='variant-1',screenshot_output=dest)
+    assert result['status']=='complete'
+    assert seen==[(out/'member-01/run',{'sample_index':0,'screenshot_directory':dest})]
+    assert not dest.exists()  # Fake did not render or write; real native viewer owns it.
+
+
+@pytest.mark.parametrize('tamper',['output','store','template'])
+def test_verified_ensemble_view_refuses_tampered_evidence_before_viewer(tmp_path,monkeypatch,tamper):
+    from emfeeld.scenario_ensembles import view_ensemble
+    store,root,template,report,out,spec=_run(tmp_path)
+    called=[]
+    monkeypatch.setattr(model_runs,'present_run',lambda run,**kw:called.append(run))
+    if tamper=='output':path=out/'member-01/decision.json'
+    elif tamper=='template':path=template/'run.json'
+    else:
+        proposal_id=spec['members'][0]['proposal']['proposal_id']
+        path=store.path/'proposals'/sha256(proposal_id.encode())/'proposal.json'
+    old=path.read_bytes()
+    path.write_bytes(old+b' ')
+    with pytest.raises((RevisionError,ValueError)):
+        view_ensemble(out,store_path=store.path,using=template,member_id='variant-1')
+    assert called==[]
+    assert path.read_bytes()==old+b' '
+
+
+def test_verified_ensemble_view_member_named_baseline_is_unambiguous(tmp_path,monkeypatch):
+    from emfeeld.scenario_ensembles import view_ensemble
+    store,root=imported(tmp_path)
+    template,inv,analysis,view=_native_root(tmp_path,store,root)
+    spec=_spec(root,template,inv,analysis,view)
+    spec['members'][0]['id']='baseline'  # Legitimate member name, not special CLI token.
+    req=write(tmp_path/'baseline-name.json',spec)
+    out=tmp_path/'baseline-name-out'
+    report=run_ensemble(req,store_path=store.path,using=template,output=out)
+    assert report['status']=='complete'
+    seen=[]
+    monkeypatch.setattr(model_runs,'present_run',lambda run,**kw:seen.append(run))
+    view_ensemble(out,store_path=store.path,using=template,baseline=True)
+    view_ensemble(out,store_path=store.path,using=template,member_id='baseline')
+    assert seen==[out/'baseline',out/'member-01/run']
+
+
+def test_verified_ensemble_view_cli_requires_explicit_selector_and_preserves_other_commands(tmp_path,monkeypatch,capsys):
+    from emfeeld import scenario_ensembles as module
+    store,root,template,report,out,spec=_run(tmp_path)
+    called=[]
+    monkeypatch.setattr(model_runs,'present_run',lambda run,**kw:called.append(run))
+    common=[str(out),'--store',str(store.path),'--using',str(template)]
+    assert module.main(['view',*common,'--member','variant-1'])==0
+    assert decode(capsys.readouterr().out.encode())['selection']=='variant-1'
+    assert called==[out/'member-01/run']
+    assert module.main(['view',*common])==2
+    assert 'select exactly one' in capsys.readouterr().err
+    assert module.main(['inspect',*common,'--member','variant-1'])==2
+    assert 'does not accept view selection' in capsys.readouterr().err
+    assert module.main(['inspect',*common])==0
+    assert decode(capsys.readouterr().out.encode())==report
