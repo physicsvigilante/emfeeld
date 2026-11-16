@@ -249,3 +249,76 @@ def test_ensemble_output_cannot_alias_sealed_run_or_store(tmp_path):
         with pytest.raises((ValueError,FileExistsError)):
             run_ensemble(request,store_path=store.path,using=template,output=output)
         assert not output.exists()
+
+
+# Independent R2 review-01 corrective regressions (original source head
+# 38773a546d76616fe815eb302c418281bded7c1d). Preserve initial red logs.
+@pytest.mark.parametrize(('section','mutation'),[
+    ('analysis', 'unexpected_token'),
+    ('investigation', 'unexpected_token'),
+    ('presentation', 'unexpected_token'),
+    ('observation', 'unexpected_token'),
+    ('analysis_checks', 'unexpected_token'),
+])
+def test_r2_malformed_nested_grammar_preflight_has_zero_side_effects(tmp_path,section,mutation):
+    store,root=imported(tmp_path)
+    template,inv,analysis,view=_native_root(tmp_path,store,root)
+    spec=_spec(root,template,inv,analysis,view)
+    member=spec['members'][0]
+    if section=='observation':
+        member['investigation']['observations'][0][mutation] = 1
+    elif section=='analysis_checks':
+        member['analysis']['checks']={'position_atol_m':1e-6, mutation:0}
+    else:
+        member[section][mutation]='malformed'
+    request=write(tmp_path/'r2-malformed.json',spec)
+    original_root=store.read(root)[1]
+    out=tmp_path/'must-not-exist'
+    with pytest.raises((ValueError,RevisionError)):
+        run_ensemble(request,store_path=store.path,using=template,output=out)
+    assert not out.exists()
+    assert len(list((store.path/'revisions').iterdir()))==1
+    assert not list((store.path/'proposals').iterdir())
+    assert store.read(root)[1]==original_root
+
+
+@pytest.mark.parametrize('numeric_location',['observation','proposal'])
+def test_r2_json_numeric_exponent_overflow_must_fail_in_preflight(tmp_path,numeric_location):
+    import json
+    store,root=imported(tmp_path)
+    template,inv,analysis,view=_native_root(tmp_path,store,root)
+    spec=_spec(root,template,inv,analysis,view)
+    if numeric_location=='observation':
+        spec['members'][0]['investigation']['observations'][0]['position_m'][0]=123456789.0
+        sentinel='123456789.0'
+    else:
+        spec['members'][0]['proposal']['changes'][0]['value']=123456789.0
+        sentinel='123456789.0'
+    serialized=json.dumps(spec,separators=(',',':'))
+    assert serialized.count(sentinel)==1
+    request=tmp_path/'r2-overflow.json'
+    request.write_text(serialized.replace(sentinel,'1e400'))
+    assert decode(request.read_bytes())['members'][0]  # Python parses 1e400 as float(inf)
+    out=tmp_path/'overflow-output'
+    with pytest.raises((ValueError,RevisionError),match='finite|nonfinite|float64|numeric'):
+        run_ensemble(request,store_path=store.path,using=template,output=out)
+    assert not out.exists()
+    assert len(list((store.path/'revisions').iterdir()))==1
+    assert not list((store.path/'proposals').iterdir())
+
+
+@pytest.mark.parametrize('bad_second',[True,False])
+def test_r2_inspector_binds_native_store_proposal_bytes_even_for_rejections(tmp_path,bad_second):
+    store,root,template,report,output,spec=_run(tmp_path,bad_second=bad_second)
+    target=spec['members'][1]['proposal']
+    assert report['members'][1]['status']==('rejected' if bad_second else 'complete')
+    path=store.path/'proposals'/sha256(target['proposal_id'].encode())/'proposal.json'
+    original=path.read_bytes()
+    assert sha256(original)==decode((store.path/'proposals'/sha256(target['proposal_id'].encode())/'decision.json').read_bytes())['proposal_sha256']
+    # Whitespace-only drift preserves parsed semantics but violates the
+    # recorded raw-byte decision receipt and must fail inspection.
+    path.write_bytes(original + b' ')
+    with pytest.raises(RevisionError,match='proposal'):
+        inspect_ensemble(output,store_path=store.path,using=template)
+    path.write_bytes(original)
+    assert inspect_ensemble(output,store_path=store.path,using=template)==report
