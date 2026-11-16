@@ -77,6 +77,118 @@ def _validate(spec):
         seen.add(pair['id'])
 
 
+def _verify_native_sample(native, scene, request, row):
+    """Check the *authored selector* and value against the saved NPZ row.
+
+    Every successful native sample is checked, even when no comparison selects
+    it. This is post-run provenance verification, not a new integration.
+    """
+    particle = request['particle_index']
+    if type(particle) is not int or particle < 0:
+        raise RevisionError('invalid_native_run', 'invalid saved particle index')
+    quantity = request['quantity']
+    arrays = {'position':'position_m','velocity':'velocity_m_s',
+              'kinetic_energy':'kinetic_J','potential_energy':'potential_J'}
+    if quantity not in (*arrays, 'time','speed','total_energy'):
+        raise RevisionError('invalid_native_run', 'unknown saved trajectory quantity')
+    try:
+        with np.load(native/'trajectories.npz', allow_pickle=False) as archive:
+            t = archive[f'p{particle}_time_s']
+            if (t.ndim != 1 or len(t) != scene['samples'] or
+                    not np.issubdtype(t.dtype, np.floating) or not np.isfinite(t).all()):
+                raise RevisionError('invalid_native_run', 'malformed saved trajectory time grid')
+            # The legacy selection engine constructs this grid directly. A
+            # re-sealed NPZ must not substitute its own notion of saved time.
+            if not np.array_equal(t, np.linspace(0., scene['duration_s'], scene['samples'])):
+                raise RevisionError('invalid_native_run', 'saved time grid contradicts captured native scene')
+            if 'sample_index' in request:
+                selected = request['sample_index']
+                offset = None
+            else:
+                requested = _number(request['time_s'])
+                right = int(np.searchsorted(t, requested))
+                if right < len(t) and float(t[right]) == requested:
+                    selected = right
+                elif request['time_selection'] == 'exact':
+                    raise RevisionError('invalid_native_run', 'complete sample has no exact requested saved time')
+                else:
+                    candidates = [i for i in (right - 1, right) if 0 <= i < len(t)]
+                    if not candidates:
+                        raise RevisionError('invalid_native_run', 'nearest selector has no saved time')
+                    selected = min(candidates, key=lambda i:(abs(float(t[i])-requested), i))
+                    tolerance = _number(request['max_time_error_s'])
+                    if abs(float(t[selected])-requested) > tolerance:
+                        raise RevisionError('invalid_native_run', 'saved sample violates nearest time tolerance')
+                offset = float(t[selected]) - requested
+            if (type(selected) is not int or selected < 0 or selected >= len(t)
+                    or type(row.get('sample_index')) is not int
+                    or row['sample_index'] != selected
+                    or _number(row.get('time_s')) != float(t[selected])):
+                raise RevisionError('invalid_native_run', 'recorded sample conflicts with immutable native selector')
+            saved_offset = row.get('time_offset_s')
+            if (saved_offset is not None if offset is None else
+                    saved_offset is None or _number(saved_offset) != offset):
+                raise RevisionError('invalid_native_run', 'saved time offset contradicts native selector')
+            if quantity in ('time','speed','total_energy'):
+                if quantity == 'time':
+                    expected = float(t[selected])
+                elif quantity == 'speed':
+                    velocity = archive[f'p{particle}_velocity_m_s']
+                    if (velocity.shape != (len(t),3) or not np.issubdtype(velocity.dtype,np.floating)
+                            or not np.isfinite(velocity).all()):
+                        raise RevisionError('invalid_native_run', 'malformed velocity trace')
+                    expected = float(np.hypot.reduce(velocity[selected]))
+                else:
+                    kinetic = archive[f'p{particle}_kinetic_J']
+                    potential = archive[f'p{particle}_potential_J']
+                    if (kinetic.shape != (len(t),) or potential.shape != (len(t),)
+                            or not np.issubdtype(kinetic.dtype,np.floating)
+                            or not np.issubdtype(potential.dtype,np.floating)
+                            or not np.isfinite(kinetic).all() or not np.isfinite(potential).all()):
+                        raise RevisionError('invalid_native_run', 'malformed energy traces')
+                    expected = float(kinetic[selected] + potential[selected])
+                recorded = _number(row.get('value'))
+            else:
+                values = archive[f'p{particle}_{arrays[quantity]}']
+                shape = (len(t),3) if quantity in ('position','velocity') else (len(t),)
+                if (values.shape != shape or not np.issubdtype(values.dtype,np.floating)
+                        or not np.isfinite(values).all()):
+                    raise RevisionError('invalid_native_run', 'malformed saved trajectory state or energy')
+                if quantity in ('position','velocity'):
+                    expected = [float(x) for x in values[selected]]
+                    recorded = _vector(row.get('value'))
+                else:
+                    expected = float(values[selected])
+                    recorded = _number(row.get('value'))
+    except RevisionError:
+        raise
+    except (OSError, KeyError, ValueError, TypeError, OverflowError, FloatingPointError) as exc:
+        raise RevisionError('invalid_native_run', 'saved native sample cannot be verified') from exc
+    if recorded != expected:
+        raise RevisionError('invalid_native_run', 'recorded native value contradicts selected saved NPZ sample')
+    unit = {'time':'s','position':'m','velocity':'m/s','speed':'m/s',
+            'kinetic_energy':'J','potential_energy':'J','total_energy':'J'}[quantity]
+    if row.get('unit') != unit:
+        raise RevisionError('invalid_native_run', 'recorded sample unit mismatches quantity')
+
+
+def _verify_field_magnitude(row, kind):
+    """Use the existing derived V1 relative-only vector/norm receipt rule."""
+    unit = 'N/C' if kind == 'electric' else 'm/s^2'
+    if row.get('unit') != unit:
+        raise RevisionError('invalid_native_run', 'recorded field unit mismatches physical domain')
+    try:
+        vector = _vector(row.get('value'))
+        recorded = _number(row.get('magnitude'))
+        expected = math.hypot(*vector)
+    except (ValueError, TypeError, OverflowError) as exc:
+        raise RevisionError('invalid_native_run', 'malformed native field vector/magnitude') from exc
+    if (not math.isfinite(expected) or recorded < 0
+            or not math.isclose(recorded,expected,rel_tol=1e-12,abs_tol=0.0)):
+        raise RevisionError('invalid_native_run', 'field vector and saved magnitude contradict each other')
+
+
+
 def _run_record(folder, expected_sha):
     """Verify source run, extra native metadata and captured named identity.
 
@@ -148,13 +260,15 @@ def _run_record(folder, expected_sha):
     for req, row, original in zip(requests, rows, authored):
         if not isinstance(row,dict) or not isinstance(req,dict) or not isinstance(original,dict):
             raise RevisionError('invalid_native_run', 'malformed native result/request')
-        check=row.get('check',{})
-        if (not isinstance(check,dict)
+        check = row.get('check')
+        # A present check is a native evidence receipt, not a truthy flag.
+        # In particular, integer 0/1, strings and None must never pass.
+        if (('check' in row and (not isinstance(check,dict) or check.get('passed') is not True))
+                or ('expectation' in req and check is None)
                 or req.get('id') != row.get('id') or row.get('id') != original.get('id')
                 or row.get('type') != req.get('type') or row.get('type') != original.get('type')
-                or row.get('kind') != revision['kind'] or row.get('status') != 'ok'
-                or check.get('passed') is False):
-            raise RevisionError('invalid_native_run', 'native result identity/status contradicts request or completion')
+                or row.get('kind') != revision['kind'] or row.get('status') != 'ok'):
+            raise RevisionError('invalid_native_run', 'native result identity/check/status contradicts request or completion')
         typ = row['type']
         if typ == 'trajectory_sample':
             ident = original.get('particle_id')
@@ -164,9 +278,11 @@ def _run_record(folder, expected_sha):
                     or mapping['particles'][ident] != req['particle_index']
                     or row.get('selection') != {k:req[k] for k in ('sample_index','time_s','time_selection','max_time_error_s') if k in req}):
                 raise RevisionError('invalid_native_run', 'trajectory sample/selection/physical ID binding contradicts native request')
+            _verify_native_sample(native,packet['scene'],req,row)
         elif typ == 'field':
             if row.get('position_m') != req.get('position_m'):
                 raise RevisionError('invalid_native_run', 'field result location changed from the authored request')
+            _verify_field_magnitude(row,revision['kind'])
         elif typ == 'potential_difference':
             if (row.get('from_m') != req.get('from_m') or row.get('to_m') != req.get('to_m')
                     or row.get('convention') != 'potential(to_m) - potential(from_m)'):
