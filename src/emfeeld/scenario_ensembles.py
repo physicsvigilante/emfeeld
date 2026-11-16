@@ -37,7 +37,10 @@ def _member_dir(output, index):
 
 
 def _run_id(ensemble, member=None):
-    return f'ensemble-{ensemble}-baseline' if member is None else f'ensemble-{ensemble}-{member}'
+    # A member literally named "baseline" must not share the fresh baseline's
+    # native run ID. This short namespace also fits the existing 64-char ID
+    # grammar for the maximum 25-char ensemble and member IDs (62 chars).
+    return f'ensemble-{ensemble}-baseline' if member is None else f'ensemble-{ensemble}-m-{member}'
 
 
 
@@ -482,6 +485,32 @@ def inspect_ensemble(output,*,store_path,using):
     return saved
 
 
+def _checked_view_screenshot(output, store_path, using, requested):
+    """Refuse fresh screenshots under *any* recognizable existing evidence root.
+
+    This protects unrelated saved native runs and comparisons as well as the
+    selected ensemble/store/template. Canonicalizing symlinked parents prevents
+    ordinary path aliases; it is not a concurrent-writer or TOCTOU guarantee.
+    """
+    screenshot = Path(requested)
+    if screenshot.exists() or screenshot.is_symlink():
+        raise FileExistsError('presentation output must be a fresh directory')
+    dest = screenshot.resolve()
+    if any(dest.is_relative_to(root.resolve()) for root in (output, store_path, using)):
+        raise ValueError('presentation output must be outside the sealed ensemble, store and template')
+    for ancestor in (dest, *dest.parents):
+        if ((ancestor/'integrity.json').is_file()
+                or ((ancestor/'model.json').is_file()
+                    and (ancestor/'revisions').is_dir()
+                    and (ancestor/'proposals').is_dir())
+                or ((ancestor/'run.json').is_file()
+                    and (ancestor/'summary.json').is_file())
+                or ((ancestor/'started.json').is_file()
+                    and (ancestor/'inputs/ensemble.json').is_file())):
+            raise ValueError('presentation output must be outside all saved evidence and model stores')
+    return screenshot
+
+
 def view_ensemble(output, *, store_path, using, member_id=None, baseline=False,
                   sample_index=0, screenshot_output=None):
     """Present exactly one integrity-checked recorded native run, never an inferred scenario transition."""
@@ -501,6 +530,8 @@ def view_ensemble(output, *, store_path, using, member_id=None, baseline=False,
         selected = output/'baseline'
         reference = summary['parent']
         selection = 'baseline'
+        selection_kind = 'fresh_baseline'
+        selected_member_id = None
     else:
         row = next((item for item in summary['members'] if item['id'] == member_id), None)
         if row is None:
@@ -511,15 +542,11 @@ def view_ensemble(output, *, store_path, using, member_id=None, baseline=False,
             raise RevisionError('preview_unavailable', 'selected member has no complete native run')
         selected = _member_dir(output, row['index'])/'run'
         reference = row['reference']
-        selection = member_id
-    screenshot = None
-    if screenshot_output is not None:
-        screenshot = Path(screenshot_output)
-        if screenshot.exists() or screenshot.is_symlink():
-            raise FileExistsError('presentation output must be a fresh directory')
-        dest = screenshot.resolve()
-        if any(dest.is_relative_to(root.resolve()) for root in (output,store_path,using)):
-            raise ValueError('presentation output must be outside the sealed ensemble, store and template')
+        selection = 'member:' + member_id
+        selection_kind = 'member'
+        selected_member_id = member_id
+    screenshot = (_checked_view_screenshot(output, store_path, using, screenshot_output)
+                  if screenshot_output is not None else None)
     # Reuse the existing sealed native presentation and sample guards; no new
     # field evaluation, interpolation, physical mutation or renderer dispatch.
     run, _, native, _ = model_runs.inspect_run(selected, expected_reference=reference)
@@ -530,6 +557,9 @@ def view_ensemble(output, *, store_path, using, member_id=None, baseline=False,
     model_runs.present_run(selected, sample_index=sample_index, screenshot_directory=screenshot)
     return {'status':'complete', 'ensemble_id':summary['id'],
             'ensemble_status':summary['status'], 'selection':selection,
+            'selection_kind':selection_kind, 'member_id':selected_member_id,
+            'run_path':selected.relative_to(output).as_posix(),
+            'run_integrity_sha256':sha256((selected/'integrity.json').read_bytes()),
             'run_id':run['run_id'], 'reference':reference,
             'presentation':'recorded native run only; not teacher acceptance',
             'meaning':MEANING}

@@ -213,3 +213,23 @@ qualify manual Windows mouse interaction.
 
 This capability is a source candidate pending its focused R1 review and
 exact-head Linux/Windows/real-PyVista qualification, not a merged-release claim.
+
+
+### R1 corrective safeguards for verified ensemble presentation
+
+The returned view receipt differentiates `selection_kind: fresh_baseline` from
+`selection_kind: member` and includes `member_id`, the verified `run_path`,
+the native `run_id`, exact model revision `reference`, and
+`run_integrity_sha256`. For example, `--baseline` reports `selection: baseline`
+whereas `--member baseline` reports `selection: member:baseline` and a different
+saved-run path. Newly generated member-run IDs use a distinct `-m-` namespace,
+within the existing maximum identifier length; older sealed runs are never
+rewritten or retroactively renamed. Older same-named IDs remain distinguishable
+by selection kind, path, reference, and exact saved-run integrity hash.
+
+A screenshot output must be fresh and outside **any recognizable saved evidence
+root**, including unrelated native runs, sealed ensembles/comparisons, pending
+ensemble attempts, and existing model stores, even through a symlinked parent.
+A normal fresh external destination remains supported. As with other local
+preflight path checks, this cannot provide distributed locking or a hostile
+concurrent-writer / filesystem TOCTOU guarantee; do not treat it as one.

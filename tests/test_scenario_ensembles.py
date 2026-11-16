@@ -387,7 +387,11 @@ def test_verified_ensemble_view_selects_only_saved_native_runs(tmp_path,monkeypa
     kwargs={'baseline':True} if choice=='baseline' else {'member_id':choice}
     result=view_ensemble(out,store_path=store.path,using=template,**kwargs)
     assert result['status']=='complete'
-    assert result['selection']==choice
+    assert result['selection']==('baseline' if choice=='baseline' else 'member:'+choice)
+    assert result['selection_kind']==('fresh_baseline' if choice=='baseline' else 'member')
+    assert result['member_id']==(None if choice=='baseline' else choice)
+    assert result['run_path']==expected
+    assert result['run_integrity_sha256']==sha256((out/expected/'integrity.json').read_bytes())
     assert result['ensemble_id']==report['id']
     assert 'not teacher acceptance' in result['presentation']
     assert 'physical transition' in result['meaning']
@@ -523,7 +527,7 @@ def test_verified_ensemble_view_cli_requires_explicit_selector_and_preserves_oth
     monkeypatch.setattr(model_runs,'present_run',lambda run,**kw:called.append(run))
     common=[str(out),'--store',str(store.path),'--using',str(template)]
     assert module.main(['view',*common,'--member','variant-1'])==0
-    assert decode(capsys.readouterr().out.encode())['selection']=='variant-1'
+    assert decode(capsys.readouterr().out.encode())['selection']=='member:variant-1'
     assert called==[out/'member-01/run']
     assert module.main(['view',*common])==2
     assert 'select exactly one' in capsys.readouterr().err
@@ -531,3 +535,105 @@ def test_verified_ensemble_view_cli_requires_explicit_selector_and_preserves_oth
     assert 'does not accept view selection' in capsys.readouterr().err
     assert module.main(['inspect',*common])==0
     assert decode(capsys.readouterr().out.encode())==report
+
+
+# Independent R1 review-01 F1: the selected three roots are not the only
+# sealed evidence that a screenshot must preserve. Each other root here is
+# independently constructed, then kept byte-identical on the refused view.
+@pytest.mark.parametrize('foreign_kind', [
+    'native_run', 'member_run', 'ensemble', 'model_store',
+    'comparison', 'symlinked_native_run',
+])
+def test_r1_view_screenshot_refuses_unrelated_sealed_evidence(tmp_path, monkeypatch, foreign_kind):
+    from emfeeld.scenario_ensembles import view_ensemble
+    store,root,template,report,out,spec=_run(tmp_path/'selected')
+    foreign_home=tmp_path/'foreign'
+    foreign_home.mkdir()
+    other_store,other_root,other_template,other_report,other_out,other_spec=_run(foreign_home)
+    roots={'native_run':other_template,
+           'member_run':other_out/'member-01/run',
+           'ensemble':other_out,
+           'model_store':other_store.path,
+           'comparison':other_out/'member-01/comparison'}
+    if foreign_kind == 'symlinked_native_run':
+        alias=tmp_path/'foreign-run-alias'
+        alias.symlink_to(other_template,target_is_directory=True)
+        protected=alias
+    else:
+        protected=roots[foreign_kind]
+    destination=protected/'new-screens'
+    before={key:_files_now(path) for key,path in (
+        ('selected_store',store.path),('selected_template',template),
+        ('selected_ensemble',out),('foreign_store',other_store.path),
+        ('foreign_template',other_template),('foreign_ensemble',other_out))}
+    called=[]
+    monkeypatch.setattr(model_runs,'present_run',lambda *args,**kwargs:called.append(args))
+    with pytest.raises(ValueError,match='saved evidence|model stores'):
+        view_ensemble(out,store_path=store.path,using=template,baseline=True,
+                      screenshot_output=destination)
+    assert not called
+    assert not destination.exists()
+    after={key:_files_now(path) for key,path in (
+        ('selected_store',store.path),('selected_template',template),
+        ('selected_ensemble',out),('foreign_store',other_store.path),
+        ('foreign_template',other_template),('foreign_ensemble',other_out))}
+    assert after==before
+    assert model_runs.inspect_run(other_template)[2]['execution_complete']
+    assert inspect_ensemble(other_out,store_path=other_store.path,using=other_template)==other_report
+
+
+def test_r1_view_screenshot_refuses_unsealed_started_ensemble(tmp_path,monkeypatch):
+    from emfeeld.scenario_ensembles import view_ensemble
+    store,root,template,report,out,spec=_run(tmp_path)
+    pending=tmp_path/'unsealed-attempt'
+    (pending/'inputs').mkdir(parents=True)
+    (pending/'started.json').write_bytes(b'{}')
+    (pending/'inputs/ensemble.json').write_bytes(b'{}')
+    dest=pending/'screens'
+    called=[]
+    monkeypatch.setattr(model_runs,'present_run',lambda *a,**kw:called.append(a))
+    with pytest.raises(ValueError,match='saved evidence'):
+        view_ensemble(out,store_path=store.path,using=template,baseline=True,
+                      screenshot_output=dest)
+    assert not dest.exists() and not called
+
+
+def test_r1_baseline_named_member_has_distinct_saved_id_and_cli_binding(tmp_path,monkeypatch,capsys):
+    from emfeeld import scenario_ensembles as module
+    from emfeeld.scenario_ensembles import _run_id
+    from emfeeld.model_revisions import identifier
+    # Include maximum valid ID lengths: generated IDs must never violate the
+    # native 64-character identifier grammar for fully legitimate inputs.
+    assert len(_run_id('e'*25,'m'*25))==62
+    assert identifier(_run_id('e'*25,'m'*25))==_run_id('e'*25,'m'*25)
+    assert _run_id('e'*25)!=_run_id('e'*25,'baseline')
+    store,root=imported(tmp_path)
+    template,inv,analysis,view=_native_root(tmp_path,store,root)
+    spec=_spec(root,template,inv,analysis,view)
+    spec['members'] += [_member(root,3,inv,analysis,view),
+                        _member(root,4,inv,analysis,view)]
+    spec['members'][2]['id']='baseline'
+    request=write(tmp_path/'four-member-request.json',spec)
+    out=tmp_path/'four-member-ensemble'
+    report=run_ensemble(request,store_path=store.path,using=template,output=out)
+    assert report['status']=='complete'
+    calls=[]
+    monkeypatch.setattr(model_runs,'present_run',lambda path,**kw:calls.append(path))
+    common=[str(out),'--store',str(store.path),'--using',str(template)]
+    assert module.main(['view',*common,'--baseline'])==0
+    base=decode(capsys.readouterr().out.encode())
+    assert module.main(['view',*common,'--member','baseline'])==0
+    member=decode(capsys.readouterr().out.encode())
+    assert calls==[out/'baseline',out/'member-03/run']
+    assert base['selection']=='baseline' and base['selection_kind']=='fresh_baseline'
+    assert base['member_id'] is None and base['run_path']=='baseline'
+    assert member['selection']=='member:baseline' and member['selection_kind']=='member'
+    assert member['member_id']=='baseline' and member['run_path']=='member-03/run'
+    assert base['reference']==report['parent']
+    assert member['reference']==report['members'][2]['reference']
+    assert base['reference']!=member['reference']
+    assert base['run_id']!=member['run_id']
+    assert base['run_integrity_sha256']==sha256((out/'baseline/integrity.json').read_bytes())
+    assert member['run_integrity_sha256']==sha256((out/'member-03/run/integrity.json').read_bytes())
+    assert base['run_integrity_sha256']!=member['run_integrity_sha256']
+    assert inspect_ensemble(out,store_path=store.path,using=template)==report
