@@ -367,7 +367,6 @@ def test_r2_static_motion_grammar_refuses_before_sibling_acceptance(tmp_path,mot
     assert {p.relative_to(store.path).as_posix():p.read_bytes() for p in store.path.rglob('*') if p.is_file()}==before_store
     assert {p.relative_to(template).as_posix():p.read_bytes() for p in template.rglob('*') if p.is_file()}==before_native
 
-
 # R1 convenience: verified selection of an existing sealed native run for viewing.
 def _files_now(root):
     return {p.relative_to(root).as_posix():p.read_bytes()
