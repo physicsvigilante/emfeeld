@@ -170,3 +170,82 @@ def test_reusing_accepted_ensemble_member_identity_fails_before_new_output(tmp_p
     with pytest.raises(RevisionError,match='already reserved'):
         run_ensemble(request,store_path=store.path,using=template,output=tmp_path/'repeat')
     assert not (tmp_path/'repeat').exists()
+
+
+def test_four_distinct_atomic_siblings_with_unchanged_root(tmp_path):
+    store,root=imported(tmp_path)
+    template,inv,analysis,view=_native_root(tmp_path,store,root)
+    spec=_spec(root,template,inv,analysis,view)
+    spec['members'].extend([_member(root,3,inv,analysis,view),
+                            _member(root,4,inv,analysis,view)])
+    request=write(tmp_path/'four.json',spec)
+    before=store.read(root)[1]
+    output=tmp_path/'four-output'
+    r=run_ensemble(request,store_path=store.path,using=template,output=output)
+    assert r['status']=='complete' and len(r['members'])==4
+    assert all(x['decision']=='accepted' for x in r['members'])
+    assert len(list((store.path/'revisions').iterdir()))==5
+    assert store.read(root)[1]==before
+    assert inspect_ensemble(output,store_path=store.path,using=template)==r
+
+
+def test_accepted_revision_with_invalid_named_presentation_has_partial_native_run(tmp_path):
+    store,root=imported(tmp_path)
+    template,inv,analysis,view=_native_root(tmp_path,store,root)
+    spec=_spec(root,template,inv,analysis,view)
+    spec['members'][1]['presentation']['entity_order']=['left','right','probe','ghost']
+    request=write(tmp_path/'invalid-display.json',spec)
+    output=tmp_path/'invalid-display-out'
+    result=run_ensemble(request,store_path=store.path,using=template,output=output)
+    assert result['status']=='partial'
+    assert result['members'][0]['status']=='complete'
+    assert result['members'][1]['decision']=='accepted'
+    assert result['members'][1]['status']=='partial'
+    assert result['members'][1]['run_status']=='rejected'
+    assert not (output/'member-02/comparison').exists()
+    assert inspect_ensemble(output,store_path=store.path,using=template)==result
+
+
+def test_valid_run_with_explicit_unmatched_baseline_observation_is_partial_not_zero(tmp_path):
+    store,root=imported(tmp_path)
+    template,inv,analysis,view=_native_root(tmp_path,store,root)
+    spec=_spec(root,template,inv,analysis,view)
+    spec['members'][1]['pairs'][0]['left_observation_id']='absent-parent'
+    request=write(tmp_path/'absent.json',spec)
+    output=tmp_path/'absent-out'
+    result=run_ensemble(request,store_path=store.path,using=template,output=output)
+    assert result['members'][0]['status']=='complete'
+    assert result['members'][1]['decision']=='accepted'
+    assert result['members'][1]['run_status']=='complete'
+    assert result['members'][1]['comparison_status']=='partial'
+    rows=decode((output/'member-02/comparison/result.json').read_bytes())['comparisons']
+    assert rows[0]['status']=='unavailable' and rows[0]['code']=='unknown_operand'
+    assert rows[0]['value'] is None
+    assert inspect_ensemble(output,store_path=store.path,using=template)==result
+
+
+def test_duplicate_added_physical_ids_across_siblings_fail_before_first_attempt(tmp_path):
+    from test_atomic_revisions import add_particle
+    store,root=imported(tmp_path)
+    template,inv,analysis,view=_native_root(tmp_path,store,root)
+    spec=_spec(root,template,inv,analysis,view)
+    for member in spec['members']:
+        member['proposal']['changes'][1]=add_particle('same-body')
+    request=write(tmp_path/'reuse-body.json',spec)
+    output=tmp_path/'refused-duplicate-body'
+    with pytest.raises(RevisionError,match='may not reuse'):
+        run_ensemble(request,store_path=store.path,using=template,output=output)
+    assert not output.exists()
+    assert len(list((store.path/'revisions').iterdir()))==1
+
+
+def test_ensemble_output_cannot_alias_sealed_run_or_store(tmp_path):
+    store,root=imported(tmp_path)
+    template,inv,analysis,view=_native_root(tmp_path,store,root)
+    request=write(tmp_path/'protected.json',_spec(root,template,inv,analysis,view))
+    from pathlib import Path
+    for protected in (store.path,template):
+        output=Path(protected)/'invented-ensemble'
+        with pytest.raises((ValueError,FileExistsError)):
+            run_ensemble(request,store_path=store.path,using=template,output=output)
+        assert not output.exists()
