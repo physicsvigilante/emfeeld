@@ -10,6 +10,7 @@ import json
 import math
 from pathlib import Path
 import sys
+from .output_safety import protect_saved_evidence
 
 from . import model_runs, scenario_comparisons
 from .atomic_revisions import _OPERATIONS
@@ -256,6 +257,7 @@ def validate_spec(spec,store,*,allow_reserved=False):
 
 
 def _protected_output(request,store_path,using,output):
+    protect_saved_evidence(output, new_directory=True)
     if output.exists() or output.is_symlink():
         raise FileExistsError('ensemble output must be a fresh directory')
     if output.resolve()==request.resolve():

@@ -23,6 +23,7 @@ from typing import Any
 
 import numpy as np
 import scipy
+from .output_safety import protect_saved_evidence
 
 from .fields import DomainError, Field, G, epsilon_0, check_kind
 from .scene import Scene, scene_from_dict, strict_keys
@@ -569,6 +570,8 @@ def main(argv: list[str] | None = None) -> int:
         if args.output and (args.output.resolve() == args.packet.resolve() or
                             (args.output.exists() and args.packet.samefile(args.output))):
             raise ValueError("output must not overwrite the input packet")
+        if args.output is not None:
+            protect_saved_evidence(args.output)
         data = load_packet(args.packet)
         if args.validate_only:
             scene, requests = packet_from_dict(data)

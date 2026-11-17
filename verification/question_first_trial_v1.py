@@ -18,6 +18,7 @@ from pathlib import Path
 import re
 import sys
 from typing import Any
+from emfeeld.output_safety import protect_saved_evidence
 
 from emfeeld.observations import packet_from_dict, run_packet
 from emfeeld.scene import strict_keys
@@ -201,6 +202,7 @@ def _json_bytes(value: dict) -> bytes:
 
 
 def freeze(question_path: Path, output: Path) -> dict:
+    protect_saved_evidence(output, new_directory=True)
     raw = _read_raw(question_path, QUESTION_LIMIT)
     question = _validate_question(_parse_json(raw))
     receipt = _receipt(raw, question)
@@ -270,6 +272,7 @@ def _validate_packet(packet: dict, question: dict) -> None:
 
 
 def _safe_output(output: Path, lock: Path, packet_path: Path) -> None:
+    protect_saved_evidence(output, new_directory=True)
     if output.exists() or output.is_symlink():
         raise FileExistsError('output directory already exists; evidence is never overwritten')
     new_root = output.resolve()
@@ -365,7 +368,7 @@ def main(argv: list[str] | None = None) -> int:
     final = sub.add_parser('assess', help='check frozen source and exact native observation coverage')
     final.add_argument('lock', type=Path)
     final.add_argument('--packet', type=Path, required=True)
-    final.add_argument('--output', type=Path, required=True)
+    final.add_argument('--output', required=True, type=Path)
     args = cli.parse_args(argv)
     try:
         if args.command == 'freeze':

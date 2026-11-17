@@ -104,7 +104,11 @@ class TrajectorySamples:
                 'diagnostic_meaning': 'energy diagnostic v2 is an observation, not a trajectory error bound; '
                                       'the exchange scale and finite-precision resolution are reported separately'}
         trajectory = None
-        if not self.scene.model.trajectory_safe:
+        if self._grid_failure is not None:
+            # Full-scene capture calls this cache directly, without observe()'s
+            # selector preflight. Never send an already rejected grid to solve.
+            info.update(self._grid_failure)
+        elif not self.scene.model.trajectory_safe:
             info.update(_failure('unsupported_trajectory', 'trajectory_not_qualified',
                 'Trajectories containing shell/plane sources remain unqualified; static probes are available.'))
         else:

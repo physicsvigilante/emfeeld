@@ -131,12 +131,21 @@ class SolidSphere(Source):
 
     def potential(self, points):
         r = np.linalg.norm(self.displacement(points), axis=-1)
-        inside = (3 - (r / self.radius) ** 2) / (2 * self.radius)
-        outside = 1 / np.maximum(r, self.radius)
-        return self.coefficient * np.where(r <= self.radius, inside, outside)
+        if not self.strength:
+            return np.zeros_like(r)
+        # Evaluate only the applicable branch. np.where eagerly evaluated the
+        # unused interior r/R expression even far outside a small sphere,
+        # producing overflow although the exterior c/r potential was finite.
+        inside = r <= self.radius
+        result = np.empty_like(r)
+        result[inside] = self.coefficient * (3 - (r[inside] / self.radius) ** 2) / (2 * self.radius)
+        result[~inside] = self.coefficient / r[~inside]
+        return result
 
     def field(self, points):
         d = self.displacement(points)
+        if not self.strength:
+            return np.zeros_like(d)
         r = np.linalg.norm(d, axis=-1)
         return self.coefficient * d / np.maximum(r, self.radius)[..., None] ** 3
 
@@ -152,6 +161,8 @@ class SphericalShell(SolidSphere):
 
     def field(self, points):
         d, error = self._displacement_with_error(points)
+        if not self.strength:
+            return np.zeros_like(d)
         r = np.linalg.norm(d, axis=-1)
         if self.strength:
             uncertainty = np.linalg.norm(error, axis=-1) + _gamma(8) * (r + self.radius)

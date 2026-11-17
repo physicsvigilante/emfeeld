@@ -1,75 +1,36 @@
 # Working on emfeeld
 
-## Goal
-A new arrangement of supported sources must be a model-authoring task, not a change to engine dispatch or a new apparatus profile. A new physical law may justify a reusable, tested extension. Favor a small composable physics core; keep visualization independent.
+## Objective
+A new arrangement of supported sources must be a model-authoring task, not a change to engine dispatch or a new apparatus profile. Build a small composable physics core with separate visualization and evidence. Teaching/exploration, not an exam-answer formatter, is the primary goal.
 
-## Required safeguards
-- Read README.md, docs/PHYSICS.md, docs/VALIDATION.md, docs/CHAT_WORKFLOW_DECISION.md, docs/VIEWER_QUALIFICATION.md and docs/PLAYBACK.md before changing physics or reporting capability.
-- Preserve explicit SI units, potential references, source assumptions, and domain errors.
-- Do not mix electric potential (V) and gravitational potential (J/kg) by adding them. Test-particle coupling is explicit.
-- Do not treat a conductor as a prescribed uniform sphere in an external field. Do not claim moving test charges constitute full electrodynamics.
-- Never infer forces from the display grid or modify physical values to improve appearance. Label schematic markers and truncated infinite geometry.
-- Add cumulative tests with independent analytic expectations, including rejection cases and unfamiliar compositions. Keep old acceptance evidence intact.
-- Report tested environment, exact commands, skips, failures and unrun checks. A self-review is not an independent review. A passing numerical suite is not visual qualification.
-- Work on a branch. Follow the explicit acceptance gate in docs/CHAT_WORKFLOW_DECISION.md: documented author verification plus user acceptance for this candidate, not a mandatory Codex handoff or a claim of independent review. Keep the PR unmerged until that acceptance is given. Do not install tools on the user's computer, change licenses, or introduce large dependencies without authorization.
+## Current source and historical records
+The released baseline through PR #38 is main commit `066c94e4953c3ef29302c0bb6d0ee2f6cb8b8ca0`. Named revisions, structural/atomic proposals, sweeps, derived observations, sealed comparisons/ensembles, readouts/tables and source-first trials are implemented, not still stacked unmerged on PR #2. The current project-audit changes are a separate candidate; see `docs/PROJECT_AUDIT_2026_11_17.md` for its actual qualification state.
 
-## Current slice
-The physics library and event interfaces support authored field/potential probes,
-saved-state measurements and bounded plane/radial/local-turning observations.
-Use docs/AUTHORING_WORKFLOW.md, not repeated same-chat pilots labelled "blind".
-Validate the exact packet bytes, record their hashes, then execute and verify
-explicit outputs. tools/replay_packets.py and verification/v6_published.json
-provide a reproducible published-byte regression without a chat attachment.
+`docs/CHAT_WORKFLOW_DECISION.md` describes the original PR #1-only chat-review exception. It is a historical record, not standing permission to bypass independent R2 review. Dated validation reports preserve their original source, counts and caveats; never rewrite historical failures as successes. Current README and source contracts distinguish shipped capabilities from pending work.
 
-Historical all-file freeze tests belong on their pinned snapshots. Keep them
-unchanged; replay their behavioral cases separately against current code. See
-docs/AUTHORING_REPAIR.md for the current suite and exact test-accounting boundary.
-New input/path safety checks do not alter physical laws or relax tolerances.
-PR #1 is merged. New implementation work belongs on a feature branch and must
-remain unmerged until explicit acceptance. Author-run checks do not imply
-independent review or human Windows interaction qualification.
+## Source, review and release gates
+Work on a feature branch. Record exact source head/tree and base, commands, environment, completed tests, failures, skips and unrun checks. Author tests are not independent review. Keep substantive source/evidence changes in a draft PR until appropriate independent review and owner integration direction; standing autonomous-development instructions do not waive scientific or release safeguards. Use exact-head guarded integration and verify the merged tree. Fresh actual-main Linux/Windows/viewer jobs and new original artifact audits are separate from pre-merge evidence. CI must cover relevant PRs and main pushes.
 
-## Capability discovery and export integrity
-Read docs/CAPABILITIES.md before authoring new packets. Generate the catalogue
-with `python -m emfeeld capabilities`; validate the resulting packet normally.
-Keep catalogue keys/enums and parser-consistency tests aligned. Never infer a
-solved event from CLI exit zero alone. Preserve single-document source provenance
-and staged screenshot exports; new capability work must not relax these guards.
+Do not install software on the user's computer, alter repository administration or choose a license without authorization. Existing declared dependencies may be used in an isolated audit environment; disclose unavailable graphics/dependencies rather than relabeling headless tests as real viewer qualification.
 
-## Teaching-first studies
-The primary objective is faithful interpretation and verified simulation of
-supported systems for teaching and exploration. Textbook answers and their format
-are optional, but every explicitly requested supported quantity must be computed
-and checked before calling that request answered. Report interpretation fidelity,
-physical/numerical correctness, simulation coverage, educational usefulness and
-textbook-answer completeness separately; never combine them into one success rate.
-Read docs/TEACHING_STUDIES.md. Preserve source givens, assumptions, illustrative
-choices, computed inputs and unresolved information separately. A declared
-conductor requirement must not become a prescribed uniform sphere silently.
-The study V1 variant replaces exactly one source-strength scalar. Do not change
-launch conditions, geometry, references or numerical settings to obtain a pass.
-Study previews consume recorded arrays, not silently reintegrated trajectories.
-Shared potential colour ranges and camera framing are comparison aids; arrows
-still show direction only. Teacher acceptance is not inferred from rendering.
-Keep historical evidence untouched. CI must cover relevant PRs targeting main
-and relevant main pushes; do not return to foundation-branch-only triggers.
+## Physics safeguards
+Read README.md, docs/PHYSICS.md, docs/OBSERVATIONS.md, docs/ENERGY_BALANCE_V2.md and relevant feature contracts before changing physics or reporting capability. Preserve SI units, potential references, source assumptions and domain errors. Never add electric potential in V to gravitational potential in J/kg. Test-particle coupling is explicit; fixed sources have no backreaction and particles do not interact.
 
-## Immutable named model revisions (candidate)
-Read docs/MODEL_REVISIONS_IMPLEMENTATION.md and its pinned design contract.
-Never edit an accepted revision in place, silently resolve a `latest` parent, or
-retarget a physical change by array position. Investigations, analysis settings
-and presentation are separate from physical revisions. Revalidate each request
-against each revision; keep source hypotheses distinct from source-grounded facts.
-Computed-input receipts are recorded evidence, not independent certification;
-changed dependencies block affected execution. Do not broaden the old study-v1
-contract, overwrite source/pilot evidence, or weaken its numerical restrictions.
-The implementation branch is stacked on PR #2; neither PR #2 nor design PR #3
-is implicitly accepted or merged by a new implementation commit.
+Do not model a polarizable conductor as a prescribed uniform sphere silently. Moving test charges are not full electrodynamics. Never infer forces from display grids or alter physical values for appearance. Markers and finite patches for infinite geometry are schematic. Add independent analytic expressions, unfamiliar compositions and negative tests; numerical agreement is not teacher certification or a global error proof.
 
-## Native revision-and-view convenience
-Read docs/NATIVE_MODEL_WORKFLOW.md. The command delegates revision, calculation and
-presentation to the existing native implementations; do not add another store or
-physical solver. Reuse only captured settings from an integrity-checked same-root
-run, never inherit its numerical pass. Preserve parent snapshots, explicit requests,
-failed attempts and calculation/view outcomes separately. Never auto-upgrade the
-portable handoff store or mistake a missing event for a fulfilled measurement.
+## Evidence and output safety
+Never overwrite source packets, existing attempts, accepted revisions or sealed evidence. Public writers must perform shared `output_safety.protect_saved_evidence` preflight before creating output or mutating model-store revisions. Existing fresh-output, alias and input-preservation checks remain required. Composition may write within its own unsealed in-progress workflow, but not a recognizable completed or sealed evidence root, frozen question lock or model store. Ordinary symlink aliases are resolved; this is not distributed ACID or a hostile concurrent-filesystem guarantee.
+
+Unkeyed hashes detect source drift, not authenticated external authorship. Source implementation changes can correctly invalidate old recorded-study replay checks. Preserve historical originals; rerun their exact inputs into distinct fresh outputs for current-source qualification. Never edit old source hashes or numerical tolerances to force compatibility.
+
+## Authoring and teaching outcomes
+Read docs/AUTHORING_WORKFLOW.md, docs/CAPABILITIES.md and docs/TEACHING_STUDIES.md. Generate discovery with `python -m emfeeld capabilities`; validate each actual packet. Separate source givens, assumptions, illustrative choices, derived inputs and unresolved information. Explicit unsupported laws or unresolved facts must not become successful substitutes. Missing events, undefined fields and failed measurements are not fulfilled requests, even if a search process completed.
+
+Report interpretation fidelity, physical/numerical correctness, simulation coverage, educational usefulness and textbook-answer completeness separately. The checked-in gravity demonstration is developer-authored; the NASA public-source exercise is non-blind because its key is public. Neither closes the genuinely independent question/withheld-judge trial. An ongoing source-aware author chat cannot manufacture judge independence by naming another folder or process “reviewer”.
+
+## Reusable named model workflow
+Read docs/MODEL_REVISIONS_IMPLEMENTATION.md, docs/STRUCTURAL_SOURCE_REVISIONS_V1.md, docs/PARTICLE_STRUCTURAL_REVISIONS_V1.md, docs/ATOMIC_SCENARIO_REVISIONS_V1.md and docs/NATIVE_MODEL_WORKFLOW.md. Accepted physical revisions are immutable; require exact parents and stable physical IDs, never implicit `latest` or positional retargeting. Investigation, settings and presentation are separate. Dependency changes invalidate stale derived-input receipts. A scenario revision is not a physical transition in time.
+
+Use the existing native revise/run/present interfaces rather than another store or solver. Reuse captured settings only from an integrity-checked same-root run, never its numerical pass. Preserve rejected proposals and interrupted attempts. Study V1 changes only one source-strength scalar; structural/atomic workflows are distinct. `model apply` is bounded to V1/V2 proposals; native revision and ensemble APIs support V3. Do not auto-upgrade portable handoff stores.
+
+Read the sweep, derived-observation, comparison and ensemble contracts before changing them. Signed right-minus-left comparisons, genuine unavailable/null results and global partial status must survive filters and presentation. A member called `baseline` is not the fresh baseline. Recorded view playback must not silently solve again. Review screenshots separately from automated render success; manual Windows mouse/keyboard and classroom usefulness need actual human evidence.

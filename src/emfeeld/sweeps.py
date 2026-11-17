@@ -12,6 +12,7 @@ from pathlib import Path, PurePosixPath, PureWindowsPath
 import sys
 
 from . import model_runs
+from .output_safety import protect_saved_evidence
 from .model_cli import _settings
 from .model_revisions import (INTENTS, ModelStore, RevisionError, check_reference,
                               decode, encode, exact_keys, identifier, put, sha256)
@@ -105,6 +106,7 @@ def run_sweep(spec_path, *, store_path, using, output):
     for protected in (store_path, using):
         if output.resolve().is_relative_to(protected.resolve()):
             raise ValueError('sweep output must be outside store and template run')
+    protect_saved_evidence(output)
     raw_spec = spec_path.read_bytes()
     spec = decode(raw_spec)
     if not isinstance(spec, dict): raise ValueError('sweep must be a JSON object')

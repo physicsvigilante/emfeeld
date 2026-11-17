@@ -8,6 +8,7 @@ import platform
 import sys
 import numpy as np
 import scipy
+from .output_safety import protect_saved_evidence
 from .fields import G, epsilon_0
 from .scene import scene_from_json
 
@@ -38,6 +39,8 @@ def _protect_input(scene_path, output_path):
         or (output_path.exists() and scene_path.samefile(output_path))
     ):
         raise ValueError("output must not overwrite the input scene")
+    if output_path is not None:
+        protect_saved_evidence(output_path)
 
 
 def _save_npz(output, arrays):

@@ -13,11 +13,12 @@ from pathlib import Path
 import sys
 
 import numpy as np
+from .output_safety import protect_saved_evidence
 
 from . import study
 from .model_revisions import (ModelStore, RevisionError, REQUIREMENTS, decode, encode,
     exact_keys, identifier, identity, put, scene_data, sha256, text, validate_snapshot)
-from .observations import packet_from_dict, run_packet
+from .observations import packet_from_dict, run_packet, _number
 
 
 def _presentation(data, revision):
@@ -27,7 +28,8 @@ def _presentation(data, revision):
         raise ValueError('only presentation_version 1 is supported')
     identifier(data['id'])
     order = data.get('entity_order', list(revision['entities']))
-    if not isinstance(order, list) or len(order) != len(set(order)) or set(order) != set(revision['entities']):
+    if (not isinstance(order, list) or any(not isinstance(key, str) for key in order)
+            or len(order) != len(set(order)) or set(order) != set(revision['entities'])):
         raise ValueError('display ordering must name each entity exactly once')
     for name in ('bounds_m', 'camera'):
         if name not in data: continue
@@ -37,16 +39,29 @@ def _presentation(data, revision):
         flat = [x for r in values for x in r] if name == 'camera' else values
         if not isinstance(values, list) or any(type(x) not in (int, float) for x in flat):
             raise ValueError('presentation coordinates must be finite JSON numbers')
+        for value in flat:
+            _number(value, 'presentation.' + name)
         a = np.asarray(values, dtype=float)
         if a.shape != ((3, 3) if name == 'camera' else (6,)) or not np.isfinite(a).all():
             raise ValueError('invalid display bounds or camera')
         if name == 'bounds_m' and np.any(a[::2] >= a[1::2]):
             raise ValueError('display bounds need min < max')
-        if name == 'camera' and (np.linalg.norm(a[0]-a[1]) == 0 or np.linalg.norm(a[2]) == 0):
-            raise ValueError('camera position, focal point and view-up must be resolved')
+        if name == 'camera':
+            try:
+                with np.errstate(over='raise', invalid='raise', divide='raise'):
+                    direction = a[1] - a[0]
+                    direction_length = float(np.hypot.reduce(direction))
+                    up_length = float(np.hypot.reduce(a[2]))
+                    if (not np.isfinite(direction_length) or not np.isfinite(up_length)
+                            or direction_length == 0 or up_length == 0):
+                        raise ValueError('camera position, focal point and view-up must be resolved')
+                    cross = np.cross(direction / direction_length, a[2] / up_length)
+                    if not np.any(cross):
+                        raise ValueError('camera view-up must not be parallel to the viewing direction')
+            except FloatingPointError as exc:
+                raise ValueError('camera geometry is outside finite numeric range') from exc
     speed = data.get('replay_seconds', 12.)
-    if type(speed) not in (int, float) or not np.isfinite(speed) or speed <= 0:
-        raise ValueError('replay_seconds must be finite and positive')
+    _number(speed, 'replay_seconds', positive=True)
 
 
 def lower(revision, investigation, analysis, presentation):
@@ -69,8 +84,7 @@ def lower(revision, investigation, analysis, presentation):
         exact_keys(analysis, ('analysis_version', 'id', 'mode', 'duration_s', 'samples', 'checks'))
         exact_keys(analysis['checks'], ('position_atol_m', 'velocity_atol_m_s', 'rtol', 'max_normalized_energy_drift'))
         for key, value in analysis['checks'].items():
-            if type(value) not in (int, float) or not np.isfinite(value) or value <= 0:
-                raise ValueError(f'{key}: strictly positive finite numerical check setting required')
+            _number(value, key, positive=True)
     elif set(analysis) != {'analysis_version', 'id', 'mode'}:
         raise ValueError('static analysis has no trajectory horizon, sampling or trajectory checks')
     _presentation(presentation, revision)
@@ -128,6 +142,7 @@ def execute(store_path, reference_path, investigation_path, analysis_path, prese
             output, *, run_id):
     """Each attempt is a new directory, including rejected analyses and failures."""
     identifier(run_id)
+    protect_saved_evidence(output, new_directory=True)
     store = ModelStore(store_path)
     raw = {'reference.json': Path(reference_path).read_bytes(),
            'investigation.json': Path(investigation_path).read_bytes(),
@@ -256,6 +271,7 @@ def present_run(output, *, presentation_path=None, sample_index=0, screenshot_di
     if dest is not None:
         if dest.resolve().is_relative_to(Path(output).resolve()):
             raise ValueError('presentation output must be outside the sealed run')
+        protect_saved_evidence(dest)
         dest.mkdir(parents=True, exist_ok=False)
     # Display-only title: the complete original scene remains in the sealed run.
     # Set the text before axes are created; actor replacement can reset their bounds.

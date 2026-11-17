@@ -11,6 +11,7 @@ import os
 from pathlib import Path
 import sys
 import tempfile
+from .output_safety import protect_saved_evidence
 
 from .fields import KINDS
 from .scene import REGISTRY, SCENE_REQUIRED, SCENE_OPTIONAL, source_keys, source_from_dict
@@ -268,6 +269,8 @@ def main(argv=None) -> int:
     parser.add_argument('--output', type=Path, help='save the same generated JSON printed to stdout')
     args = parser.parse_args(argv)
     try:
+        if args.output is not None:
+            protect_saved_evidence(args.output)
         text = json.dumps(get_capabilities(), indent=2, allow_nan=False) + '\n'
         if args.output is not None:
             args.output.parent.mkdir(parents=True, exist_ok=True)
