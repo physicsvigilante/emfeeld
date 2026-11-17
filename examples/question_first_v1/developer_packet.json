@@ -1,0 +1,21 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "Illustrative gravity question: prescribed uniform downward acceleration",
+    "kind": "gravity",
+    "sources": [{"type": "uniform", "field_m_s2": [0, -2, 0], "origin_m": [0, 0, 0]}],
+    "particles": [{"mass_kg": 2.5, "position_m": [1, 2, 0], "velocity_m_s": [0.4, 1.2, 0.1]}],
+    "duration_s": 2,
+    "samples": 21,
+    "bounds_m": [-2, 4, -1, 4, -2, 2]
+  },
+  "observations": [
+    {"id": "field_launch", "type": "field", "position_m": [1, 2, 0]},
+    {"id": "position_final", "type": "trajectory_sample", "particle_index": 0, "quantity": "position", "sample_index": 20},
+    {"id": "velocity_final", "type": "trajectory_sample", "particle_index": 0, "quantity": "velocity", "sample_index": 20},
+    {"id": "total_energy_initial", "type": "trajectory_sample", "particle_index": 0, "quantity": "total_energy", "sample_index": 0},
+    {"id": "total_energy_final", "type": "trajectory_sample", "particle_index": 0, "quantity": "total_energy", "sample_index": 20}
+  ],
+  "notes": "Developer-authored illustrative gravity case only; not a blind teacher-supplied physics task."
+}

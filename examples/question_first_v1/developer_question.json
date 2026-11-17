@@ -1,0 +1,89 @@
+{
+  "trial_version": 1,
+  "id": "gravity-trajectory-question",
+  "source": {
+    "origin": "developer_authored",
+    "label": "Illustrative developer exercise, NOT an independently supplied teacher question",
+    "question": "A free nonrelativistic test mass moves in a fixed prescribed uniform downward gravitational field of 2 m/s^2. With initial position (1,2,0) m and velocity (0.4,1.2,0.1) m/s, what are its position and velocity after 2 seconds? Report the field at the launch point and its initial and final total mechanical energy using zero gravitational potential at the origin."
+  },
+  "givens": [
+    "Uniform gravitational acceleration (0,-2,0) m/s^2",
+    "Initial position (1,2,0) m and velocity (0.4,1.2,0.1) m/s",
+    "Test mass 2.5 kg, duration 2 seconds, potential reference origin (0,0,0) m"
+  ],
+  "assumptions": [
+    "Static prescribed field, nonrelativistic independent test mass",
+    "No collisions, drag, source backreaction or other forces"
+  ],
+  "illustrative_choices": [
+    "21 saved samples on a uniform 0.1 second grid"
+  ],
+  "unresolved_information": [],
+  "requirements": [
+    "fixed_prescribed_sources",
+    "independent_nonrelativistic_test_particles"
+  ],
+  "requested_measurements": [
+    {
+      "id": "field_launch",
+      "quantity": "gravitational acceleration at launch",
+      "unit": "m/s^2",
+      "context": {
+        "position_m": [
+          1,
+          2,
+          0
+        ]
+      },
+      "native_type": "field"
+    },
+    {
+      "id": "position_final",
+      "quantity": "position at t=2 s",
+      "unit": "m",
+      "context": {
+        "particle_index": 0,
+        "sample_index": 20,
+        "time_s": 2
+      },
+      "native_type": "trajectory_sample",
+      "native_quantity": "position"
+    },
+    {
+      "id": "velocity_final",
+      "quantity": "velocity at t=2 s",
+      "unit": "m/s",
+      "context": {
+        "particle_index": 0,
+        "sample_index": 20,
+        "time_s": 2
+      },
+      "native_type": "trajectory_sample",
+      "native_quantity": "velocity"
+    },
+    {
+      "id": "total_energy_initial",
+      "quantity": "mechanical energy at t=0 s",
+      "unit": "J",
+      "context": {
+        "particle_index": 0,
+        "sample_index": 0,
+        "time_s": 0
+      },
+      "native_type": "trajectory_sample",
+      "native_quantity": "total_energy"
+    },
+    {
+      "id": "total_energy_final",
+      "quantity": "mechanical energy at t=2 s",
+      "unit": "J",
+      "context": {
+        "particle_index": 0,
+        "sample_index": 20,
+        "time_s": 2
+      },
+      "native_type": "trajectory_sample",
+      "native_quantity": "total_energy"
+    }
+  ]
+}
