@@ -15,6 +15,7 @@ from pathlib import Path
 import sys
 
 import numpy as np
+from .output_safety import protect_saved_evidence
 
 from .dynamics import Trajectory, integrate
 from .energy import check_energy_balance, ENERGY_DIAGNOSTIC_VERSION
@@ -260,6 +261,7 @@ def _comparisons(a, b):
 
 def run_study(path, output, *, render=False):
     path, output = Path(path), Path(output)
+    protect_saved_evidence(output, new_directory=True)
     raw = path.read_bytes()
     data = load_packet(path)
     if path.read_bytes() != raw:

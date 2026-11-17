@@ -104,7 +104,11 @@ class TrajectorySamples:
                 'diagnostic_meaning': 'energy diagnostic v2 is an observation, not a trajectory error bound; '
                                       'the exchange scale and finite-precision resolution are reported separately'}
         trajectory = None
-        if not self.scene.model.trajectory_safe:
+        if self._grid_failure is not None:
+            # Full-scene capture calls this cache directly, without observe()'s
+            # selector preflight. Never send an already rejected grid to solve.
+            info.update(self._grid_failure)
+        elif not self.scene.model.trajectory_safe:
             info.update(_failure('unsupported_trajectory', 'trajectory_not_qualified',
                 'Trajectories containing shell/plane sources remain unqualified; static probes are available.'))
         else:
@@ -164,7 +168,12 @@ class TrajectorySamples:
                   'unit': unit, 'value': None, 'status': 'ok', 'error_bound': None,
                   'method': 'saved_trajectory_sample', 'selection': request.selector()}
         if self._grid_failure is not None:
-            return dict(result, **self._grid_failure)
+            # An invalid saved-time grid is a per-particle no-integration run,
+            # whether requested only or reached via optional full capture.
+            # Preserve the actual failure telemetry without invoking the solver.
+            _, info = self._trajectory(request.particle_index)
+            result['diagnostics_key'] = str(request.particle_index)
+            return dict(result, status=info['status'], error=dict(info['error']))
         index, failure = self._select(request)
         if failure is not None:
             return dict(result, **failure)

@@ -11,6 +11,7 @@ from pathlib import Path
 import sys
 from typing import Any
 from uuid import uuid4
+from .output_safety import protect_saved_evidence
 
 from . import model_runs
 from .model_revisions import (ModelStore, RevisionError, check_reference, decode,
@@ -96,6 +97,7 @@ def apply_revision(proposal_path: str | Path, *, store_path: str | Path,
             raise ValueError('output must be outside the model store and the sealed --using run')
     if not (store_path / 'model.json').is_file():
         raise ValueError('a native model store is required; portable classroom-model stores need explicit import, not in-place conversion')
+    protect_saved_evidence(output)
     raw_proposal = proposal_path.read_bytes()
     proposal = decode(raw_proposal)
     if (not isinstance(proposal, dict) or type(proposal.get('proposal_version')) is not int

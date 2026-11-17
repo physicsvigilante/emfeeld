@@ -1,296 +1,105 @@
 # emfeeld
 
-A local, LLM-authorable explorer for **analytic electrostatic and Newtonian gravitational fields, potentials, and test-particle motion in 3D**.
+A local, data-authorable explorer for **analytic electrostatic or Newtonian gravitational fields, potentials and independent test-particle motion in 3D**. Its purpose is teaching and investigation: author a physical model, ask explicit questions, retain the calculated evidence, then explore named hypothetical revisions without silently changing the original model.
 
-**Status: merged analytic-field foundation with qualified Linux/Windows offscreen previews.** Eight scenes have passed offscreen rendering and programmatic time-slider checks; screenshots were inspected in chat. Windows desktop/mouse interaction remains untested. This is author verification, not independent review. The [approved chat workflow](docs/CHAT_WORKFLOW_DECISION.md) requires explicit user acceptance before merge. See [viewer qualification](docs/VIEWER_QUALIFICATION.md). This is not a general electromagnetic or conductor solver.
+**Status:** the source baseline through PR #38 is merged at `066c94e4953c3ef29302c0bb6d0ee2f6cb8b8ca0`. The repository includes named model revisions, investigations, sweeps, atomic scenarios, sealed comparisons/ensembles, recorded playback and source-first question trials. The project-wide audit changes in this working revision are a **new review candidate**, not already independently reviewed or cross-platform release-qualified. See [the audit and forward plan](docs/PROJECT_AUDIT_2026_11_17.md).
 
-## Teaching accompaniment and two-configuration studies
+The original PR #1 chat-only acceptance exception and dated validation reports are **historical records**, not current feature status or permission to bypass review. Keep author tests, independent review, hosted CI, manual visual inspection and educational evaluation distinct. This is **not a general electromagnetic, conductor or natural-language physics solver**.
 
-The primary goal is faithful physical interpretation and verified simulation of
-supported systems. Textbook final answers, exam formats and solution sequences
-are optional. Interpretation fidelity, physical correctness, simulation coverage,
-educational usefulness and textbook-answer completeness are separate outcomes.
-An explicitly requested quantity still requires a genuine computed result.
+## Install and start
 
-```text
-python -m emfeeld.study run examples/studies/electric.json --output output/electric-study-001 --render
-python -m emfeeld.study run examples/studies/gravity.json --output output/gravity-study-001 --render
-python -m emfeeld.study view output/electric-study-001 --configuration variant
-```
+The package declares Python >=3.11; the released CI baseline used Python 3.13.5 on Ubuntu and Windows. Declared dependency ranges are compatibility intentions, not evidence that every combination was tested. Use an isolated environment; no external LLM service is required by the engine.
 
-Each study records assumptions, keeps a baseline packet, changes exactly one
-source strength, and retains measurements and checked full-horizon trajectories.
-The report and snapshots compare configurations at matching physical times, with
-shared potential colour scales. Playback uses saved arrays without reintegration.
-Use a new output directory each time. Rendering and numerical checks do not
-establish classroom usefulness or correct source interpretation by themselves.
-See [the bounded study contract](docs/TEACHING_STUDIES.md).
-
-## Machine-readable capability discovery
-
-```text
+```sh
+python -m venv .venv
+# Activate .venv using your shell's normal command, then:
+python -m pip install -e ".[dev]"
+python -m pytest -q -W error
 python -m emfeeld capabilities --output output/capabilities.json
+python -m emfeeld validate examples/electric_composition.json
+python -m emfeeld.observations examples/observations/gravity_composition.json --output output/gravity-probes.json
 ```
 
-The generated catalogue lists actual source fields, units, observations, saved-
-state selectors, event conditions and unsupported physics. It requires no viewer
-or external LLM service. It is descriptive discovery data, not a second validator:
-validate each authored packet with `python -m emfeeld.observations PACKET.json --validate-only`.
-See [the catalogue guide](docs/CAPABILITIES.md) and
-[export-integrity qualification](docs/CAPABILITIES_VALIDATION.md).
-Two illustrative composed electric/gravitational models and a separate reference
-manifest are in `examples/authoring/` and `verification/discovery_examples.json`.
+For the optional desktop viewer, install `python -m pip install -e ".[view]"` in that same environment, then run `python -m emfeeld view examples/ideal_sun.json`. PyVista/VTK needs a working graphics backend even for screenshots. Calculations and headless tests do not require it. On Windows, an explicit executable is `.venv\Scripts\python.exe`; on Linux/macOS it is `.venv/bin/python`.
 
-## Current authoring workflow
+## Capability map and scientific boundaries
 
-Use [the question-to-packet workflow](docs/AUTHORING_WORKFLOW.md) to author
-sources **and measurements** as data. Static probes, saved trajectory states,
-plane/radial crossings and local radial turning points are available through
-`python -m emfeeld.observations`. Event detection is numerical, not a guarantee
-that every crossing was found; local extrema are not global closest approach.
+| Area | Implemented capability | Important boundary |
+|---|---|---|
+| Analytic sources | Point source, uniformly filled sphere, thin spherical shell, infinite line, infinite plane, uniform field; translated/oriented same-kind compositions | Electric and gravity are separate domains. A prescribed sphere is not a polarizable conductor or collision surface. |
+| Static measurements | Field vector/magnitude, potential, force with explicit test charge/mass, ordered potential difference | Explicit SI units and potential references; undefined source/surface values remain errors, not softened values. |
+| Motion | DOP853 integration, multiple independent nonrelativistic test particles, saved positions/velocities/speeds/energies | Fixed prescribed sources; no particle-particle forces, recoil, magnetic force, collisions or relativistic dynamics. Shell/plane-source motion is refused. |
+| Events | Bounded plane/radial crossings and local radial turning observations, including the explicit rest-launch policy | Numerical first-detected events, not a proof that every crossing exists/was found or that a local extremum is global. |
+| Numerical checks | Recorded energy exchange diagnostics; baseline/refined comparisons in teaching studies | Checks are not certified global error bounds or independent physical interpretation. |
+| Reusable systems | Immutable named model revisions; source/particle insertion/removal; atomic 2-4-change V3 proposals | Exact parent and stable IDs; new observations/settings need not create a new physical model. `model apply` is currently bounded to V1/V2 proposals; V3 is available through native revision/ensemble interfaces. |
+| Investigations | Bounded authored sweeps; derived ratios/separations; signed cross-scenario comparisons; sibling ensembles with a fresh baseline | Hypotheses are not physical time transitions. Unavailable operands remain typed `null`, and partial status is not upgraded by filtering. |
+| Evidence | Captured input bytes, source hashes, sealed runs, read-only measurement projection and escaped Markdown tables | Hash receipts detect drift; unkeyed hashes do not authenticate a maliciously rewritten history or external teacher identity. |
+| Visualization | Source geometry, potential slice, field-direction arrows, recorded trajectories, play/pause/seek/sample step, screenshots | Equal-length arrows show direction, markers are schematic. No field-line tracing, 3D equipotential surfaces or integral teaching UI. Manual Windows interaction is not established by offscreen CI. |
+| Question trials | Freeze declared question/context before the packet; require native IDs, quantities, units and actual saved times | Structural native coverage is not correct prose interpretation, verified model assumptions or educational usefulness. |
 
-```text
-python -m emfeeld.observations pilots/authorability_v6/first_attempt/MAIN19-Q5-LINE-OUTWARD.json --validate-only
-python -m emfeeld.observations pilots/authorability_v6/first_attempt/MAIN19-Q5-LINE-OUTWARD.json --output output/line-motion.json
+The Python library also supplies midpoint line-integral contributions and spherical flux quadrature; these are **not yet general observation-packet request types or interactive integral views**. Native JSON supports strict data, not arbitrary expressions or executable code. Python superpositions can be nested; JSON scenes compose a list of supported source records.
+
+Read the exact [physics](docs/PHYSICS.md), [observations](docs/OBSERVATIONS.md), [saved samples](docs/TRAJECTORY_OBSERVATIONS.md), [events](docs/PLANE_EVENTS.md), [radial events](docs/RADIAL_EVENTS.md), [turning](docs/TURNING_EVENTS.md) and [energy](docs/ENERGY_BALANCE_V2.md) contracts before expanding a claim.
+
+## Author a question and retain its evidence
+
+Use [the authoring workflow](docs/AUTHORING_WORKFLOW.md). Separate source givens, assumptions, illustrative choices, derived inputs and unresolved facts. Declare unsupported requirements rather than replacing them with convenient supported physics. The capability catalogue is descriptive; the packet validator remains authoritative.
+
+```sh
+python -m emfeeld.observations examples/nasa_ion_public_v0/packet.json --validate-only
+python verification/question_first_trial_v1.py freeze examples/question_first_v1/developer_question.json --output output/question-lock-001
+python verification/question_first_trial_v1.py assess output/question-lock-001 --packet examples/question_first_v1/developer_packet.json --output output/question-attempt-001
 python tools/replay_packets.py verification/v6_published.json --output output/published-replay-001
 ```
 
-The replay command requires a **new** output directory. It checks exact input
-hashes, freezes those bytes, executes the existing engine, and checks declared
-statuses, shapes, units and separate references. A successful CLI exit alone is
-not a solved-event claim. The published-v6 replay is a regression, **not a new
-blind authorability benchmark**. See [repair and verification evidence](docs/AUTHORING_REPAIR.md).
+Use **new output directories** for retained studies/runs/replays. In the audit candidate, public writers also refuse destinations inside recognizable saved evidence or model stores, including ordinary symlink-parent aliases. Ordinary file replacement outside protected evidence retains each command's documented policy. This is preflight path protection, not distributed locking or a hostile concurrent-filesystem guarantee.
 
-The scene CLI rejects outputs that alias its input (including links). Numerical
-exports replace an existing output only after successful serialization. Scene
-JSON rejects booleans and numeric strings instead of changing their meaning.
+The [question-first contract](docs/QUESTION_FIRST_TRIAL_V1.md) qualifies explicitly requested native measurements only. Keep **interpretation fidelity, physical/numerical correctness, simulation coverage, educational usefulness and textbook-answer completeness** separate. The checked-in gravity example is developer-authored; the [NASA ion exercise](docs/NASA_ION_PUBLIC_REHEARSAL_V0.md) is a public **non-blind** rehearsal with an available answer key, not a previously unseen teacher task.
 
-## Install and run
+## Reuse models rather than copying apparatus code
 
-Use Python 3.11 or newer in a dedicated virtual environment. From the repository root:
+[Named model revisions](docs/MODEL_REVISIONS_IMPLEMENTATION.md) keep physical state, investigation, numerical settings and presentation distinct. Read [source revisions](docs/STRUCTURAL_SOURCE_REVISIONS_V1.md), [particle revisions](docs/PARTICLE_STRUCTURAL_REVISIONS_V1.md), [atomic scenarios](docs/ATOMIC_SCENARIO_REVISIONS_V1.md) and [LLM-directed exploration](docs/LLM_DIRECTED_EXPLORATION.md).
 
-```powershell
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -e ".[dev,view]"
-.\.venv\Scripts\python.exe -m pytest -q
-.\.venv\Scripts\python.exe -m emfeeld run examples/ideal_sun.json --output output/ideal_sun.npz
-.\.venv\Scripts\python.exe -m emfeeld view examples/ideal_sun.json
-```
-
-On Linux/macOS, use `.venv/bin/python` in place of `.\.venv\Scripts\python.exe`. Headless calculations need only `pip install -e .`; PyVista is optional. Dependency ranges are compatibility intentions, not proof that every combination has been tested. See the [original numerical validation](docs/VALIDATION.md) and [current viewer qualification](docs/VIEWER_QUALIFICATION.md) for executed environments.
-
-```text
-python -m emfeeld validate examples/electric_composition.json
-python -m emfeeld run examples/electric_composition.json --output output/composition.npz
-python -m emfeeld view examples/shell_fields.json
-python -m emfeeld view examples/ideal_sun.json --screenshot output/sun.png
-```
-
-`validate` checks the schema and reports whether trajectories are supported; it does not integrate or certify the physics. `run` computes trajectories and prints energy diagnostics. NPZ files contain SI arrays, input JSON, version/constant metadata, and no pickled objects. `view` requires a working PyVista/VTK graphics environment; screenshot mode also needs graphics support.
-
-## What works in the numerical core
-
-- Point sources, uniform solid spheres, thin spherical shells, infinite lines, infinite planes, and uniform fields, in both physical domains.
-- Vectorized field/potential evaluation and arbitrary same-domain superpositions. No named apparatus profiles or source-count-dependent physics.
-- DOP853 motion for nonrelativistic test particles in supported static, continuous fields; several independent particles can share a scene.
-- Midpoint line-integral contributions and spherical flux quadrature with individual contributions retained for later visualization.
-- Strict, data-only JSON authoring and explicit invalid-domain errors. No `eval`, softened singularities, or hidden conductor approximations.
-
-The preview combines source geometry, equal-length field-direction arrows, a potential slice, trajectory curves, a sample-time slider, and **play/pause/restart/sample-stepping controls**. Its recorded Linux rendering and native timer checks are verified; this is **not Windows mouse-interaction qualification**. Field lines, equipotential surfaces and animated integral explanations remain future work.
-
-### Motion controls
-
-Moving scenes start paused. **Space** plays/pauses, **Home** restarts paused, and **Left/Right** steps one saved sample. Dragging the time slider pauses playback. Replay stops at the final sample; Space then starts it again. The full simulated interval is replayed in about 12 wall-clock seconds by default, with physical sample time shown separately. This display speed never changes solver timesteps or particle forces. See [playback contract and evidence](docs/PLAYBACK.md).
-
-## Examples
-
-| File | Purpose |
-|---|---|
-| `electric_sphere.json` | Test charge entering a prescribed uniform insulating sphere; not a conducting sphere or hard collision surface |
-| `electric_composition.json` | Two translated spheres plus a uniform field, authored entirely as data |
-| `shell_fields.json` | Zero interior field with nonzero constant interior potential |
-| `line_plane_fields.json` | Prescribed infinite line and plane with explicit potential references |
-| `ideal_sun.json` | Fixed point-Sun and two independent test planets, including an inclined trajectory |
-
-The Sun example uses illustrative SI parameters, not an ephemeris. Planet masses are 1 kg test masses; there is no planet-planet interaction or solar recoil. Rendering markers do not represent planetary radii. A solid sphere is a penetrable prescribed density, not an automatic material collision boundary.
-
-## Authoring and extending
-
-```python
-from emfeeld import SolidSphere, UniformField, Superposition, Particle, integrate
-import numpy as np
-
-field = Superposition((
-    SolidSphere("electric", -1e-9, center=(0, 0, 0), radius=1),
-    UniformField("electric", (0, 0, 0.2)),
-))
-particle = Particle(mass_kg=1e-3, charge_C=1e-6,
-                    position_m=(2, 0, 0), velocity_m_s=(0, 0.02, 0))
-result = integrate(field, particle, np.linspace(0, 20, 401))
-```
-
-Python sources implement `kind`, `trajectory_safe`, `field(points)`, and `potential(points)`. Evaluation accepts shape `(..., 3)`; potentials have shape `(...)`. New physics needs a reusable source implementation and tests. New combinations of existing sources need only a new model. The JSON source registry and viewer geometry adapters are separate from field composition and integration.
-
-JSON uses explicit unit-bearing keys: `charge_C`/`mass_kg`, `radius_m`, `center_m`, line densities `charge_per_m_C_m`/`mass_per_m_kg_m`, and plane densities `charge_per_m2_C_m2`/`mass_per_m2_kg_m2`. Lines require `reference_radius_m`. Uniform fields use `field_N_C` or `field_m_s2`. See the examples and [physics contract](docs/PHYSICS.md).
-
-## Viewer regression checks
-
-With the existing `[dev,view]` extras installed and a working graphics backend:
-
-```text
-python -m pytest -q -W error tests viewer_tests
-python tools/qualify_viewer.py --output output/viewer-qualification
-```
-
-The ordinary `python -m pytest -q` remains the headless suite. `viewer_tests` explicitly requires real PyVista; it is not silently skipped when dependencies are missing. The capture tool produces images and a runtime report. Inspect the images separately; successful rendering is not automatically a visual-acceptance decision.
-
-## Deliberate boundaries and next work
-
-Shell/plane fields and potentials work, but motion involving them is rejected until surface-crossing behavior has been qualified. Point/line singular encounters are not collision handling. No source reaction, radiation, induced conductor charge, relativistic motion, simultaneous electric-plus-gravity coupling, or self-consistent many-body dynamics is implemented.
-
-Playback is available for existing moving scenes; foundation PR #1 is merged. New features require separate acceptance. Windows desktop interaction remains a separate optional qualification before claiming Windows support. Plane/radial observation events and local turning points are documented in the authoring workflow; they do not add material collision handling. Integral teaching views remain separate work. Do not add a general mesh solver or a large application framework merely to run another supported arrangement.
-
-No license has yet been selected by the repository owner.
-
-## Reusable named physical models (candidate)
-
-`python -m emfeeld.model_runs --help` exposes an explicit import/revision/run
-adapter over the existing physics. A source property or physical launch change
-creates an immutable descendant addressed by physical ID. New probes or numerical
-settings reuse the same model revision. Original source bytes and rejected edits
-are retained. No structural, boundary, inverse or sweep service is added.
-
-See [the model-revision guide](docs/MODEL_REVISIONS_IMPLEMENTATION.md). Execute the
-two illustrative models and named hypotheses without copying their physical
-systems or modifying production code:
-
-```text
-python tools/qualify_model_revisions.py --output output/model-revisions-001 --render
-python verification/check_model_revision_runs.py output/model-revisions-001 --output output/model-revisions-checks-001.json
-```
-
-This is a separately reviewed candidate stacked on Teaching Study V1. Neither
-candidate is merged by publication. Teacher usefulness and textbook-answer
-completeness remain separate from numerical execution and reference agreement.
-
-## Native revision-and-view command (candidate)
-
-```powershell
+```sh
+python -m emfeeld model --help
 python -m emfeeld model apply revision.json --store my-model --using runs/root-motion --output runs/change-001 --view
+python -m emfeeld.scenario_ensembles --help
 ```
 
-Reuse the explicitly identified previous run's investigation/settings, apply a native
-pinned-parent proposal and compute fresh checked results before opening its recorded
-preview. No physics or source facts are silently changed. See
-[the native workflow guide](docs/NATIVE_MODEL_WORKFLOW.md), including the explicit
-import requirement for older portable handoff stores. Existing commands remain supported.
+The `apply` example requires an existing native store, an explicit pinned-parent V1/V2 proposal and an integrity-checked same-root prior run; it is not a no-input quick start. It reuses settings, **never** the previous numerical pass. For other interfaces see [sweeps](docs/INVESTIGATION_SWEEPS_V1.md), [derived observations](docs/DERIVED_OBSERVATIONS_V1.md), [comparisons](docs/SEALED_CROSS_SCENARIO_COMPARISON_V1.md) and [ensembles](docs/BOUNDED_SCENARIO_ENSEMBLE_V1.md).
 
-## Verified bounded ensemble native viewing (R1 candidate)
+Completed ensembles can be inspected without another solve:
 
-After creating a sealed Bounded Scenario Ensemble V1 with separately authored
-V3 siblings and complete/partial evidence, the new *candidate* CLI can route a
-selected saved run to the existing native PyVista viewer without guessing the
-internal member-directory index:
-
-```text
-python -m emfeeld.scenario_ensembles view ENSEMBLE_OUTPUT --store EXACT_STORE --using ORIGINAL_PARENT_RUN --baseline
-python -m emfeeld.scenario_ensembles view ENSEMBLE_OUTPUT --store EXACT_STORE --using ORIGINAL_PARENT_RUN --member hypothesis-A --sample-index 0
-python -m emfeeld.scenario_ensembles view ENSEMBLE_OUTPUT --store EXACT_STORE --using ORIGINAL_PARENT_RUN --member hypothesis-B --output NEW_SCREENSHOT_DIRECTORY
-```
-
-Exactly one of `--baseline` and `--member EXACT_DECLARED_ID` is required;
-these are deliberately separate because a member may literally be named
-`baseline`. The command first verifies the complete saved ensemble, original
-model-store proposals and sealed parent template, then selects the **actual
-complete native run** and delegates to `model_runs.present_run`. A legitimate
-partial *comparison* may coexist with a fully viewable native member run; a
-rejected or incomplete selected run never opens. Static runs have only
-sample index zero; motion playback and screenshots use recorded native states,
-not interpolation or a new solver. Screenshot output must be fresh and outside
-the ensemble, model store and sealed parent run. Neither scene presentation
-nor saved comparisons model physical transitions, certify teacher outcomes or
-qualify manual Windows mouse interaction.
-
-This capability is a source candidate pending its focused R1 review and
-exact-head Linux/Windows/real-PyVista qualification, not a merged-release claim.
-
-
-### R1 corrective safeguards for verified ensemble presentation
-
-The returned view receipt differentiates `selection_kind: fresh_baseline` from
-`selection_kind: member` and includes `member_id`, the verified `run_path`,
-the native `run_id`, exact model revision `reference`, and
-`run_integrity_sha256`. For example, `--baseline` reports `selection: baseline`
-whereas `--member baseline` reports `selection: member:baseline` and a different
-saved-run path. Newly generated member-run IDs use a distinct `-m-` namespace,
-within the existing maximum identifier length; older sealed runs are never
-rewritten or retroactively renamed. Older same-named IDs remain distinguishable
-by selection kind, path, reference, and exact saved-run integrity hash.
-
-A screenshot output must be fresh and outside **any recognizable saved evidence
-root**, including unrelated native runs, sealed ensembles/comparisons, pending
-ensemble attempts, and existing model stores, even through a symlinked parent.
-A normal fresh external destination remains supported. As with other local
-preflight path checks, this cannot provide distributed locking or a hostile
-concurrent-writer / filesystem TOCTOU guarantee; do not treat it as one.
-
-
-## Verified ensemble measurement readout (R1 candidate)
-
-The ensemble's existing inspector establishes complete/partial status; this new
-read-only convenience exposes already verified per-member **signed right-minus-left
-measurement values, units, typed unavailable reasons and exact saved-source hashes**
-without opening or guessing nested comparison paths:
-
-```text
+```sh
 python -m emfeeld.scenario_ensembles measurements ENSEMBLE_OUTPUT --store EXACT_STORE --using ORIGINAL_PARENT_RUN
-python -m emfeeld.scenario_ensembles measurements ENSEMBLE_OUTPUT --store EXACT_STORE --using ORIGINAL_PARENT_RUN --member hypothesis-B
-```
-
-The command verifies **all** original ensemble and model-store evidence with the
-existing native inspectors *before* selecting a member, then projects only fields
-from the sealed cross-scenario comparison results. It performs no new physical
-calculation, numeric rounding, unit conversion or file write. Member filtering
-never changes the **global** reported ensemble status; a complete selected
-member does not turn a legitimately partial ensemble into a complete one.
-Rejected or native-incomplete members remain explicit with no synthetic zero
-measurements. A genuinely unavailable G1 baseline body keeps its original
-`unknown_operand` code and `null` value. A member literally named `baseline`
-is selected by `--member baseline`, not confused with the fresh left baseline.
-
-As in the existing inspector, the CLI exits `0` for globally complete evidence,
-`1` for honest globally partial evidence, and `2` for invalid inputs, unknown
-members or detected integrity failures. The JSON fields include source `run.json`
-SHA256 pins and the exact sealed request/result/integrity SHA256 receipts. This
-is an evidence *presentation*, not another comparator or a claim of physical
-time evolution, independent physics certification or teacher acceptance.
-
-This is a new unmerged source candidate requiring its own focused independent
-R1 presentation-integrity review and Linux/Windows plus real-PyVista CI.
-See [the bounded readout contract](docs/VERIFIED_ENSEMBLE_MEASUREMENT_READOUT_V1.md).
-
-
-## Verified ensemble evidence table (R1 candidate)
-
-The new *candidate* stdout-only table command displays the existing sealed
-comparison results without path guessing or another solver. It calls the fully
-integrity-checked `measurements` readout and formats only its source-bound values:
-
-```text
 python -m emfeeld.scenario_ensembles table ENSEMBLE_OUTPUT --store EXACT_STORE --using ORIGINAL_PARENT_RUN
-python -m emfeeld.scenario_ensembles table ENSEMBLE_OUTPUT --store EXACT_STORE --using ORIGINAL_PARENT_RUN --member hypothesis-B
+python -m emfeeld.scenario_ensembles view ENSEMBLE_OUTPUT --store EXACT_STORE --using ORIGINAL_PARENT_RUN --baseline
 ```
 
-The table retains signed member-minus-fresh-baseline measurements and original
-SI units, context/observation IDs, genuine missing-operand reasons and full saved
-SHA256 comparison/run receipts. A globally partial ensemble remains partial even
-when filtering to a complete sibling. A member literally named `baseline` is not
-confused with the independent fresh baseline. The command creates **no saved
-files**; untrusted source text is escaped so it cannot insert Markdown rows or
-links. Existing native `run`, `inspect`, `view` and `measurements` remain the
-scientific source and guardrails. No new numerical laws, integration, unit
-conversions, teacher outcome claims or physical time evolution are implied.
+A member named `baseline` is selected separately with `--member baseline`; it is not the fresh baseline. Signed results are member/right minus baseline/left. Filtering never changes the global partial/complete status. Numerical inputs and recorded trajectories are preserved; screenshots cannot rewrite them.
 
-This is an unmerged feature candidate subject to exact-head Linux/Windows,
-real-PyVista and focused independent R1 source/presentation review. See the
-[frozen table contract](docs/VERIFIED_ENSEMBLE_EVIDENCE_TABLE_V1.md).
+## Teaching studies and playback
+
+```sh
+python -m emfeeld.study run examples/studies/electric.json --output output/electric-study-001 --render
+python -m emfeeld.study view output/electric-study-001 --configuration variant
+```
+
+Study V1 compares a baseline with **one changed source-strength scalar**, holding other physical and numerical conditions fixed. Broader structural/atomic scenarios use the named-model interfaces; do not silently broaden V1. See [teaching studies](docs/TEACHING_STUDIES.md).
+
+Moving views start paused: **Space** toggles play, **Home** restarts paused, **Left/Right** steps saved samples, and dragging the slider pauses playback. Display speed changes no forces, timesteps or captured arrays. Shared colors/camera aid comparison but do not establish teacher acceptance.
+
+## Testing, evidence and next work
+
+```sh
+python -m pytest -q -W error tests
+# Requires the real viewer dependencies and a working graphics backend:
+python -m pytest -q -W error viewer_tests
+python tools/qualify_viewer.py --output output/viewer-qualification-001
+```
+
+Historical all-file freeze tests belong to their original pinned snapshots. Replay their behavioral cases separately without rewriting those old records. Hosted Linux/Windows workflows, screenshots and technical review are different checks from human desktop interaction or an independent classroom trial.
+
+The next priorities are: qualify the audit fixes on both OSs with independent review; exercise a genuinely independently sourced question and separately held reference; complete human viewer acceptance; streamline the existing question-to-model workflow; then add only physical capabilities justified by concrete questions. A general mesh solver, symbolic inverse solver or broad application framework is not needed to compose currently supported sources.
+
+No repository license has yet been selected by the owner. See [the project-wide audit](docs/PROJECT_AUDIT_2026_11_17.md) for scope, reproducible findings, test evidence and remaining decisions.

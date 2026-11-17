@@ -13,6 +13,7 @@ import re
 import sys
 
 import numpy as np
+from .output_safety import protect_saved_evidence
 
 from .model_revisions import RevisionError, decode, encode, identifier, put, sha256
 from .model_runs import inspect_run
@@ -546,6 +547,7 @@ def compare(request_path,*,left,right,output):
                 and (ancestor/'revisions').is_dir()
                 and (ancestor/'proposals').is_dir()):
             raise ValueError('comparison output must be outside model stores')
+    protect_saved_evidence(output)
     raw=request_path.read_bytes()
     spec=decode(raw)
     _validate(spec)

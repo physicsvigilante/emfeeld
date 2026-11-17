@@ -11,6 +11,7 @@ import json
 from pathlib import Path
 import re
 from typing import Any
+from .output_safety import protect_saved_evidence
 
 from .observations import ID_PATTERN, packet_from_dict
 from .scene import scene_from_dict, source_keys, strict_keys
@@ -330,6 +331,7 @@ class ModelStore:
     @classmethod
     def import_legacy(cls, source, assignment, output):
         """Explicit import pinned to raw source bytes; all prior source data retained."""
+        protect_saved_evidence(output, new_directory=True)
         raw = Path(source).read_bytes(); spec_raw = Path(assignment).read_bytes(); spec = decode(spec_raw)
         exact_keys(spec, ('import_version', 'model_id', 'revision_id', 'source_sha256',
                          'source_ids', 'particle_ids', 'default_origin', 'interpretation'),
@@ -388,6 +390,8 @@ class ModelStore:
 
     def revise(self, proposal_path):
         raw = Path(proposal_path).read_bytes(); proposal = decode(raw)
+        if not isinstance(proposal, dict):
+            raise ValueError('proposal must be a JSON object')
         identifier(proposal.get('proposal_id'))
         directory = self.path / 'proposals' / sha256(proposal['proposal_id'].encode())
         directory.mkdir()  # retain accepted and rejected well-formed attempts

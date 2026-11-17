@@ -17,6 +17,7 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'src'))
 from emfeeld.observations import load_packet, run_packet
+from emfeeld.output_safety import protect_saved_evidence
 from emfeeld.scene import strict_keys
 
 
@@ -147,6 +148,7 @@ def preflight(manifest, root):
 
 
 def replay(manifest_path, output, *, root=ROOT):
+    protect_saved_evidence(output, new_directory=True)
     manifest_bytes = Path(manifest_path).read_bytes()
     manifest = load_packet(manifest_path)
     captured = preflight(manifest, root)

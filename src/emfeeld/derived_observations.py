@@ -10,6 +10,7 @@ import math
 from pathlib import Path
 import re
 import sys
+from .output_safety import protect_saved_evidence
 
 from .model_revisions import RevisionError, decode, encode, identifier, put, sha256
 from .model_runs import inspect_run
@@ -198,6 +199,7 @@ def derive(request_path, *, using, output):
     if output.exists() or output.is_symlink():raise FileExistsError('output already exists')
     if output.resolve().is_relative_to(using.resolve()):
         raise ValueError('output cannot be inside native run')
+    protect_saved_evidence(output)
     raw=request_path.read_bytes();spec=decode(raw);_validate(spec)
     saved=using/'run.json'
     if sha256(saved.read_bytes()) != spec['source_run_sha256']:

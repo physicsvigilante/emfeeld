@@ -1,5 +1,6 @@
 """Static prescribed sources. SI everywhere; field = -gradient(potential)."""
 from dataclasses import dataclass
+import math
 from typing import Protocol
 import numpy as np
 from scipy.constants import G, epsilon_0
@@ -69,6 +70,42 @@ class Field(Protocol):
     def potential(self, points): ...
 
 
+def _sphere_potential_coefficient(kind, strength, distance, *, interior_factor=None):
+    """Evaluate +/-G*m/d or k*q/d without spurious intermediate underflow.
+
+    Float64 source strengths, the physical constant and the distance are all
+    admitted as finite numbers, but their product may not be representable on
+    its own even when the final potential is. frexp/ldexp preserve exponents
+    until the final physically meaningful result is formed. They do not soften
+    a singularity or suppress a genuinely nonfinite answer.
+    """
+    coefficient_m, coefficient_e = math.frexp(K if kind == "electric" else -G)
+    strength_m, strength_e = math.frexp(strength)
+    distance_m, distance_e = np.frexp(distance)
+    fraction = coefficient_m * strength_m / distance_m
+    if interior_factor is not None:
+        fraction = fraction * interior_factor
+    return np.ldexp(fraction, coefficient_e + strength_e - distance_e)
+
+
+def _sphere_radial_field(kind, strength, displacement, distance):
+    """Stable k*q*d/r^3 or -G*m*d/r^3, for a positive physical scale r.
+
+    In particular, directly cubing a subnormal/small metre scale underflows
+    even when the actual vector field is finite. Extract powers of two from
+    each input separately instead of forming r^3 or a possibly zero source
+    coefficient first. All physical inside/outside source laws are unchanged.
+    """
+    coefficient_m, coefficient_e = math.frexp(K if kind == "electric" else -G)
+    strength_m, strength_e = math.frexp(strength)
+    displacement_m, displacement_e = np.frexp(displacement)
+    distance_m, distance_e = np.frexp(distance)
+    fraction = coefficient_m * strength_m * displacement_m / (
+        distance_m[..., None] * distance_m[..., None] * distance_m[..., None])
+    exponent = coefficient_e + strength_e + displacement_e - 3 * distance_e[..., None]
+    return np.ldexp(fraction, exponent)
+
+
 @dataclass(frozen=True)
 class Source:
     """strength: C/kg, C/m or kg/m for lines, C/m^2 or kg/m^2 for planes."""
@@ -130,15 +167,31 @@ class SolidSphere(Source):
         object.__setattr__(self, "radius", scalar(self.radius, "radius", positive=True))
 
     def potential(self, points):
-        r = np.linalg.norm(self.displacement(points), axis=-1)
-        inside = (3 - (r / self.radius) ** 2) / (2 * self.radius)
-        outside = 1 / np.maximum(r, self.radius)
-        return self.coefficient * np.where(r <= self.radius, inside, outside)
+        # hypot avoids the squared-distance underflow in np.linalg.norm at
+        # representable subnormal metre scales. Select first; never evaluate an
+        # unused interior formula while probing far outside a tiny sphere.
+        r = np.hypot.reduce(self.displacement(points), axis=-1)
+        if not self.strength:
+            return np.zeros_like(r)
+        inside = r <= self.radius
+        result = np.empty_like(r)
+        if np.any(inside):
+            ratio = r[inside] / self.radius
+            weight = (3 - ratio * ratio) / 2
+            result[inside] = _sphere_potential_coefficient(
+                self.kind, self.strength, self.radius, interior_factor=weight)
+        if np.any(~inside):
+            result[~inside] = _sphere_potential_coefficient(
+                self.kind, self.strength, r[~inside])
+        return result
 
     def field(self, points):
         d = self.displacement(points)
-        r = np.linalg.norm(d, axis=-1)
-        return self.coefficient * d / np.maximum(r, self.radius)[..., None] ** 3
+        if not self.strength:
+            return np.zeros_like(d)
+        r = np.hypot.reduce(d, axis=-1)
+        return _sphere_radial_field(self.kind, self.strength, d,
+                                    np.maximum(r, self.radius))
 
 
 @dataclass(frozen=True)
@@ -147,19 +200,28 @@ class SphericalShell(SolidSphere):
     trajectory_safe = False
 
     def potential(self, points):
-        r = np.linalg.norm(self.displacement(points), axis=-1)
-        return self.coefficient / np.maximum(r, self.radius)
+        r = np.hypot.reduce(self.displacement(points), axis=-1)
+        if not self.strength:
+            return np.zeros_like(r)
+        return _sphere_potential_coefficient(self.kind, self.strength,
+                                              np.maximum(r, self.radius))
 
     def field(self, points):
         d, error = self._displacement_with_error(points)
-        r = np.linalg.norm(d, axis=-1)
-        if self.strength:
-            uncertainty = np.linalg.norm(error, axis=-1) + _gamma(8) * (r + self.radius)
-            _reject_unresolved(r - self.radius, uncertainty,
-                               "shell field has two one-sided limits at its surface")
-        return np.where((r > self.radius)[..., None],
-                        self.coefficient * d / np.maximum(r, self.radius)[..., None] ** 3,
-                        0.0)
+        if not self.strength:
+            return np.zeros_like(d)
+        r = np.hypot.reduce(d, axis=-1)
+        uncertainty = np.hypot.reduce(error, axis=-1) + _gamma(8) * (r + self.radius)
+        _reject_unresolved(r - self.radius, uncertainty,
+                           "shell field has two one-sided limits at its surface")
+        # No eager evaluation of a meaningless interior field or a denominator
+        # whose cube underflows. Leave the true one-sided sheet undefined.
+        outside = r > self.radius
+        result = np.zeros_like(d)
+        if np.any(outside):
+            result[outside] = _sphere_radial_field(self.kind, self.strength,
+                                                    d[outside], r[outside])
+        return result
 
 
 @dataclass(frozen=True)
