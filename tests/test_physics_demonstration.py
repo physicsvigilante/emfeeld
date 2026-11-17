@@ -85,3 +85,24 @@ def test_wrong_charge_reference_does_not_pass():
     row = next(row for row in changed["results"] if row["id"] == "position_40")
     assert row["status"] == "ok"
     assert abs(row["value"][0] - reference) > 1e-3
+
+def test_exact_published_packet_replay(tmp_path):
+    """Freeze original packet bytes and exercise the established replay evidence path."""
+    import importlib.util
+    root = Path(__file__).resolve().parents[1]
+    spec = importlib.util.spec_from_file_location(
+        "physics_demo_replay", root / "tools/replay_packets.py")
+    replay = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(replay)
+    manifest_path = root / "verification/physics_demonstration_v1.json"
+    manifest = load_packet(manifest_path)
+    assert len(manifest["cases"]) == 1
+    case = manifest["cases"][0]
+    assert replay.digest(PACKET.read_bytes()) == case["sha256"]
+    output = tmp_path / "sealed_replay"
+    result = replay.replay(manifest_path, output, root=root)
+    assert result["passed"], result["cases"]
+    assert len(result["cases"][0]["checks"]) == len(case["checks"]) == 64
+    assert (output / "uniform_electric_v1/input.json").read_bytes() == PACKET.read_bytes()
+    assert (output / "uniform_electric_v1/result.json").is_file()
+    assert (output / "summary.json").is_file()
