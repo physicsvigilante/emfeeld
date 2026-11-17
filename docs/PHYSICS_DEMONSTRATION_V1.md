@@ -18,6 +18,14 @@ For this one fixed prescribed field, without magnetic interactions or feedback,
 
 At 4 s, expected position is **(0.648,0.1,0.3) m** and velocity **(0.124,0.05,0) m/s**. The analytical total energy is **5.05×10⁻⁶ J** at all three times. The reference formulas in the regression do not import the engine source implementation or its ODE integrator.
 
+| Predicted time (s) | x (m) | vₓ (m/s) | K (J) | qV (J) | K + qV (J) |
+|---:|---:|---:|---:|---:|---:|
+| 0 | 0.200 | 0.100 | 6.250 × 10⁻⁶ | −1.200 × 10⁻⁶ | 5.050 × 10⁻⁶ |
+| 2 | 0.412 | 0.112 | 7.522 × 10⁻⁶ | −2.472 × 10⁻⁶ | 5.050 × 10⁻⁶ |
+| 4 | 0.648 | 0.124 | 8.938 × 10⁻⁶ | −3.888 × 10⁻⁶ | 5.050 × 10⁻⁶ |
+
+**Physical interpretation:** over four seconds, the prescribed electric force does **+2.688 × 10⁻⁶ J** of work. The kinetic energy rises by the same amount as the electric potential energy falls; total mechanical energy stays constant in the ideal analytical model. The numerical regression verifies the measured values within stated finite tolerances, not symbolic energy conservation for arbitrary scenes.
+
 ## Commands
 
 ```sh
