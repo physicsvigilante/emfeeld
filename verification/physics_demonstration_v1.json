@@ -1,0 +1,572 @@
+{
+  "version": 1,
+  "description": "Physics Demonstration V1: exact published uniform-electric packet; independently derived kinematics, SI units and kinetic-plus-potential energy at three saved times. Same-author regression, not independent scientific certification.",
+  "cases": [
+    {
+      "id": "uniform_electric_v1",
+      "packet": "examples/physics_demonstrations/uniform_electric.json",
+      "sha256": "ff9ce129f906b4cb6b68fa27819e33fa6d54637a8c3412d4f6fb1970c11ecf52",
+      "statuses": {
+        "field_initial": "ok",
+        "potential_initial": "ok",
+        "position_0": "ok",
+        "position_20": "ok",
+        "position_40": "ok",
+        "velocity_0": "ok",
+        "velocity_20": "ok",
+        "velocity_40": "ok",
+        "kinetic_energy_0": "ok",
+        "kinetic_energy_20": "ok",
+        "kinetic_energy_40": "ok",
+        "potential_energy_0": "ok",
+        "potential_energy_20": "ok",
+        "potential_energy_40": "ok",
+        "total_energy_0": "ok",
+        "total_energy_20": "ok",
+        "total_energy_40": "ok"
+      },
+      "checks": [
+        {
+          "id": "field_initial",
+          "path": [
+            "value"
+          ],
+          "value": [
+            3,
+            0,
+            0
+          ],
+          "atol": 1e-12,
+          "rtol": 0
+        },
+        {
+          "id": "field_initial",
+          "path": [
+            "unit"
+          ],
+          "value": "N/C"
+        },
+        {
+          "id": "potential_initial",
+          "path": [
+            "value"
+          ],
+          "value": -0.6,
+          "atol": 1e-12,
+          "rtol": 0
+        },
+        {
+          "id": "potential_initial",
+          "path": [
+            "unit"
+          ],
+          "value": "V"
+        },
+        {
+          "id": "position_0",
+          "path": [
+            "unit"
+          ],
+          "value": "m"
+        },
+        {
+          "id": "position_0",
+          "path": [
+            "sample_index"
+          ],
+          "value": 0
+        },
+        {
+          "id": "position_0",
+          "path": [
+            "time_s"
+          ],
+          "value": 0,
+          "atol": 1e-14,
+          "rtol": 0
+        },
+        {
+          "id": "position_0",
+          "path": [
+            "value"
+          ],
+          "value": [
+            0.2,
+            -0.1,
+            0.3
+          ],
+          "atol": 2e-8,
+          "rtol": 0
+        },
+        {
+          "id": "position_20",
+          "path": [
+            "unit"
+          ],
+          "value": "m"
+        },
+        {
+          "id": "position_20",
+          "path": [
+            "sample_index"
+          ],
+          "value": 20
+        },
+        {
+          "id": "position_20",
+          "path": [
+            "time_s"
+          ],
+          "value": 2,
+          "atol": 1e-14,
+          "rtol": 0
+        },
+        {
+          "id": "position_20",
+          "path": [
+            "value"
+          ],
+          "value": [
+            0.412,
+            0,
+            0.3
+          ],
+          "atol": 2e-8,
+          "rtol": 0
+        },
+        {
+          "id": "position_40",
+          "path": [
+            "unit"
+          ],
+          "value": "m"
+        },
+        {
+          "id": "position_40",
+          "path": [
+            "sample_index"
+          ],
+          "value": 40
+        },
+        {
+          "id": "position_40",
+          "path": [
+            "time_s"
+          ],
+          "value": 4,
+          "atol": 1e-14,
+          "rtol": 0
+        },
+        {
+          "id": "position_40",
+          "path": [
+            "value"
+          ],
+          "value": [
+            0.648,
+            0.1,
+            0.3
+          ],
+          "atol": 2e-8,
+          "rtol": 0
+        },
+        {
+          "id": "velocity_0",
+          "path": [
+            "unit"
+          ],
+          "value": "m/s"
+        },
+        {
+          "id": "velocity_0",
+          "path": [
+            "sample_index"
+          ],
+          "value": 0
+        },
+        {
+          "id": "velocity_0",
+          "path": [
+            "time_s"
+          ],
+          "value": 0,
+          "atol": 1e-14,
+          "rtol": 0
+        },
+        {
+          "id": "velocity_0",
+          "path": [
+            "value"
+          ],
+          "value": [
+            0.1,
+            0.05,
+            0
+          ],
+          "atol": 2e-8,
+          "rtol": 0
+        },
+        {
+          "id": "velocity_20",
+          "path": [
+            "unit"
+          ],
+          "value": "m/s"
+        },
+        {
+          "id": "velocity_20",
+          "path": [
+            "sample_index"
+          ],
+          "value": 20
+        },
+        {
+          "id": "velocity_20",
+          "path": [
+            "time_s"
+          ],
+          "value": 2,
+          "atol": 1e-14,
+          "rtol": 0
+        },
+        {
+          "id": "velocity_20",
+          "path": [
+            "value"
+          ],
+          "value": [
+            0.112,
+            0.05,
+            0
+          ],
+          "atol": 2e-8,
+          "rtol": 0
+        },
+        {
+          "id": "velocity_40",
+          "path": [
+            "unit"
+          ],
+          "value": "m/s"
+        },
+        {
+          "id": "velocity_40",
+          "path": [
+            "sample_index"
+          ],
+          "value": 40
+        },
+        {
+          "id": "velocity_40",
+          "path": [
+            "time_s"
+          ],
+          "value": 4,
+          "atol": 1e-14,
+          "rtol": 0
+        },
+        {
+          "id": "velocity_40",
+          "path": [
+            "value"
+          ],
+          "value": [
+            0.124,
+            0.05,
+            0
+          ],
+          "atol": 2e-8,
+          "rtol": 0
+        },
+        {
+          "id": "kinetic_energy_0",
+          "path": [
+            "unit"
+          ],
+          "value": "J"
+        },
+        {
+          "id": "kinetic_energy_0",
+          "path": [
+            "sample_index"
+          ],
+          "value": 0
+        },
+        {
+          "id": "kinetic_energy_0",
+          "path": [
+            "time_s"
+          ],
+          "value": 0,
+          "atol": 1e-14,
+          "rtol": 0
+        },
+        {
+          "id": "kinetic_energy_0",
+          "path": [
+            "value"
+          ],
+          "value": 0.00000625,
+          "atol": 5e-10,
+          "rtol": 0
+        },
+        {
+          "id": "kinetic_energy_20",
+          "path": [
+            "unit"
+          ],
+          "value": "J"
+        },
+        {
+          "id": "kinetic_energy_20",
+          "path": [
+            "sample_index"
+          ],
+          "value": 20
+        },
+        {
+          "id": "kinetic_energy_20",
+          "path": [
+            "time_s"
+          ],
+          "value": 2,
+          "atol": 1e-14,
+          "rtol": 0
+        },
+        {
+          "id": "kinetic_energy_20",
+          "path": [
+            "value"
+          ],
+          "value": 0.000007522,
+          "atol": 5e-10,
+          "rtol": 0
+        },
+        {
+          "id": "kinetic_energy_40",
+          "path": [
+            "unit"
+          ],
+          "value": "J"
+        },
+        {
+          "id": "kinetic_energy_40",
+          "path": [
+            "sample_index"
+          ],
+          "value": 40
+        },
+        {
+          "id": "kinetic_energy_40",
+          "path": [
+            "time_s"
+          ],
+          "value": 4,
+          "atol": 1e-14,
+          "rtol": 0
+        },
+        {
+          "id": "kinetic_energy_40",
+          "path": [
+            "value"
+          ],
+          "value": 0.000008938,
+          "atol": 5e-10,
+          "rtol": 0
+        },
+        {
+          "id": "potential_energy_0",
+          "path": [
+            "unit"
+          ],
+          "value": "J"
+        },
+        {
+          "id": "potential_energy_0",
+          "path": [
+            "sample_index"
+          ],
+          "value": 0
+        },
+        {
+          "id": "potential_energy_0",
+          "path": [
+            "time_s"
+          ],
+          "value": 0,
+          "atol": 1e-14,
+          "rtol": 0
+        },
+        {
+          "id": "potential_energy_0",
+          "path": [
+            "value"
+          ],
+          "value": -0.0000012,
+          "atol": 5e-10,
+          "rtol": 0
+        },
+        {
+          "id": "potential_energy_20",
+          "path": [
+            "unit"
+          ],
+          "value": "J"
+        },
+        {
+          "id": "potential_energy_20",
+          "path": [
+            "sample_index"
+          ],
+          "value": 20
+        },
+        {
+          "id": "potential_energy_20",
+          "path": [
+            "time_s"
+          ],
+          "value": 2,
+          "atol": 1e-14,
+          "rtol": 0
+        },
+        {
+          "id": "potential_energy_20",
+          "path": [
+            "value"
+          ],
+          "value": -0.000002472,
+          "atol": 5e-10,
+          "rtol": 0
+        },
+        {
+          "id": "potential_energy_40",
+          "path": [
+            "unit"
+          ],
+          "value": "J"
+        },
+        {
+          "id": "potential_energy_40",
+          "path": [
+            "sample_index"
+          ],
+          "value": 40
+        },
+        {
+          "id": "potential_energy_40",
+          "path": [
+            "time_s"
+          ],
+          "value": 4,
+          "atol": 1e-14,
+          "rtol": 0
+        },
+        {
+          "id": "potential_energy_40",
+          "path": [
+            "value"
+          ],
+          "value": -0.000003888,
+          "atol": 5e-10,
+          "rtol": 0
+        },
+        {
+          "id": "total_energy_0",
+          "path": [
+            "unit"
+          ],
+          "value": "J"
+        },
+        {
+          "id": "total_energy_0",
+          "path": [
+            "sample_index"
+          ],
+          "value": 0
+        },
+        {
+          "id": "total_energy_0",
+          "path": [
+            "time_s"
+          ],
+          "value": 0,
+          "atol": 1e-14,
+          "rtol": 0
+        },
+        {
+          "id": "total_energy_0",
+          "path": [
+            "value"
+          ],
+          "value": 0.00000505,
+          "atol": 5e-10,
+          "rtol": 0
+        },
+        {
+          "id": "total_energy_20",
+          "path": [
+            "unit"
+          ],
+          "value": "J"
+        },
+        {
+          "id": "total_energy_20",
+          "path": [
+            "sample_index"
+          ],
+          "value": 20
+        },
+        {
+          "id": "total_energy_20",
+          "path": [
+            "time_s"
+          ],
+          "value": 2,
+          "atol": 1e-14,
+          "rtol": 0
+        },
+        {
+          "id": "total_energy_20",
+          "path": [
+            "value"
+          ],
+          "value": 0.00000505,
+          "atol": 5e-10,
+          "rtol": 0
+        },
+        {
+          "id": "total_energy_40",
+          "path": [
+            "unit"
+          ],
+          "value": "J"
+        },
+        {
+          "id": "total_energy_40",
+          "path": [
+            "sample_index"
+          ],
+          "value": 40
+        },
+        {
+          "id": "total_energy_40",
+          "path": [
+            "time_s"
+          ],
+          "value": 4,
+          "atol": 1e-14,
+          "rtol": 0
+        },
+        {
+          "id": "total_energy_40",
+          "path": [
+            "value"
+          ],
+          "value": 0.00000505,
+          "atol": 5e-10,
+          "rtol": 0
+        }
+      ]
+    }
+  ]
+}
