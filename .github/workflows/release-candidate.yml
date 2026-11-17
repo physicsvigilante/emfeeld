@@ -196,6 +196,35 @@ jobs:
                      for m in e['members']+g['members'])
           print('verified E1 complete and G1 honest partial readouts from sealed native records')
           PY
+      - name: Render original sealed signed measurements into deterministic Markdown tables
+        run: |
+          set -euo pipefail
+          python -m emfeeld.scenario_ensembles table output/release-candidate/scenario-ensembles/E1/ensemble --store output/release-candidate/scenario-ensembles/E1/store --using output/release-candidate/scenario-ensembles/E1/parent-template > output/release-candidate/ensemble-evidence-table-E1.md
+          if python -m emfeeld.scenario_ensembles table output/release-candidate/scenario-ensembles/G1/ensemble --store output/release-candidate/scenario-ensembles/G1/store --using output/release-candidate/scenario-ensembles/G1/parent-template --member hypothesis-B > output/release-candidate/ensemble-evidence-table-G1.md; then
+            echo 'G1 table incorrectly returned globally complete'; exit 1
+          else
+            test "$?" -eq 1
+          fi
+          python - <<'PYTHON'
+          import json
+          from pathlib import Path
+          from emfeeld.scenario_ensembles import _ensemble_measurement_table
+          root=Path('output/release-candidate')
+          for case in ('E1','G1'):
+              native=json.loads((root/f'ensemble-measurements-{case}.json').read_bytes())
+              rendered=(root/f'ensemble-evidence-table-{case}.md').read_text(encoding='utf-8')
+              assert rendered==_ensemble_measurement_table(native)
+              assert 'Signed original **member (right) minus freshly computed baseline (left)**' in rendered
+              assert f'Global ensemble status: **{native["status"]}**' in rendered
+              expected=sum(len(m['measurements']) if m['measurements'] else 1 for m in native['members'])
+              section=rendered.split('## Original sealed measurement values')[1].split('## Original comparison and native-run SHA256 bindings')[0]
+              assert len([line for line in section.splitlines() if line.startswith('| ')])==2+expected
+              for m in native['members']:
+                  if m['evidence']:
+                      assert all(value in rendered for value in m['evidence'].values())
+          assert 'unavailable (no numeric value)' in (root/'ensemble-evidence-table-G1.md').read_text(encoding='utf-8')
+          print('verified E1 complete and G1 partial Markdown table/source receipt binding')
+          PYTHON
       - name: Verify native view delegation for sealed ensemble baseline and partial comparison member
         run: |
           set -euo pipefail

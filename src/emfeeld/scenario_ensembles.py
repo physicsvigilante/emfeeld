@@ -6,6 +6,7 @@ potential conventions and comparison semantics belong to existing modules.
 from __future__ import annotations
 
 import argparse
+import json
 import math
 from pathlib import Path
 import sys
@@ -607,6 +608,123 @@ def read_ensemble_measurements(output, *, store_path, using, member_id=None):
                             'no new physics, no inferred time transition, '
                             'not teacher acceptance'}
 
+
+def _markdown_table_cell(value):
+    """Render untrusted display content as inert, single-line Markdown cell text.
+
+    JSON quoting protects control characters, and character entities prevent
+    caller-controlled IDs/reasons/context from creating rows, links or markup.
+    Native JSON numbers use the shortest lossless round-trip spelling.
+    """
+    if value is None:
+        return '—'
+    if type(value) is str:
+        plain = json.dumps(value, ensure_ascii=True)[1:-1]
+    else:
+        plain = json.dumps(value, ensure_ascii=True, sort_keys=True,
+                           separators=(',', ':'), allow_nan=False)
+    for ch, entity in (('&', '&amp;'), ('<', '&lt;'), ('>', '&gt;'),
+                       ('|', '&#124;'), ('\\', '&#92;'), ('`', '&#96;'),
+                       ('*', '&#42;'), ('_', '&#95;'), ('[', '&#91;'),
+                       (']', '&#93;'), ('!', '&#33;'), (':', '&#58;'),
+                       ('@', '&#64;')):
+        plain = plain.replace(ch, entity)
+    # GFM can autolink bare www.* even without a scheme. Do not create links
+    # from arbitrary original source strings; this is a display, not browsing.
+    import re
+    plain = re.sub(r'(?i)(?<![\w])www\.', lambda m: m.group(0)[:-1] + '&#46;', plain)
+    return plain
+
+
+def _ensemble_measurement_table(readout):
+    """Pure formatting of an ALREADY VERIFIED readout; never inspect/re-solve.
+
+    Only the `table` CLI calls this after read_ensemble_measurements has
+    validated every source and projected exact native measurement receipts.
+    This renderer is not a replacement provenance validator.
+    """
+    if readout.get('readout_version') != 1 or readout.get('status') not in ('complete', 'partial'):
+        raise ValueError('expected an original verified ensemble measurement readout')
+    cell = _markdown_table_cell
+    lines = [
+        '# Verified Ensemble Evidence Table V1',
+        '',
+        f'Ensemble: {cell(readout["id"])}',
+        f'Global ensemble status: **{readout["status"]}**',
+        f'Selection: {cell(readout["selection"])}',
+        f'Original parent reference: {cell(readout["parent"])}',
+        f'Original parent native run.json SHA256: {cell(readout["source_run_sha256"])}',
+        '',
+        '**Meaning:** Signed original **member (right) minus freshly computed baseline (left)** '
+        'in the recorded SI units. Independent prescribed-source scenarios are alternatives, '
+        'not successive physical times. No recalculation, rounding or teacher acceptance.',
+        '',
+        '## Original sealed measurement values',
+        '',
+        '| Member (index) | Measurement | Left observation | Right observation | Quantity | Signed value (right − left) | SI unit | Context | Particle | Error bound | Status / reason | Result SHA256 |',
+        '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |',
+    ]
+    for member in readout['members']:
+        member_label = cell(member['id']) + f' (#{member["index"]})'
+        values = member['measurements']
+        evidence = member['evidence']
+        if not values:
+            # Rejected or native-incomplete: an absent value is never numeric 0.
+            reason = member.get('reason') or member.get('status') or 'no comparison'
+            row = [member_label, '—', '—', '—', '—', '—', '—', '—', '—', '—',
+                   'not measured: ' + cell(reason), '—']
+            lines.append('| ' + ' | '.join(row) + ' |')
+            continue
+        if not isinstance(evidence, dict):
+            raise ValueError('measured member lacks original sealed evidence receipt')
+        for measurement in values:
+            status = measurement['status']
+            if status == 'ok':
+                value = cell(measurement['value'])
+                note = 'ok'
+            elif status == 'unavailable':
+                if measurement['value'] is not None:
+                    raise ValueError('unavailable measurement cannot have a numeric value')
+                value = 'unavailable (no numeric value)'
+                note = 'unavailable: ' + cell(measurement.get('code'))
+                if measurement.get('reason') is not None:
+                    note += ' — ' + cell(measurement['reason'])
+            else:
+                raise ValueError('unsupported original native measurement status')
+            row = [member_label, cell(measurement['id']),
+                   cell(measurement.get('left_observation_id')),
+                   cell(measurement.get('right_observation_id')),
+                   cell(measurement['type']), value, cell(measurement.get('unit')),
+                   cell(measurement.get('context')),
+                   cell(measurement.get('particle_id')),
+                   cell(measurement.get('error_bound')), note,
+                   cell(evidence['result_sha256'])]
+            lines.append('| ' + ' | '.join(row) + ' |')
+    lines.extend([
+        '',
+        '## Original comparison and native-run SHA256 bindings',
+        '',
+        '| Member (index) | Decision | Native run | Comparison | Request SHA256 | Result SHA256 | Integrity SHA256 | Left run SHA256 | Right run SHA256 |',
+        '| --- | --- | --- | --- | --- | --- | --- | --- | --- |',
+    ])
+    for member in readout['members']:
+        evidence = member['evidence']
+        row = [cell(member['id']) + f' (#{member["index"]})',
+               cell(member.get('decision')), cell(member.get('run_status')),
+               cell(member.get('comparison_status'))]
+        row.extend(cell(evidence.get(k)) if evidence else '—' for k in (
+            'request_sha256', 'result_sha256', 'integrity_sha256',
+            'left_run_sha256', 'right_run_sha256'))
+        lines.append('| ' + ' | '.join(row) + ' |')
+    lines.extend([
+        '',
+        'Source: original fully integrity-checked ensemble and sealed native comparisons. '
+        'The hashes above identify original saved evidence; the table is not an independent '
+        'scientific calculation or an authoritative replacement for the source records.',
+    ])
+    return '\n'.join(lines) + '\n'
+
+
 def view_ensemble(output, *, store_path, using, member_id=None, baseline=False,
                   sample_index=0, screenshot_output=None):
     """Present exactly one integrity-checked recorded native run, never an inferred scenario transition."""
@@ -662,7 +780,7 @@ def view_ensemble(output, *, store_path, using, member_id=None, baseline=False,
 
 def main(argv=None):
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command',choices=('run','inspect','view','measurements'))
+    parser.add_argument('command',choices=('run','inspect','view','measurements','table'))
     parser.add_argument('spec_or_output')
     parser.add_argument('--store',required=True)
     parser.add_argument('--using',required=True)
@@ -694,9 +812,20 @@ def main(argv=None):
                                  screenshot_output=args.output)
         else:
             if args.output is not None or args.baseline or args.sample_index is not None:
-                raise ValueError('measurements accepts only an optional --member filter')
+                raise ValueError(args.command+' accepts only an optional --member filter')
             result=read_ensemble_measurements(args.spec_or_output,store_path=args.store,
                                               using=args.using,member_id=args.member)
+            if args.command=='table':
+                # Only render after complete original sealed readout; no new IO.
+                # UTF-8 table bytes must be stable even when Windows redirects
+                # stdout through a legacy locale codec (for example cp1252).
+                # Preserve Unicode signs/dashes and the exact Markdown output.
+                rendered = _ensemble_measurement_table(result)
+                if getattr(sys.stdout, 'buffer', None) is not None:
+                    sys.stdout.buffer.write(rendered.encode('utf-8'))
+                else:
+                    sys.stdout.write(rendered)  # e.g. test StringIO captures
+                return 0 if result['status']=='complete' else 1
         print(encode(result).decode(),end='')
         return 0 if result['status']=='complete' else 1
     except (OSError,ValueError,KeyError,TypeError) as exc:
