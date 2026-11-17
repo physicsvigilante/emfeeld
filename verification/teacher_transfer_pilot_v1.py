@@ -20,6 +20,14 @@ from emfeeld.scenario_ensembles import read_ensemble_measurements
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 DEFAULT_FIXTURE = ROOT / 'pilots' / 'teacher_transfer_v1' / 'questions.json'
+# These are independent, versioned trust anchors for the published V1 pilot.
+# Never take qualification identities from a caller-supplied question document.
+FROZEN_FIXTURE_SHA256 = '536ada6775aa3effb7abafaef742f7cb0030ce4428bcecf1d4664e1025436008'
+QUALIFIED_MAIN_SHA = '3f1ec44a54b24b9f8275a98abf81126a9386bf61'
+QUALIFIED_ARCHIVE_SHA256 = {
+    'linux': '0654fa7d39249c4026945295ce15a18eae46a8598325e66d321cd515aa1e7f55',
+    'windows': 'be72aef030afef113758a671aa93363b7e01af51ad9e79d942b91ea508c9a27e',
+}
 FILE_LIMIT = 50 * 1024 * 1024
 TOTAL_LIMIT = 200 * 1024 * 1024
 ENTRY_LIMIT = 10_000
@@ -37,14 +45,25 @@ def _require(condition: bool, message: str) -> None:
 def _frozen_fixture(path: pathlib.Path) -> tuple[dict, str]:
     raw = path.read_bytes()
     _require(len(raw) < 256_000, 'pilot fixture too large')
+    fixture_sha = _sha(raw)
+    _require(fixture_sha == FROZEN_FIXTURE_SHA256,
+             'fixture SHA256 does not match the qualified original questions')
     fixture = json.loads(raw)
-    _require(type(fixture) is dict and fixture.get('pilot_version') == 1,
+    _require(type(fixture) is dict and type(fixture.get('pilot_version')) is int and
+             fixture['pilot_version'] == 1,
              'unsupported pilot fixture version')
     _require(type(fixture.get('questions')) is list and len(fixture['questions']) == 3,
              'expected exactly three frozen development-authored questions')
+    _require(all(type(q) is dict for q in fixture['questions']),
+             'frozen questions must be objects')
     _require({q.get('case') for q in fixture['questions']} == {'E1', 'G1', 'T1'},
              'frozen question case identities changed')
-    return fixture, _sha(raw)
+    provenance = fixture.get('provenance')
+    _require(type(provenance) is dict and
+             provenance.get('qualified_main_sha') == QUALIFIED_MAIN_SHA and
+             provenance.get('qualified_archive_sha256') == QUALIFIED_ARCHIVE_SHA256,
+             'fixture source/release anchors do not match qualified originals')
+    return fixture, fixture_sha
 
 
 def _safe_files(archive: zipfile.ZipFile) -> list[zipfile.ZipInfo]:
@@ -70,20 +89,20 @@ def _safe_files(archive: zipfile.ZipFile) -> list[zipfile.ZipInfo]:
     return entries
 
 
-def transfer(archive_path: pathlib.Path, *, platform: str,
-             fixture_path: pathlib.Path = DEFAULT_FIXTURE) -> dict:
-    fixture, fixture_sha = _frozen_fixture(fixture_path)
-    provenance = fixture['provenance']
-    known = provenance['qualified_archive_sha256']
-    _require(platform in ('linux', 'windows'), 'platform must be linux or windows')
-    _require(platform in known, 'unsupported archive platform')
+def transfer(archive_path: pathlib.Path, *, platform: str) -> dict:
+    # Canonical-only V1: no custom fixture is part of the qualified interface.
+    # Refuse a changed question, a re-pinned ZIP or a re-labeled original commit
+    # before even opening a purported release archive or running native inspection.
+    _require(platform in QUALIFIED_ARCHIVE_SHA256, 'platform must be linux or windows')
+    fixture, fixture_sha = _frozen_fixture(DEFAULT_FIXTURE)
     original_zip_sha = _sha(archive_path.read_bytes())
-    _require(original_zip_sha == known[platform], 'archive ZIP SHA256 does not match frozen release')
+    _require(original_zip_sha == QUALIFIED_ARCHIVE_SHA256[platform],
+             'archive ZIP SHA256 does not match qualified original release')
 
     with zipfile.ZipFile(archive_path, mode='r') as z:
         entries = _safe_files(z)
         _require(z.testzip() is None, 'corrupt archive CRC')
-        _require(z.read('head-sha.txt').decode('ascii').strip() == provenance['qualified_main_sha'],
+        _require(z.read('head-sha.txt').decode('ascii').strip() == QUALIFIED_MAIN_SHA,
                  'archive is not from the qualified exact main commit')
         names = {entry.filename for entry in entries}
         # Never write into existing model stores or the archive itself: extract
@@ -160,7 +179,7 @@ def transfer(archive_path: pathlib.Path, *, platform: str,
         })
     return {
         'pilot_id': fixture['pilot_id'], 'pilot_version': 1,
-        'original_release_commit': provenance['qualified_main_sha'],
+        'original_release_commit': QUALIFIED_MAIN_SHA,
         'original_release_zip_sha256': original_zip_sha,
         'platform': platform, 'frozen_fixture_sha256': fixture_sha,
         'questions': answers,
@@ -180,10 +199,9 @@ def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('archive',type=pathlib.Path,help='exact original qualified main release ZIP')
     parser.add_argument('--platform',required=True, choices=('linux','windows'))
-    parser.add_argument('--fixture',type=pathlib.Path,default=DEFAULT_FIXTURE)
     args = parser.parse_args(argv)
     try:
-        report = transfer(args.archive, platform=args.platform,fixture_path=args.fixture)
+        report = transfer(args.archive, platform=args.platform)
     except (ValueError, OSError, KeyError, TypeError, json.JSONDecodeError,
             zipfile.BadZipFile) as e:
         print(f'teaching-transfer pilot: {e}',file=sys.stderr)

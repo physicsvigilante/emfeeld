@@ -106,3 +106,60 @@ def test_pilot_invalid_platform_does_not_mutate_source(tmp_path):
     with pytest.raises(ValueError,match='platform'):
         pilot.transfer(archive,platform='unknown')
     assert archive.read_bytes()==original
+
+
+@pytest.mark.parametrize('spoof', [
+    'zip_repin', 'commit_repin', 'both_repin', 'teacher_authorship',
+    'negative_field_magnitude', 'missing_body_zero', 'conductor_maxwell',
+    'changed_notes', 'not_question_objects',
+])
+def test_pilot_rejects_untrusted_provenance_and_prose_before_archive_or_native(
+        tmp_path, monkeypatch, spoof):
+    # A caller cannot redefine the original release or smuggle new alleged
+    # teacher/conductor claims into source-bound measurements. The input fixture
+    # must fail before even reading the purported ZIP or running native physics.
+    fixture, _ = pilot._frozen_fixture(pilot.DEFAULT_FIXTURE)
+    if spoof in ('zip_repin', 'both_repin'):
+        fixture['provenance']['qualified_archive_sha256']['linux'] = 'f' * 64
+    if spoof in ('commit_repin', 'both_repin'):
+        fixture['provenance']['qualified_main_sha'] = 'f' * 40
+    if spoof == 'teacher_authorship':
+        fixture['provenance']['teacher_validation'] = 'passed_by_teacher'
+    if spoof == 'negative_field_magnitude':
+        fixture['questions'][0]['question'] = 'Certified negative absolute electric field magnitude.'
+    if spoof == 'missing_body_zero':
+        fixture['questions'][1]['notes'] = 'Teacher verified zero baseline displacement for body_4.'
+    if spoof == 'conductor_maxwell':
+        fixture['questions'][2]['question'] = 'Teacher-verified Maxwell conductor polarization over time.'
+    if spoof == 'changed_notes':
+        fixture['questions'][2]['notes'] = 'Independently certified human teacher acceptance.'
+    if spoof == 'not_question_objects':
+        fixture['questions'] = ['E1', 'G1', 'T1']
+    candidate = tmp_path / 'untrusted.json'
+    candidate.write_text(json.dumps(fixture), encoding='utf-8')
+    monkeypatch.setattr(pilot, 'DEFAULT_FIXTURE', candidate)
+    monkeypatch.setattr(pilot, 'read_ensemble_measurements', lambda *a, **kw:
+                        pytest.fail('native inspection reached on bad fixture'))
+    archive = tmp_path / 'do-not-open.zip'  # deliberately nonexistent
+    with pytest.raises(ValueError, match='fixture SHA256'):
+        pilot.transfer(archive, platform='linux')
+    assert not archive.exists()
+
+
+def test_pilot_qualified_cli_refuses_fixture_override(tmp_path, capsys):
+    # No second, user-controlled interpretation/provenance mode is advertised.
+    # A rejected option cannot produce a legitimate original-source report.
+    with pytest.raises(SystemExit) as err:
+        pilot.main([str(tmp_path / 'not-present.zip'), '--platform', 'linux',
+                    '--fixture', str(tmp_path / 'spoof.json')])
+    assert err.value.code == 2
+    output = capsys.readouterr()
+    assert not output.out
+    assert 'unrecognized arguments: --fixture' in output.err
+
+
+def test_pilot_canonical_constants_are_separate_from_fixture():
+    frozen, digest = pilot._frozen_fixture(pilot.DEFAULT_FIXTURE)
+    assert digest == pilot.FROZEN_FIXTURE_SHA256
+    assert frozen['provenance']['qualified_main_sha'] == pilot.QUALIFIED_MAIN_SHA
+    assert frozen['provenance']['qualified_archive_sha256'] == pilot.QUALIFIED_ARCHIVE_SHA256
