@@ -168,7 +168,12 @@ class TrajectorySamples:
                   'unit': unit, 'value': None, 'status': 'ok', 'error_bound': None,
                   'method': 'saved_trajectory_sample', 'selection': request.selector()}
         if self._grid_failure is not None:
-            return dict(result, **self._grid_failure)
+            # An invalid saved-time grid is a per-particle no-integration run,
+            # whether requested only or reached via optional full capture.
+            # Preserve the actual failure telemetry without invoking the solver.
+            _, info = self._trajectory(request.particle_index)
+            result['diagnostics_key'] = str(request.particle_index)
+            return dict(result, status=info['status'], error=dict(info['error']))
         index, failure = self._select(request)
         if failure is not None:
             return dict(result, **failure)
