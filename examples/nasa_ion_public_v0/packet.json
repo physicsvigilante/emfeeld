@@ -1,0 +1,36 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "Public NASA ion grid problem 1, illustrative prescribed uniform field only",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "uniform",
+        "field_N_C": [1857142.8571428573, 0, 0],
+        "origin_m": [0, 0, 0]
+      }
+    ],
+    "particles": [
+      {
+        "mass_kg": 2.2e-25,
+        "charge_C": 1.6e-19,
+        "position_m": [0, 0, 0],
+        "velocity_m_s": [0, 0, 0]
+      }
+    ],
+    "duration_s": 3.2195317385273e-08,
+    "samples": 21,
+    "bounds_m": [-0.0001, 0.0009, -0.0002, 0.0002, -0.0002, 0.0002]
+  },
+  "observations": [
+    {
+      "id": "exit_speed_native",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "speed",
+      "sample_index": 20
+    }
+  ],
+  "notes": "NASA public exercise; no expected answer in packet. Model explicitly prescribes E=1300 V / 0.7 mm and derives exit time from rest in uniform field. Not a physical ion thruster model or blind teacher study."
+}
