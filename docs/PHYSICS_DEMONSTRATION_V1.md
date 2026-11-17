@@ -1,0 +1,39 @@
+# Physics Demonstration V1 — uniform electric acceleration
+
+Tracking: [Issue #31](https://github.com/physicsvigilante/emfeeld/issues/31). This is an **illustrative, same-author** analytical check of an existing supported law, not independent scientific certification or a held-out natural-language study.
+
+## Physical question and inputs
+
+A fixed prescribed uniform electric field **E=(3,0,0) N/C** acts on a single independent nonrelativistic test particle with **q=2×10⁻⁶ C**, **m=10⁻³ kg**, initial position **(0.2,-0.1,0.3) m** and initial velocity **(0.1,0.05,0) m/s**. The field's electric-potential zero is at origin **(0,0,0) m**. Predict and measure position, velocity, kinetic, potential and total energy at **t=0, 2, 4 s**. The duration is 4 s with 41 saved samples. These inputs are illustrative, not externally sourced experimental measurements.
+
+## Independent prediction
+
+For this one fixed prescribed field, without magnetic interactions or feedback,
+
+- **a=qE/m=(0.006,0,0) m/s²**
+- **r(t)=r₀+v₀t+(a/2)t²**
+- **v(t)=v₀+at**
+- **V(r)=-E·(r-origin)** in volts
+- **K=½m|v|²**, **U=qV**, **H=K+U**
+
+At 4 s, expected position is **(0.648,0.1,0.3) m** and velocity **(0.124,0.05,0) m/s**. The analytical total energy is **5.05×10⁻⁶ J** at all three times. The reference formulas in the regression do not import the engine source implementation or its ODE integrator.
+
+## Commands
+
+```sh
+python -m emfeeld.observations examples/physics_demonstrations/uniform_electric.json --validate-only
+python -m emfeeld.observations examples/physics_demonstrations/uniform_electric.json --output output/uniform-electric-observations.json
+python -m pytest -q -W error tests/test_physics_demonstration.py
+```
+
+The packet deliberately contains **no numerical answers**: its named observations request the engine's computed results. The regression independently derives predictions from packet givens, checks observation status, SI units, actual sample indices and times, all five requested quantities at three instants, static field/potential, and conservation of total mechanical energy. A charge perturbation is separately checked to cause a detectable change from the original prediction.
+
+The regression uses componentwise absolute position/velocity tolerance **2×10⁻⁸** in their respective units, energy tolerance **5×10⁻¹⁰ J**, and total-energy range threshold **5×10⁻¹⁰ J**. These are illustrative acceptance thresholds, not rigorous global error bounds. It uses the already qualified DOP853 saved-sample API; no interpolation, modified integration settings, or new field laws.
+
+## Honest outcome boundaries
+
+Schema acceptance, numerical measurement, agreement with independently derived kinematics, energy diagnostics, question coverage and teaching value are separate judgments. A passing regression does **not** prove numerical convergence across settings, validate magnetic physics, certify classroom usefulness, or show that a teacher interpreted an arbitrary original question correctly. Further qualified source evidence and CI outcomes must be recorded against an exact commit; source authors must not mislabel their own checks as independent review.
+
+This example is intentionally outside the ensemble pipeline: it first validates the underlying question-to-observation workflow. A future qualified exercise can use a sealed native revision/ensemble and signed comparison evidence without representing alternative static hypotheses as physical time evolution.
+
+Do not modify previously sealed PR #29 evidence, solver tolerances, field laws or original stored runs.
