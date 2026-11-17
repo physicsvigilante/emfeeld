@@ -1,0 +1,175 @@
+{
+  "observation_schema_version": 1,
+  "scene": {
+    "schema_version": 1,
+    "title": "Physics Demonstration V1: prescribed uniform electric acceleration",
+    "kind": "electric",
+    "sources": [
+      {
+        "type": "uniform",
+        "field_N_C": [
+          3,
+          0,
+          0
+        ],
+        "origin_m": [
+          0,
+          0,
+          0
+        ]
+      }
+    ],
+    "particles": [
+      {
+        "mass_kg": 0.001,
+        "charge_C": 0.000002,
+        "position_m": [
+          0.2,
+          -0.1,
+          0.3
+        ],
+        "velocity_m_s": [
+          0.1,
+          0.05,
+          0
+        ]
+      }
+    ],
+    "duration_s": 4,
+    "samples": 41,
+    "bounds_m": [
+      -1,
+      2,
+      -1,
+      1,
+      -1,
+      1
+    ]
+  },
+  "observations": [
+    {
+      "id": "field_initial",
+      "type": "field",
+      "position_m": [
+        0.2,
+        -0.1,
+        0.3
+      ]
+    },
+    {
+      "id": "potential_initial",
+      "type": "potential",
+      "position_m": [
+        0.2,
+        -0.1,
+        0.3
+      ]
+    },
+    {
+      "id": "position_0",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "position",
+      "sample_index": 0
+    },
+    {
+      "id": "position_20",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "position",
+      "sample_index": 20
+    },
+    {
+      "id": "position_40",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "position",
+      "sample_index": 40
+    },
+    {
+      "id": "velocity_0",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "velocity",
+      "sample_index": 0
+    },
+    {
+      "id": "velocity_20",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "velocity",
+      "sample_index": 20
+    },
+    {
+      "id": "velocity_40",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "velocity",
+      "sample_index": 40
+    },
+    {
+      "id": "kinetic_energy_0",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "kinetic_energy",
+      "sample_index": 0
+    },
+    {
+      "id": "kinetic_energy_20",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "kinetic_energy",
+      "sample_index": 20
+    },
+    {
+      "id": "kinetic_energy_40",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "kinetic_energy",
+      "sample_index": 40
+    },
+    {
+      "id": "potential_energy_0",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "potential_energy",
+      "sample_index": 0
+    },
+    {
+      "id": "potential_energy_20",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "potential_energy",
+      "sample_index": 20
+    },
+    {
+      "id": "potential_energy_40",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "potential_energy",
+      "sample_index": 40
+    },
+    {
+      "id": "total_energy_0",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "total_energy",
+      "sample_index": 0
+    },
+    {
+      "id": "total_energy_20",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "total_energy",
+      "sample_index": 20
+    },
+    {
+      "id": "total_energy_40",
+      "type": "trajectory_sample",
+      "particle_index": 0,
+      "quantity": "total_energy",
+      "sample_index": 40
+    }
+  ],
+  "notes": "Illustrative specified SI inputs, prescribed fixed field, one independent nonrelativistic test charge. No answer encoded; reference values are calculated separately in tests."
+}
