@@ -1,0 +1,57 @@
+{
+  "pilot_version": 1,
+  "pilot_id": "developer-authored-illustrative-transfer-01",
+  "provenance": {
+    "basis": "reviewed post-merge E1/G1/T1 saved scenario ensembles, not blind teacher inputs",
+    "qualified_main_sha": "3f1ec44a54b24b9f8275a98abf81126a9386bf61",
+    "qualified_archive_sha256": {
+      "linux": "0654fa7d39249c4026945295ce15a18eae46a8598325e66d321cd515aa1e7f55",
+      "windows": "be72aef030afef113758a671aa93363b7e01af51ad9e79d942b91ea508c9a27e"
+    },
+    "authorship": "development-author-selected, retrospectively constructed from already observed E1/G1/T1 evidence",
+    "teacher_validation": "not_evaluated"
+  },
+  "questions": [
+    {
+      "id": "E1-signed-field-magnitude",
+      "question": "At the saved probe (1.5, -0.4, 1.4) m, which independent electric source replacement decreases the field magnitude relative to the common fresh baseline, and which increases it? Give the exact signed differences in N/C, not absolute field magnitudes.",
+      "case": "E1",
+      "member_ids": ["hypothesis-A", "hypothesis-B"],
+      "measurement_id": "field-magnitude",
+      "expected_global_status": "complete",
+      "expected_measurement_status": "ok",
+      "expected_unit": "N/C",
+      "expected_context": {"position_m": [1.5, -0.4, 1.4]},
+      "notes": "Both alternatives replace an original negative line with distinct illustrative positive-line sources. These are not sequential line moves or actual charging dynamics."
+    },
+    {
+      "id": "G1-absent-baseline-body",
+      "question": "In gravity hypothesis-B, can the saved position of the newly added body_4 be differenced against the fresh baseline at the requested time? State the actual original comparison outcome without inventing a baseline body or zero displacement.",
+      "case": "G1",
+      "member_ids": ["hypothesis-B"],
+      "measurement_id": "body-4-absent",
+      "expected_global_status": "partial",
+      "expected_measurement_status": "unavailable",
+      "expected_unit": null,
+      "expected_context": null,
+      "expected_code": "unknown_operand",
+      "notes": "Hypothesis-B adds body_4 and alters source_A mass. Its native run can be complete while the cross-scenario body_4 position comparison is unavailable; the missing left operand is not a numeric zero."
+    },
+    {
+      "id": "T1-static-potential-step",
+      "question": "At the same ordered from_m to to_m probe locations, report the saved signed change in the potential difference for each independent static shell-plus-point charge hypothesis, in volts. Do not attribute either whole difference to only the shell.",
+      "case": "T1",
+      "member_ids": ["hypothesis-A", "hypothesis-B"],
+      "measurement_id": "potential-step",
+      "expected_global_status": "complete",
+      "expected_measurement_status": "ok",
+      "expected_unit": "V",
+      "expected_context": {
+        "convention": "potential(to_m) - potential(from_m)",
+        "from_m": [0.4, 0.6, 0.3],
+        "to_m": [2.8, 0.25, 0.4]
+      },
+      "notes": "Each accepted hypothesis changes both original prescribed shell and central-point charges. The domain is static electric potential, not a conducting-shell polarization response."
+    }
+  ]
+}
