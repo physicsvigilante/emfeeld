@@ -88,6 +88,32 @@ def _number(value: Any, name: str, *, nonnegative: bool = False) -> float:
     return result
 
 
+
+def _same_saved_time(measured: Any, target: Any, *, duration_s: float, samples: int) -> bool:
+    """Compare an actual native saved time to its original requested instant.
+
+    Floating-point representation can differ by one ULP (e.g., a decimal
+    requested time versus an evenly spaced saved grid). A physical difference
+    of even 1e-13 s is NOT generally negligible; the old 1e-12 s absolute
+    tolerance could silently accept the wrong sampled instant.
+    """
+    import math
+    try:
+        actual = _number(measured, 'native saved time', nonnegative=True)
+        requested = _number(target, 'frozen saved time', nonnegative=True)
+    except ValueError:
+        return False
+    if actual == requested:
+        return True
+    if actual == 0 or requested == 0:
+        return False
+    spacing = duration_s / (samples - 1)
+    difference = abs(actual - requested)
+    return (math.isfinite(spacing) and spacing > 0
+            and difference <= min(math.ulp(actual), math.ulp(requested))
+            and difference < spacing / 4)
+
+
 def _three_vector(value: Any, name: str) -> None:
     if not isinstance(value, list) or len(value) != 3:
         raise ValueError(f'{name} must be a vector of three finite SI numbers')
@@ -295,7 +321,10 @@ def assess(lock: Path, packet_path: Path, output: Path) -> dict:
         for key, target in expected['context'].items():
             measured = actual.get(key)
             if key == 'time_s':
-                if type(measured) not in (int, float) or abs(measured - target) > 1e-12:
+                scene = packet['scene']
+                if not _same_saved_time(measured, target,
+                                        duration_s=scene['duration_s'],
+                                        samples=scene.get('samples', 401)):
                     issues.append(expected['id'] + ': actual saved time disagrees with frozen context')
             elif measured != target:
                 issues.append(expected['id'] + ': context mismatch for ' + key)
