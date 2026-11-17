@@ -1,0 +1,45 @@
+{
+  "trial_version": 1,
+  "id": "nasa-ion-grid-p1-public-rehearsal",
+  "source": {
+    "origin": "external_unverified",
+    "label": "NASA Space Math, The Mathematics of Ion Rocket Engines, page 64, Problem 1; https://spacemath.gsfc.nasa.gov/weekly/5Page64.pdf",
+    "question": "What will be the speed of the atom, in kilometers/hour, if the voltage grid of the ion engine is 1,300 volts?"
+  },
+  "givens": [
+    "NASA page 64 Problem 1: singly charged xenon ion, mass 2.2e-25 kg and charge +1.6e-19 C",
+    "NASA page 64 Problem 1: kinetic energy 0.5 m v^2, energy gain q times 1300-V potential drop",
+    "NASA page 64 Problem 2 separately supplies grid separation 0.7 mm; used only to instantiate the explicit trajectory"
+  ],
+  "assumptions": [
+    "Ion initially at rest before entering the acceleration gap; NASA wording does not fully specify the inlet speed",
+    "The grid is represented as a fixed prescribed uniform electric field over the gap and the ion is an independent nonrelativistic test particle",
+    "Only the particle flight within the grid gap is modeled; no charge cloud, collision, fringe field, source backreaction, or magnetic force"
+  ],
+  "illustrative_choices": [
+    "Choose positive x axis from injection to exit, launch at (0,0,0) m, x=0.0007 m exit, and potential reference zero at injection",
+    "Choose 21 evenly spaced saved samples including the exit crossing instant",
+    "Compute native sample exit time from the explicitly recorded prescribed-field assumptions; this is authored inverse algebra, not solved by native engine",
+    "Native speed is m/s; the original question requests km/hour, which requires an explicit separate 3.6 unit conversion",
+    "This is a public source-derived NON-BLIND rehearsal: the NASA PDF includes an answer key; the PDF bytes and independent provider identity are not authenticated by this local lock"
+  ],
+  "unresolved_information": [],
+  "requirements": [
+    "fixed_prescribed_sources",
+    "independent_nonrelativistic_test_particles"
+  ],
+  "requested_measurements": [
+    {
+      "id": "exit_speed_native",
+      "quantity": "speed at the grid exit, native SI value before conversion to requested km/hour",
+      "unit": "m/s",
+      "native_type": "trajectory_sample",
+      "native_quantity": "speed",
+      "context": {
+        "particle_index": 0,
+        "sample_index": 20,
+        "time_s": 3.2195317385273e-08
+      }
+    }
+  ]
+}

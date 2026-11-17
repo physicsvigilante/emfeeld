@@ -125,6 +125,44 @@ jobs:
           assert result['educational_usefulness'] == 'not_evaluated'
           print('question-first V1: 5 native measurements present, source bytes bound, interpretation not certified')
           PYTHON
+      - name: Public NASA ion-source question replay (non-blind evidence only)
+        run: |
+          set -euo pipefail
+          python verification/question_first_trial_v1.py freeze examples/nasa_ion_public_v0/question.json --output output/release-candidate/nasa-ion-public-v0/lock 2>&1 | tee output/release-candidate/nasa-ion-public-v0-freeze.log
+          python verification/question_first_trial_v1.py assess output/release-candidate/nasa-ion-public-v0/lock --packet examples/nasa_ion_public_v0/packet.json --output output/release-candidate/nasa-ion-public-v0/ci-replay 2>&1 | tee output/release-candidate/nasa-ion-public-v0-assess.log
+          python - <<'PYTHON'
+          import hashlib
+          import json
+          import math
+          from pathlib import Path
+          frozen = Path('examples/nasa_ion_public_v0')
+          root = Path('output/release-candidate/nasa-ion-public-v0')
+          lock, run = root/'lock', root/'ci-replay'
+          question = (frozen/'question.json').read_bytes()
+          packet = (frozen/'packet.json').read_bytes()
+          assert hashlib.sha256(question).hexdigest() == 'cd797751a84d86caa57c2024620215895c1414169c6682b96933e4b4cf25cc23'
+          assert hashlib.sha256(packet).hexdigest() == 'f86211065ec99e3e82181de256d321a6ebb054f9b397440996529a3ec6ccfeda'
+          assert (lock/'question.json').read_bytes() == (run/'question.json').read_bytes() == question
+          assert (lock/'receipt.json').read_bytes() == (frozen/'receipt.json').read_bytes()
+          assert (run/'packet.json').read_bytes() == packet
+          assessment = json.loads((run/'assessment.json').read_text(encoding='utf-8'))
+          native = json.loads((run/'native-result.json').read_text(encoding='utf-8'))
+          assert assessment['native_measurement_coverage'] == 'complete'
+          assert assessment['requested_observations'] == 1 and assessment['issues'] == []
+          assert assessment['interpretation_fidelity'] == 'not_verified'
+          assert assessment['independent_physics_correctness'] == 'not_evaluated'
+          assert assessment['educational_usefulness'] == 'not_evaluated'
+          assert hashlib.sha256((run/'native-result.json').read_bytes()).hexdigest() == assessment['native_report_sha256']
+          assert json.loads((run/'state.json').read_text(encoding='utf-8'))['execution_complete'] is True
+          assert native['status'] == 'ok' and len(native['results']) == 1
+          result = native['results'][0]
+          assert result['id'] == 'exit_speed_native' and result['status'] == 'ok'
+          assert result['quantity'] == 'speed' and result['unit'] == 'm/s'
+          assert result['sample_index'] == 20
+          assert math.isclose(result['time_s'], (2*0.0007/(1.6e-19*(1300/0.0007)/2.2e-25))**0.5, rel_tol=1e-14)
+          assert math.isclose(result['value'], math.sqrt(2*1.6e-19*1300/2.2e-25), rel_tol=1e-9)
+          print('NASA public-source NON-BLIND rehearsal: one native SI speed, interpretation not independently verified')
+          PYTHON
       - name: Validate, execute and export representative physics scenes
         run: |
           set -euo pipefail

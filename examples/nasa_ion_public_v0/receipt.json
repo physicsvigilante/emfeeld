@@ -1,0 +1,12 @@
+{
+  "receipt_version": 1,
+  "question_sha256": "cd797751a84d86caa57c2024620215895c1414169c6682b96933e4b4cf25cc23",
+  "trial_id": "nasa-ion-grid-p1-public-rehearsal",
+  "declared_origin": "external_unverified",
+  "requested_ids": [
+    "exit_speed_native"
+  ],
+  "source_authenticity": "not_authenticated",
+  "physical_interpretation": "not_verified",
+  "meaning": "Local byte checkpoint only; not a timestamped, independent or teacher-certified source"
+}
