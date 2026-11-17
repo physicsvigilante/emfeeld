@@ -56,7 +56,19 @@ def _zip_bytes(entries):
     'C:/absolute.txt', 'folder\\evil.txt'
 ])
 def test_pilot_refuses_archive_traversal_and_platform_paths(entry):
-    with zipfile.ZipFile(io.BytesIO(_zip_bytes([(entry,b'data')]))) as z:
+    # ZipInfo normalizes backslashes to forward slashes on Windows. Construct
+    # the literal raw unsafe ZIP header and restore its name to the metadata
+    # supplied to _safe_files if Python normalized it during reading. A safely
+    # normalized name is not evidence that the validator accepted a backslash.
+    encoded_name = entry.replace('\\', '/')
+    raw = _zip_bytes([(encoded_name,b'data')])
+    if '\\' in entry:
+        raw = raw.replace(encoded_name.encode(), entry.encode())
+        assert entry.encode() in raw
+    with zipfile.ZipFile(io.BytesIO(raw)) as z:
+        if '\\' in entry and z.infolist()[0].filename != entry:
+            assert z.infolist()[0].filename == encoded_name
+            z.infolist()[0].filename = entry
         with pytest.raises(ValueError,match='unsafe'):
             pilot._safe_files(z)
 
