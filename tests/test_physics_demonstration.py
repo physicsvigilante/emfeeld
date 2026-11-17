@@ -106,3 +106,30 @@ def test_exact_published_packet_replay(tmp_path):
     assert (output / "uniform_electric_v1/input.json").read_bytes() == PACKET.read_bytes()
     assert (output / "uniform_electric_v1/result.json").is_file()
     assert (output / "summary.json").is_file()
+
+def test_public_cli_validation_and_numerical_export(tmp_path):
+    """Exercise the exact documented CLI, not only the in-process packet API."""
+    import json
+    import subprocess
+    import sys
+
+    source_bytes = PACKET.read_bytes()
+    root = Path(__file__).resolve().parents[1]
+    base = [sys.executable, "-m", "emfeeld.observations", str(PACKET)]
+    validation = subprocess.run(base + ["--validate-only"], cwd=root,
+                                capture_output=True, text=True, encoding="utf-8")
+    assert validation.returncode == 0, validation.stderr
+    checked = json.loads(validation.stdout)
+    assert checked["valid_schema"] is True
+    assert checked["requests"] == 17
+    assert "NOT RUN" in checked["evaluation"]
+
+    output = tmp_path / "real-observations.json"
+    execution = subprocess.run(base + ["--output", str(output)], cwd=root,
+                               capture_output=True, text=True, encoding="utf-8")
+    assert execution.returncode == 0, execution.stderr
+    report = json.loads(execution.stdout)
+    assert report["status"] == "ok"
+    assert report["counts"]["requests"] == 17
+    assert report == json.loads(output.read_text(encoding="utf-8"))
+    assert PACKET.read_bytes() == source_bytes
