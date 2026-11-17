@@ -85,6 +85,22 @@ jobs:
         run: |
           set -euo pipefail
           python tools/replay_packets.py verification/v6_published.json --output output/release-candidate/replay-v6 2>&1 | tee output/release-candidate/replay.log
+      - name: Physics Demonstration V1 — exact analytical replay and archived evidence
+        run: |
+          set -euo pipefail
+          python tools/replay_packets.py verification/physics_demonstration_v1.json --output output/release-candidate/physics-demo-v1 2>&1 | tee output/release-candidate/physics-demo-v1.log
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root = Path('output/release-candidate/physics-demo-v1')
+          summary = json.loads((root / 'summary.json').read_text(encoding='utf-8'))
+          report = json.loads((root / 'uniform_electric_v1/result.json').read_text(encoding='utf-8'))
+          assert summary['passed'] is True and len(summary['cases']) == 1
+          assert len(summary['cases'][0]['checks']) == 64
+          assert report['status'] == 'ok' and report['counts']['requests'] == 17
+          assert all(row['status'] == 'ok' for row in report['results'])
+          print('Physics Demonstration V1: 17 native observations and 64 independently authored reference checks passed')
+          PY
       - name: Validate, execute and export representative physics scenes
         run: |
           set -euo pipefail
