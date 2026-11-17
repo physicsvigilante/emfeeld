@@ -101,6 +101,30 @@ jobs:
           assert all(row['status'] == 'ok' for row in report['results'])
           print('Physics Demonstration V1: 17 native observations and 64 independently authored reference checks passed')
           PY
+      - name: Question-first source checkpoint and actual native coverage evidence
+        run: |
+          set -euo pipefail
+          python verification/question_first_trial_v1.py freeze examples/question_first_v1/developer_question.json --output output/release-candidate/question-first-v1/lock 2>&1 | tee output/release-candidate/question-first-v1-freeze.log
+          python verification/question_first_trial_v1.py assess output/release-candidate/question-first-v1/lock --packet examples/question_first_v1/developer_packet.json --output output/release-candidate/question-first-v1/attempt 2>&1 | tee output/release-candidate/question-first-v1-assess.log
+          python - <<'PYTHON'
+          import hashlib
+          import json
+          from pathlib import Path
+          root = Path('output/release-candidate/question-first-v1')
+          lock = root/'lock'; run = root/'attempt'
+          receipt = json.loads((lock/'receipt.json').read_text(encoding='utf-8'))
+          result = json.loads((run/'assessment.json').read_text(encoding='utf-8'))
+          native = json.loads((run/'native-result.json').read_text(encoding='utf-8'))
+          assert hashlib.sha256((lock/'question.json').read_bytes()).hexdigest() == receipt['question_sha256']
+          assert (run/'question.json').read_bytes() == (lock/'question.json').read_bytes()
+          assert result['native_measurement_coverage'] == 'complete'
+          assert result['requested_observations'] == 5 and native['status'] == 'ok'
+          assert len(native['results']) == 5 and all(row['status'] == 'ok' for row in native['results'])
+          assert result['interpretation_fidelity'] == 'not_verified'
+          assert result['independent_physics_correctness'] == 'not_evaluated'
+          assert result['educational_usefulness'] == 'not_evaluated'
+          print('question-first V1: 5 native measurements present, source bytes bound, interpretation not certified')
+          PYTHON
       - name: Validate, execute and export representative physics scenes
         run: |
           set -euo pipefail
