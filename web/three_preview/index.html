@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EMFEELD · Three.js prototype</title><link rel="stylesheet" href="style.css">
+<script type="importmap">{"imports":{"three":"./vendor/three.module.js","three/addons/":"./vendor/addons/"}}</script>
+</head><body>
+<header><div class="eyebrow">EMFEELD / RENDERER PROOF OF CONCEPT — NOT A RELEASE</div><h1 id="title">Loading saved scene…</h1>
+<p>Real Three.js / WebGL. Orbit with the mouse or touch. Python computed the physics; this page only displays it.</p></header>
+<main><section class="stage"><div id="canvas"></div><div id="error" role="alert" hidden></div></section>
+<aside><label>Existing example <select id="scene" disabled></select></label>
+<p class="legend"><b>Gray:</b> sources and equal-length field-direction arrows.<br><b>Black:</b> calculated particle trajectories, not field lines.<br><b>Magenta:</b> schematic particle markers, not physical size or charge sign.</p>
+<label><input id="potential" type="checkbox" checked> Show potential slice</label><p id="range"></p>
+<p class="small">Slice colors interpolate exported scalar samples for display. Cells touching undefined samples are omitted—not replaced by zero.</p>
+<div class="controls"><button id="play" disabled>Play</button><button id="reset" disabled>Reset camera</button></div>
+<label>Saved sample <input id="frame" type="range" min="0" max="1" value="0" step="1" disabled></label>
+<output id="time"></output><pre id="positions"></pre><p class="small">A full replay takes 12 display seconds. Physical time is shown above. Replay selects saved samples; it does not integrate or interpolate motion.</p>
+<details><summary>Physical meaning and export provenance</summary><pre id="provenance"></pre><p id="notes"></p></details>
+</aside></main><script type="module" src="app.js"></script></body></html>
