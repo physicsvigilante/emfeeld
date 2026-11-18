@@ -45,6 +45,10 @@ def qualify(output):
             for widget in view.sliders:
                 assert widget.GetEnabled()
                 assert view.plot.renderers[1].HasViewProp(widget.GetRepresentation())
+            np.testing.assert_allclose(
+                [w.GetRepresentation().GetValue() for w in view.sliders],
+                [np.linalg.norm(view.model.charge_position_m)/view.model.inner_radius_m,
+                 view.theta,view.phi,view.isolated_Q*1e9],rtol=2e-14,atol=2e-14)
             model=view.model;R=model.inner_radius_m
             assert np.linalg.matrix_rank(view.inner_mesh.points)==3
             np.testing.assert_allclose(np.linalg.norm(view.inner_mesh.points,axis=1),1,atol=2e-12)

@@ -160,6 +160,7 @@ class CavityLesson:
         value=float(value)
         if not math.isfinite(value) or not 0<=value<=MAX_OFFSET:raise ValueError('offset outside V1 display range')
         self._update(charge_position_m=self._position(offset=value));self.offset=value
+        self.sliders[0].GetRepresentation().SetValue(value)
 
     def set_theta(self,value):
         # PyVista invokes callbacks once while installing each widget.
@@ -169,6 +170,7 @@ class CavityLesson:
         value=float(value)
         if not math.isfinite(value) or not 0<=value<=180:raise ValueError('polar angle outside [0,180]')
         self._update(charge_position_m=self._position(theta=value));self.theta=value
+        self.sliders[1].GetRepresentation().SetValue(value)
 
     def set_phi(self,value):
         # PyVista invokes callbacks once while installing each widget.
@@ -178,6 +180,7 @@ class CavityLesson:
         value=float(value)
         if not math.isfinite(value) or not -180<=value<=180:raise ValueError('azimuth outside [-180,180]')
         self._update(charge_position_m=self._position(phi=value));self.phi=value
+        self.sliders[2].GetRepresentation().SetValue(value)
 
     def set_Q_nC(self,value):
         # PyVista invokes callbacks once while installing each widget.
@@ -189,6 +192,10 @@ class CavityLesson:
         replace(self.model,mode='isolated',conductor_charge_C=q)
         self.isolated_Q=q
         if self.model.mode=='isolated':self._update(conductor_charge_C=q)
+        rep=self.sliders[3].GetRepresentation()
+        limit=self._Q_range()
+        rep.SetMinimumValue(-limit);rep.SetMaximumValue(limit)
+        rep.SetValue(q*1e9)
 
     def toggle_grounded(self):
         if self.model.mode=='isolated':self._update(mode='grounded',conductor_charge_C=0.0)
@@ -207,6 +214,8 @@ class CavityLesson:
         return {'cutaway':self.cutaway,'cutaway_is_not_physical_hole':True,
                 'field_lines_visible':self.show_lines,'surface_resolution':self.resolution,
                 'line_count':self.line_count,'isolated_Q_setting_C':self.isolated_Q,
+                'slider_values': [w.GetRepresentation().GetValue() for w in self.sliders],
+                'slider_order': ['offset_a_over_R','polar_deg','azimuth_deg','isolated_Q_nC'],
                 'coordinates':'x/R,y/R,z/R',
                 'camera': [list(row) for row in self.plot.renderers[0].camera_position],
                 'surface_color':'actual nC/m^2; symmetric automatic color range, read the legend',
