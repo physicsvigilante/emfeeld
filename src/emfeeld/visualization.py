@@ -9,7 +9,7 @@ Not a new source-authoring or evidence schema: a second renderer may consume
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from typing import Callable
 import warnings
 
@@ -161,10 +161,11 @@ class VisualizationData:
 
         Intended for a *future* consumer; not a simulation authoring packet.
         Physical fields and schematic glyphs have separate keys and meanings.
+        Exported metadata is detached too: edits cannot mutate frozen records.
         """
         return {
             "visualization_version": 1, "title": self.title,
-            "bounds_m": list(self.bounds_m), "units": vars(self.units),
+            "bounds_m": list(self.bounds_m), "units": asdict(self.units),
             "potential": {"role": self.potential.role, "unit": self.potential.unit,
                           "points_m": _json_array(self.potential.points_m),
                           "values": _json_array(self.potential.values),
@@ -177,12 +178,12 @@ class VisualizationData:
                           "unit_directions": _json_array(self.field.arrow_directions),
                           "display_length_m": self.field.arrow_length_m,
                           "not_calibrated_field_lines": True}},
-            "geometry": [vars(g) for g in self.geometry],
+            "geometry": [asdict(g) for g in self.geometry],
             "trajectories": [{"id": p.id, "role": p.role,
                               "positions_m": _json_array(p.positions_m),
                               "marker_radius_m": p.marker_radius_m,
                               "marker_role": p.marker_role} for p in self.trajectories],
-            "annotations": [vars(a) for a in self.annotations],
+            "annotations": [asdict(a) for a in self.annotations],
             "animation": {"duration_s": self.duration_s, "samples": self.samples,
                           "time_unit": "s", "role": "saved_trajectory_sample_display_only"},
             "has_uniform_source": self.has_uniform_source,

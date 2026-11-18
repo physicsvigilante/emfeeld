@@ -141,3 +141,14 @@ def test_unit_metadata_cannot_be_misrepresented_as_field_lines():
     assert encoded['potential']['unit'] == 'J/kg'
     assert encoded['field']['role'] == 'schematic_field_direction_glyphs_not_field_lines'
     assert encoded['animation']['role'] == 'saved_trajectory_sample_display_only'
+
+
+@pytest.mark.parametrize("section", ["units", "geometry", "annotations"])
+def test_portable_metadata_is_detached_from_frozen_snapshot(section):
+    data = build_visualization(_scene(PointSource('electric', 1e-9)), resolution=5)
+    before = json.dumps(data.to_dict(), allow_nan=False, sort_keys=True)
+    exported = data.to_dict()
+    target = exported[section] if section == "units" else exported[section][0]
+    key = {"units": "position", "geometry": "role", "annotations": "text"}[section]
+    target[key] = "renderer-local edit"
+    assert json.dumps(data.to_dict(), allow_nan=False, sort_keys=True) == before
