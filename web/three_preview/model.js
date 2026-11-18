@@ -62,3 +62,11 @@ export function potentialTriangles(d) {
   }
   return {triangles,omitted_cells:omitted};
 }
+
+export function replayIndex(startIndex, elapsedMs, samples, replaySeconds=12) {
+  if (!Number.isInteger(startIndex) || !Number.isInteger(samples) || samples<2
+      || startIndex<0 || startIndex>=samples || !Number.isFinite(elapsedMs)
+      || !Number.isFinite(replaySeconds) || replaySeconds<=0) throw Error('Invalid display clock');
+  // A RAF timestamp can precede a click's performance.now() within that frame.
+  return Math.min(samples-1,startIndex+Math.floor(Math.max(0,elapsedMs)/(1000*replaySeconds)*(samples-1)));
+}

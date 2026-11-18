@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {displayTransform,toDisplay,savedFrame,potentialTriangles,validateSnapshot} from './model.js';
+import {displayTransform,toDisplay,savedFrame,potentialTriangles,validateSnapshot,replayIndex} from './model.js';
 const fixture=()=>({visualization_version:1,title:'test',bounds_m:[10,14,20,24,30,34],
  units:{position:'m',time:'s',field:'N/C',potential:'V'},
  animation:{duration_s:2,samples:3,role:'saved_trajectory_sample_display_only'},geometry:[],annotations:[],missing_geometry:[],
@@ -13,3 +13,4 @@ test('potential corner values follow x-fastest order',()=>{const {triangles,omit
 test('null potential creates a hole, not a zero',()=>{const d=fixture();d.potential.values[1]=null;assert.deepEqual(potentialTriangles(d),{triangles:[],omitted_cells:1});assert.equal(d.potential.values[1],null);});
 test('valid electric and gravity units admitted',()=>{const d=fixture();assert.equal(validateSnapshot(d),d);d.units.field=d.field.unit='m/s²';d.units.potential=d.potential.unit='J/kg';assert.equal(validateSnapshot(d),d);});
 test('malformed versions/units/roles/timeline refused',()=>{for(const alter of [d=>d.visualization_version=2,d=>d.units.position='cm',d=>d.trajectories[0].role='field_line',d=>d.animation.samples=9,d=>d.field.schematic_arrows.unit_directions[0]=[0,0,0],d=>d.potential.sample_order='row_major',d=>d.potential.values[0]=Infinity]){const d=fixture();alter(d);assert.throws(()=>validateSnapshot(d));}});
+test('display clock never selects a negative or out-of-range sample',()=>{assert.equal(replayIndex(0,-1,401),0);assert.equal(replayIndex(0,0,401),0);assert.equal(replayIndex(0,6000,401),200);assert.equal(replayIndex(20,-2,401),20);assert.equal(replayIndex(20,20000,401),400);assert.throws(()=>replayIndex(0,NaN,401));});

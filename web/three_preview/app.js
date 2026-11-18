@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { validateSnapshot, displayTransform, toDisplay, savedFrame, potentialTriangles } from './model.js';
+import { validateSnapshot, displayTransform, toDisplay, savedFrame, potentialTriangles, replayIndex } from './model.js';
 
 const $=id=>document.getElementById(id), host=$('canvas');
 let data, transform, sourceRecord, group, markers=[], arrows=[], potentialMesh, lastIndex=0;
@@ -145,7 +145,7 @@ try{
     omitted_cells:omitted,source:structuredClone(sourceRecord),camera:camera.position.toArray()}),
     setFrame};
   function tick(now){requestAnimationFrame(tick);
-    if(playing){const next=Math.min(data.animation.samples-1,startIndex+Math.floor((now-startMs)/12000*(data.animation.samples-1)));
+    if(playing){const next=replayIndex(startIndex,now-startMs,data.animation.samples);
       if(next!==lastIndex)setFrame(next);if(next===data.animation.samples-1){playing=false;$('play').textContent='Play';}}
     controls.update();renderer.render(world,camera);
   }
