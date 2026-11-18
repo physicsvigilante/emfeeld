@@ -112,3 +112,21 @@ def test_invalid_control_is_transactional(view):
         assert view.state==before
     with pytest.raises(ValueError):view.set_coordinate(0,1e7)
     assert view.state==before
+
+
+def test_outline_is_actual_rotated_cube_not_world_bounding_box(view):
+    view.set_yaw(35);view.set_tilt(20)
+    view.toggle_move_surface();view.set_coordinate(1,.2)
+    mesh=view.outline_mesh
+    assert mesh.n_points==8 and mesh.n_cells==12
+    world=mesh.points*view.unit+view.origin
+    local=(world-np.asarray(view.state.surface.center_m))@np.asarray(view.state.surface.rotation)
+    local/=view.state.scale_m
+    np.testing.assert_allclose(np.abs(local),1,atol=1e-14)
+    for cell in mesh.lines.reshape(-1,3):
+        assert cell[0]==2
+        delta=np.abs(local[cell[1]]-local[cell[2]])
+        assert np.count_nonzero(delta>1e-12)==1
+        assert max(delta)==pytest.approx(2)
+    view.toggle_shape()
+    assert view.outline_mesh is None

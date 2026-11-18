@@ -222,7 +222,18 @@ class GaussLesson:
                 opacity=.48,show_edges=False,scalar_bar_args={'title':'Local E dot n [N/C]',
                 'color':'#17394d','position_y':.10,'position_x':.15,'width':.70,'height':.06})
         else:p.add_mesh(self.visible_mesh,color='lightgray',opacity=.4)
-        p.add_mesh(display.outline(),color='#647383',line_width=1)
+        # A world-axis bounding box is NOT the Gaussian surface. Draw only
+        # the real rotated cube edges; a sphere has no auxiliary cube around it.
+        self.outline_mesh = None
+        if isinstance(self.state.surface, GaussianCube):
+            corners = np.array([[x,y,z] for x in (-1.,1.) for y in (-1.,1.) for z in (-1.,1.)])
+            edges = [(i,j) for i in range(8) for j in range(i+1,8)
+                     if np.count_nonzero(corners[i] != corners[j]) == 1]
+            world = (np.asarray(self.state.surface.center_m)
+                     + self.state.scale_m * (corners @ np.asarray(self.state.surface.rotation).T))
+            self.outline_mesh = pv.PolyData((world-self.origin)/self.unit,
+                lines=np.c_[np.full(12,2),np.asarray(edges)].ravel())
+            p.add_mesh(self.outline_mesh,color='#647383',line_width=1)
         self.arrow_meshes=[]
         if self.fields is not None:
             indices=np.linspace(0,len(self.probes)-1,12,dtype=int)
