@@ -153,21 +153,37 @@ class CavityLesson:
         if not self._building:self.redraw()
 
     def set_offset(self,value):
+        # PyVista invokes callbacks once while installing each widget.
+        # Opening the viewer must preserve the exact authored equilibrium.
+        if self._building:
+            return
         value=float(value)
         if not math.isfinite(value) or not 0<=value<=MAX_OFFSET:raise ValueError('offset outside V1 display range')
         self._update(charge_position_m=self._position(offset=value));self.offset=value
 
     def set_theta(self,value):
+        # PyVista invokes callbacks once while installing each widget.
+        # Opening the viewer must preserve the exact authored equilibrium.
+        if self._building:
+            return
         value=float(value)
         if not math.isfinite(value) or not 0<=value<=180:raise ValueError('polar angle outside [0,180]')
         self._update(charge_position_m=self._position(theta=value));self.theta=value
 
     def set_phi(self,value):
+        # PyVista invokes callbacks once while installing each widget.
+        # Opening the viewer must preserve the exact authored equilibrium.
+        if self._building:
+            return
         value=float(value)
         if not math.isfinite(value) or not -180<=value<=180:raise ValueError('azimuth outside [-180,180]')
         self._update(charge_position_m=self._position(phi=value));self.phi=value
 
     def set_Q_nC(self,value):
+        # PyVista invokes callbacks once while installing each widget.
+        # Opening the viewer must preserve the exact authored equilibrium.
+        if self._building:
+            return
         q=float(value)*1e-9
         # Validate even while grounded; this is the stored isolated-mode setting.
         replace(self.model,mode='isolated',conductor_charge_C=q)

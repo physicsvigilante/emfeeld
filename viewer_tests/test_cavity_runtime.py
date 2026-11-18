@@ -26,11 +26,12 @@ def test_camera_cutaway_and_current_state_snapshot(tmp_path):
     source=ConductorCavity();view=CavityLesson(source,off_screen=True,line_count=8,resolution=24)
     try:
         view.plot.show(interactive=False,auto_close=False)
+        assert view.model==source
         view.plot.subplot(0,0);view.plot.camera.azimuth+=40
-        before=np.array(view.plot.camera_position)
+        before=np.array(list(view.plot.camera_position),dtype=float)
         probe=source.field([0,.2,.1])
         view.toggle_cutaway()
-        np.testing.assert_allclose(view.plot.renderers[0].camera_position,before)
+        np.testing.assert_allclose(list(view.plot.renderers[0].camera_position),before)
         np.testing.assert_array_equal(probe,view.model.field([0,.2,.1]))
         view.sliders[0].GetRepresentation().SetValue(.8)
         view.sliders[0].InvokeEvent(vtkCommand.EndInteractionEvent)
