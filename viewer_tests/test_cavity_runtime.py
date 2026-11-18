@@ -27,6 +27,9 @@ def test_camera_cutaway_and_current_state_snapshot(tmp_path):
     try:
         view.plot.show(interactive=False,auto_close=False)
         assert view.model==source
+        for widget in view.sliders:
+            assert widget.GetEnabled()
+            assert view.plot.renderers[1].HasViewProp(widget.GetRepresentation())
         view.plot.subplot(0,0);view.plot.camera.azimuth+=40
         before=np.array(list(view.plot.camera_position),dtype=float)
         probe=source.field([0,.2,.1])
@@ -43,6 +46,9 @@ def test_camera_cutaway_and_current_state_snapshot(tmp_path):
         assert report['original_input_equals_current_state'] is False
         assert not view.exterior_paths
         assert report['display']['cutaway'] is False
+        for widget in view.sliders:
+            assert widget.GetEnabled()
+            assert view.plot.renderers[1].HasViewProp(widget.GetRepresentation())
     finally:view.plot.close()
 
 

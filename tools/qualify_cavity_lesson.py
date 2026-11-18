@@ -42,6 +42,9 @@ def qualify(output):
                 view.set_theta(45);view.set_phi(35);view.toggle_cutaway()
                 view.plot.subplot(0,0);view.plot.camera.azimuth+=60
                 assert not view.cutaway and all(abs(x)>0 for x in view.model.charge_position_m)
+            for widget in view.sliders:
+                assert widget.GetEnabled()
+                assert view.plot.renderers[1].HasViewProp(widget.GetRepresentation())
             model=view.model;R=model.inner_radius_m
             assert np.linalg.matrix_rank(view.inner_mesh.points)==3
             np.testing.assert_allclose(np.linalg.norm(view.inner_mesh.points,axis=1),1,atol=2e-12)

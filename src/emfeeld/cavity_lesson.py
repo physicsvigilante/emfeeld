@@ -114,8 +114,8 @@ class CavityLesson:
         self.phi=math.degrees(math.atan2(float(a[1]),float(a[0]))) if self.offset else 0.0
         self.plot=pv.Plotter(shape=(1,2), col_weights=(0.72,0.28),
                             border=False, window_size=(1400,900),off_screen=off_screen)
-        self.plot.subplot(0,0);self.plot.set_background('white')
-        self.plot.subplot(0,1);self.plot.set_background('#f1f5f8')
+        self.plot.subplot(0,0);self.plot.set_background('white',all_renderers=False)
+        self.plot.subplot(0,1);self.plot.set_background('#f1f5f8',all_renderers=False)
         self._building=True
         self.sliders=[]
         specs=[(self.set_offset,(0,MAX_OFFSET),self.offset,'Charge offset a/R',.27),
@@ -226,7 +226,10 @@ class CavityLesson:
         p=self.plot;m=self.model;pv=self.pv
         p.subplot(0,0)
         camera=p.camera_position if not reset_camera else None
-        p.clear()
+        # Clear only the 3D renderer. Plotter.clear() also removes the right
+        # panel's slider representations, even when callback objects still exist.
+        p.renderer.clear()
+        p.scalar_bars.clear()
         R=m.inner_radius_m;b=m.outer_radius_m/R
         inner=self._surface(1);outer=self._surface(b)
         name='Surface charge [nC/m^2]'
@@ -257,7 +260,7 @@ class CavityLesson:
             p.add_mesh(poly,color='#d99b17',line_width=2,name=f'cavity_line_{i}')
             j=len(pts)//2
             direction=pts[min(j+1,len(pts)-1)]-pts[max(0,j-1)]
-            arrow=pv.Arrow(start=pts[j],direction=direction,scale=.055)
+            arrow=pv.Arrow(start=pts[j],direction=direction,scale=.12,tip_radius=.18)
             p.add_mesh(arrow,color='#b67b08',name=f'cavity_arrow_{i}')
         if self.show_lines and m.outer_charge_C:
             for i,n in enumerate(seed_directions(16)):
@@ -265,9 +268,9 @@ class CavityLesson:
                 if m.outer_charge_C<0:pts=pts[::-1].copy()
                 self.exterior_paths.append(pts.copy())
                 p.add_mesh(pv.lines_from_points(pts),color='#6d7682',line_width=1.5,name=f'outer_line_{i}')
-                p.add_mesh(pv.Arrow(start=pts.mean(axis=0),direction=pts[1]-pts[0],scale=.065),
+                p.add_mesh(pv.Arrow(start=pts.mean(axis=0),direction=pts[1]-pts[0],scale=.12,tip_radius=.18),
                            color='#6d7682',name=f'outer_arrow_{i}')
-        p.add_text('CONDUCTOR CAVITY | JEE\nAnalytic electrostatics, sampled 3D display',
+        p.add_text('JEE CONDUCTOR CAVITY\nAnalytic electrostatics, sampled 3D display',
                    name='title',font_size=14,color='#17394d')
         p.add_text('Cutaway is only a view: the conductor is still CLOSED.\n'
                    'Curves show E direction, not particle motion or calibrated flux.',
