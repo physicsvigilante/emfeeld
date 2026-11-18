@@ -28,7 +28,7 @@ def make_plotter(scene, *, resolution=41, off_screen=False, replay_seconds=12.0,
     try:
         import pyvista as pv
     except ImportError as exc:
-        raise RuntimeError('3D viewer requires: python -m pip install -e "[view]"') from exc
+        raise RuntimeError('3D viewer requires: python -m pip install -e ".[view]"') from exc
     if type(resolution) is not int or not 5 <= resolution <= 101:
         raise ValueError("resolution must be an integer from 5 through 101")
     replay = PlaybackState(scene.duration_s, scene.samples, replay_seconds=replay_seconds)
