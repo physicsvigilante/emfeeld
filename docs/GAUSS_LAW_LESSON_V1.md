@@ -1,9 +1,11 @@
-# JEE 3D Gauss-law lesson V1 — review candidate
+# JEE 3D Gauss-law lesson V1
 
-Tracks Issue #46 / draft PR #47. This is an opt-in lesson, not a new native
-observation-packet request, conductor solver or released physics certification.
-Author tests and automated graphics do not replace independent R2 review,
-actual-main release qualification, human Windows operation or a teacher trial.
+The bounded physics core was independently reviewed and released through
+PR #47 / Issue #46. The presentation follow-up described below is tracked by
+Issue #48; its own PR/release state determines when those refinements ship.
+This opt-in lesson is not a new native observation-packet request or conductor
+solver. Automated graphics and technical review do not establish human Windows
+operation or classroom effectiveness.
 
 ## Run
 
@@ -134,3 +136,41 @@ orientation, real arrow geometry and current-state snapshots.
 `tools/qualify_gauss_lesson.py` retains eight actual production scenes.
 Full existing release workflows remain unchanged; a separate Gauss-lesson
 workflow collects source, tests and screenshots on PRs and main pushes.
+
+
+## Sampling caution and supported window layout (Issue #48)
+
+The sphere panel shows a prominent **SAMPLING CAUTION** when
+
+`abs(sampled_total - exact_total) > 0.01 * sum(abs(q_i)) / epsilon_0`.
+
+This 1% threshold is a **teaching attention rule**, not a solver tolerance,
+rigorous error bound, or measurement acceptance test. The scale includes all
+prescribed charges (inside and outside), so the comparison remains defined
+when enclosed net charge is zero. All-zero charges give zero scale and no
+warning; there is no division by net flux. Opposite-sign sampling errors can
+cancel: **absence of a banner is not an accuracy certificate**. Local surface
+samples can be poorly resolved even when the total discrepancy is small.
+
+Exact total, sampled total and signed sample-minus-exact discrepancy remain
+unchanged. Refinement can still leave a large discrepancy near the surface.
+The warning is hidden during prediction, cleared for undefined boundary
+configurations, and never applied to the analytic cube-face integrals.
+No source distance cutoff, smoothing, rescaling or extra field solver is added.
+
+The supported minimum render-window size is **840 x 560 pixels**, with
+**1440 x 960** as the default. Text size adapts on real render-window resize;
+resizing annotations does not recalculate flux or alter geometry or camera.
+The scalar bar, directions inset and keyboard instructions have distinct
+regions; a wider results panel and larger slider titles improve legibility.
+Text/slider values are formatted for display, not full-precision input records;
+near-surface 0.9999 and 1.0001 positions remain visibly distinct. The original
+SI values remain in `lesson.json` and the current-state receipts.
+
+Snapshots additionally record actual window size, annotation font settings and
+the display-only caution criterion/visibility. Numerical physics, availability,
+original input preservation and protected-output rules remain the same.
+`tools/qualify_gauss_usability.py` captures six actual production scenes,
+including near-inside/outside, zero enclosed net charge, boundary refusal and
+an off-centre cube at reduced size. Offscreen checks are not manual Windows
+acceptance. Windows below the stated minimum are not qualified for legibility.
