@@ -48,9 +48,13 @@ def qualify(output):
                 # Widget coordinates are relative to this renderer's viewport,
                 # not the entire window. Keep useful span and label margins.
                 rep=widget.GetRepresentation()
-                left=rep.GetPoint1Coordinate().GetValue()
-                right=rep.GetPoint2Coordinate().GetValue()
-                assert .08 <= left[0] <= .2 and .8 <= right[0] <= .92
+                viewport=view.plot.renderers[1].GetViewport()
+                span=np.array([viewport[2]-viewport[0],viewport[3]-viewport[1]])
+                # PyVista converts supplied panel-relative positions to
+                # normalized-display spans before assigning VTK coordinates.
+                left=np.array(rep.GetPoint1Coordinate().GetValue()[:2])/span
+                right=np.array(rep.GetPoint2Coordinate().GetValue()[:2])/span
+                assert .08 <= left[0] <= .2 and .8 <= right[0] <= .92, (left,right,viewport)
                 assert right[0]-left[0] >= .6
                 assert .06 <= left[1] <= .48 and left[1]==right[1]
             np.testing.assert_allclose(
