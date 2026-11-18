@@ -1,4 +1,4 @@
-"""Retain ten actual dipole scenes; automation is not teacher acceptance."""
+"""Retain fourteen actual dipole scenes; automation is not teacher acceptance."""
 import argparse
 from dataclasses import replace
 import hashlib
@@ -32,11 +32,23 @@ def main(argv=None):
         ("prediction",base,(840,560),"predict"),
         ("translated_origin",base,(840,560),"translate"),
     ]
+    for size in [(840,560),(1440,960)]:
+        for button in ("1","3"):
+            cases.append((f"noncardinal_key{button}_{size[0]}",base,size,button))
     report=[]
     for name,state,size,action in cases:
         v=DipoleLesson(state,off_screen=True,window_size=size)
         try:
             v.plot.show(auto_close=False,interactive=False)
+            if action in ("1","3"):
+                from vtkmodules.vtkCommonCore import vtkCommand
+                for index,value in [(2,75.),(3,40.)]:
+                    widget=v.sliders[index]
+                    widget.GetRepresentation().SetValue(value)
+                    widget.InvokeEvent(vtkCommand.EndInteractionEvent)
+                for button in ("b",action):
+                    v.plot.iren.interactor.SetKeyEventInformation(0,0,button,0,button)
+                    v.plot.iren.interactor.InvokeEvent("KeyPressEvent")
             if action=="change":v.set_dipole_polar(100.);v.set_dipole_azimuth(-35.)
             if action=="predict":v.toggle_values()
             if action=="translate":v.translate_pair();v.move_origin()

@@ -134,10 +134,38 @@ energy gradients/work signs, zero cases and schema refusals.
 `tests/test_dipole_io.py` checks bytes, current state, unavailable angles/work,
 output protection and failures. `viewer_tests/test_dipole_runtime.py` executes
 real widgets, geometry, resize, camera and snapshot checks.
-`tools/qualify_dipole_lesson.py` retains ten actual production scenes; the
+`tools/qualify_dipole_lesson.py` retains fourteen actual production scenes; the
 dedicated workflow also preserves original source and tests.
 
 Author checks are not independent R2 review. Keep the feature draft/unmerged
 until exact-head independent physics/graphics review and all premerge gates.
 Guarded integration and new actual-main qualification remain separate.
 No teacher usefulness, unseen-JEE success or free-rotation capability is claimed.
+
+## Requested presets and representational precision (R2-01)
+
+Keys 1/3 request ideal parallel/antiparallel orientations. Normalizing a generic
+field and rounding endpoint coordinates can leave a small, signed torque in the
+represented pose. The physics report is unchanged: the residual remains nonzero
+and its computed classification remains `not_equilibrium`. The UI now labels
+this as a **requested preset with rounded coordinates**, describes the ideal
+zero-torque stable/unstable target separately, and omits the misleading fixed-size
+torque arrow, plane and rotation cue for this known construction residue only.
+
+The display records the exact endpoint/field signature when a preset is requested.
+It also checks direction and a coordinate-roundoff guard
+`8*eps*(1+(norm(r_plus)+norm(r_minus))/separation)`. This is not a global torque
+threshold or a physical equilibrium criterion. An arbitrary authored near-collinear
+state, even one with identical represented coordinates, has no preset provenance:
+its signed nonzero torque and schematic cue remain visible. Origin changes,
+charge changes and view-only operations retain applicable construction history;
+new endpoint/field coordinates or reset invalidate it. Zero charge/field retain
+no-preferred-orientation semantics; exact axis alignment stays exact.
+
+Snapshot `display.preset_alignment` distinguishes the requested target, actual
+stored equilibrium and residual, and cue suppression. No underlying physics,
+NPZ torque, work value or source-input byte is altered. Prediction hides the
+preset explanation as well as numerical answers. New real-VTK regressions and
+four additional captured scenes exercise non-cardinal field sliders and keys
+1/3 at 840x560 and 1440x960. Independent review of this correction is still a
+separate requirement, not supplied by its author tests.

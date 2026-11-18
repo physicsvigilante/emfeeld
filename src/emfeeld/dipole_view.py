@@ -65,6 +65,7 @@ class DipoleLesson:
         self.charge_unit=state.charge_C or 1e-9
         self.show_values=True
         self.control_notice=""
+        self._alignment_request=None
         self.dipole_angles=_angles(state.separation_vector_m)
         self.field_angles=_angles(state.external_field_N_C)
         self.plot=pv.Plotter(shape=(1,2),col_weights=(.62,.38),border=False,
@@ -113,14 +114,56 @@ class DipoleLesson:
             self.control_notice="Control refused: no valid pose for this key."
             self.redraw()
 
-    def _apply(self,proposed):
+    @staticmethod
+    def _alignment_signature(state):
+        # Charge/origin do not change alignment; positions/E do.
+        return (state.positive_position_m, state.negative_position_m, state.external_field_N_C)
+
+    def _preset_alignment_info(self):
+        """Display provenance only; never change measure(), torque or equilibrium.
+
+        Only a known 1/3 key construction may hide a roundoff-sized cue. An
+        independently authored identical pose has no such construction history.
+        """
+        request=self._alignment_request
+        if (request is None or request[1]!=self._alignment_signature(self.state)
+                or not self.state.charge_C or not norm(self.state.external_field_N_C)):
+            return None
+        direction=self.state.separation_vector_m/self.state.separation_m
+        e=np.asarray(self.state.external_field_N_C)/norm(self.state.external_field_N_C)
+        sine=norm(np.cross(direction,e))
+        # Coordinate-subtraction/normalization roundoff guard, NOT a torque
+        # threshold or a new physical equilibrium/measurement acceptance rule.
+        guard=8*np.finfo(float).eps*(1+(norm(self.state.positive_position_m)
+                    +norm(self.state.negative_position_m))/self.state.separation_m)
+        sign=1 if request[0]=="parallel" else -1
+        if sine>guard or sign*float(np.dot(direction,e))<=0:
+            return None
+        residual=bool(norm(self.report["torque_N_m"]))
+        return {"requested":request[0],
+                "status":"rounded_coordinates" if residual else "exact_equilibrium",
+                "ideal_target":"stable_parallel" if sign>0 else "unstable_antiparallel",
+                "stored_equilibrium":self.report["equilibrium"],
+                "residual_torque_N_m":list(self.report["torque_N_m"]),
+                "direction_sine_residual":sine,"construction_roundoff_guard":guard,
+                "torque_cues_suppressed":bool(residual and self.show_values),
+                "physical_measurements_changed":False}
+
+    def _apply(self,proposed,*,alignment_request=None):
         if not isinstance(proposed,DipoleState):raise ValueError("invalid physical state")
         measure(proposed)  # fail precision/refusal before replacing live state
         previous=self.state
+        previous_request=self._alignment_request
         self.state=proposed
+        if alignment_request in ("parallel","antiparallel"):
+            self._alignment_request=(alignment_request,self._alignment_signature(proposed))
+        elif (self._alignment_request is not None and
+              self._alignment_request[1]!=self._alignment_signature(proposed)):
+            self._alignment_request=None
         try:self.redraw()
         except Exception:
             self.state=previous
+            self._alignment_request=previous_request
             self.redraw()
             raise
 
@@ -199,7 +242,8 @@ class DipoleLesson:
             basis=np.eye(3)[int(np.argmin(abs(u)))]
             u=np.cross(u,basis);u/=norm(u)
         center=self.state.center_m;delta=self.state.separation_m*u
-        self._apply(replace(self.state,positive_position_m=center+delta/2,negative_position_m=center-delta/2))
+        self._apply(replace(self.state,positive_position_m=center+delta/2,negative_position_m=center-delta/2),
+                    alignment_request=kind)
         self.dipole_angles=_angles(self.state.separation_vector_m);self._sync_widgets()
 
     def set_work_reference(self):
@@ -209,6 +253,7 @@ class DipoleLesson:
         self.show_values=not self.show_values;self.redraw()
 
     def reset(self):
+        self._alignment_request=None
         self.state=self.reference=self.initial
         self.dipole_angles=_angles(self.state.separation_vector_m)
         self.field_angles=_angles(self.state.external_field_N_C)
@@ -261,6 +306,9 @@ class DipoleLesson:
         camera=None if reset_camera else p.camera_position
         p.renderer.clear()
         self.report=measure(self.state)
+        self.preset_alignment=self._preset_alignment_info()
+        suppress_torque_cue=bool(self.preset_alignment and
+                                self.preset_alignment["torque_cues_suppressed"])
         self.work=orientation_work(self.reference,self.state)
         center=self.state.center_m;length=self.state.separation_m
         self.display_origin=center;self.display_scale=length
@@ -283,8 +331,9 @@ class DipoleLesson:
             self._glyph("negative_force",minus,self.report["negative_force_N"],"N",.85,"#df831d")
             self._glyph("dipole_moment",-1.1*u,self.report["dipole_moment_C_m"],"C m",.55,"#2565a8")
             tau=np.asarray(self.report["torque_N_m"])
-            self._glyph("torque",np.zeros(3),tau,"N m",.95,"#8b4b9f")
-            if norm(tau):
+            if not suppress_torque_cue:
+                self._glyph("torque",np.zeros(3),tau,"N m",.95,"#8b4b9f")
+            if norm(tau) and not suppress_torque_cue:
                 n=tau/norm(tau);v=np.cross(n,u)
                 corners=.55*np.array([-u-v,u-v,u+v,-u+v])
                 self.plane_mesh=pv.PolyData(corners,faces=[4,0,1,2,3])
@@ -304,6 +353,14 @@ class DipoleLesson:
                                show_points=False,always_visible=True,text_color="#333333")
         self._text("title","DIPOLE: FORCE, TORQUE AND ENERGY",(.025,.98),"title")
         self._text("legend","Blue: p [C m]   Green: E [N/C]\nOrange: forces [N]   Purple: torque [N m]",(.025,.90),"help")
+        preset_note=""
+        if suppress_torque_cue:
+            requested=self.preset_alignment["requested"]
+            target="stable" if requested=="parallel" else "unstable"
+            preset_note=(f"Requested {requested}: rounded coordinates.\n"
+                         "Stored torque residual retained; cue hidden.\n"
+                         f"Ideal target: zero torque, {target} equilibrium.")
+        self._text("preset-note",preset_note,(.025,.80),"help",color="#6d3b80")
         self._text("instructions","Mouse: orbit. 1 / 2 / 3: parallel / perpendicular / antiparallel\n"
             "N reverse, Q charge, T translate, O origin\n"
             "V predict, B work reference, 0 reset\n"
@@ -332,7 +389,8 @@ class DipoleLesson:
                     f'Uext = {self.report["external_orientation_energy_J"]:+.7g} J',
                     "Angle = "+("unavailable (p or E is zero)" if self.report["angle_deg"] is None
                                  else f'{self.report["angle_deg"]:.7g} deg'),
-                    self.report["equilibrium"].replace("_"," "),
+                    ("Stored pose: not exact equilibrium" if suppress_torque_cue
+                     else self.report["equilibrium"].replace("_"," ")) ,
                     (f'Wext from ref = {self.work["external_work_J"]:+.6g} J'
                        if self.work["status"]=="available" else "Rotation work unavailable: q, d or E changed"),
                     "Field work = -Wext; B sets reference.",
@@ -348,6 +406,7 @@ class DipoleLesson:
 
     def display_state(self):
         return {"values_visible":self.show_values,
+                "preset_alignment":self._preset_alignment_info(),
                 "control_notice":self.control_notice,
                 "window_size_pixels":list(self.plot.window_size),
                 "minimum_supported_window_size_pixels":list(MINIMUM_WINDOW_SIZE),
