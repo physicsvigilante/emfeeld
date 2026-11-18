@@ -73,6 +73,8 @@ def qualify(output):
                 delta=np.diff(row['points_m'],axis=0)
                 e=model.field((row['points_m'][1:]+row['points_m'][:-1])/2)
                 assert (np.sum(delta*e,axis=1)>0).all()
+            for arrow in view.cavity_arrow_meshes:
+                assert (np.linalg.norm(arrow.points,axis=1)<1).all()
             for pts in view.exterior_paths:
                 assert (np.linalg.norm(pts,axis=1)>model.outer_radius_m/R).all()
             r=save_snapshot(model,output/name,lesson=view)

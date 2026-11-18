@@ -263,13 +263,19 @@ class CavityLesson:
                                always_visible=True,shape_opacity=.7)
         self.lines=trace_cavity_lines(m,count=self.line_count) if self.show_lines else []
         self.exterior_paths=[]
+        self.cavity_arrow_meshes=[]
         for i,line in enumerate(self.lines):
             pts=line['points_m']/R
             poly=pv.lines_from_points(pts)
             p.add_mesh(poly,color='#d99b17',line_width=2,name=f'cavity_line_{i}')
-            j=len(pts)//2
+            # Use half arc length rather than half the adaptive sample count;
+            # dense near-wall points must not pull the arrow into the metal.
+            arc=np.r_[0.0,np.cumsum(np.linalg.norm(np.diff(pts,axis=0),axis=1))]
+            j=min(int(np.searchsorted(arc,arc[-1]/2)),len(pts)-2)
             direction=pts[min(j+1,len(pts)-1)]-pts[max(0,j-1)]
-            arrow=pv.Arrow(start=pts[j],direction=direction,scale=.12,tip_radius=.18)
+            scale=min(.12,.35*(1-np.linalg.norm(pts[j])),.35*np.linalg.norm(pts[j]-a))
+            arrow=pv.Arrow(start=pts[j],direction=direction,scale=scale,tip_radius=.18)
+            self.cavity_arrow_meshes.append(arrow)
             p.add_mesh(arrow,color='#b67b08',name=f'cavity_arrow_{i}')
         if self.show_lines and m.outer_charge_C:
             for i,n in enumerate(seed_directions(16)):

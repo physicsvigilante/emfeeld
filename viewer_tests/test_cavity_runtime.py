@@ -64,3 +64,14 @@ def test_zero_charge_and_invalid_controller_setting():
         view.toggle_grounded()
         assert view.exterior_paths==[]
     finally:view.plot.close()
+
+
+def test_arrow_glyphs_cannot_enter_metal_at_extreme_admitted_offset():
+    view=CavityLesson(ConductorCavity(charge_position_m=(.9,0,0)),off_screen=True,line_count=8,resolution=16)
+    try:
+        for _ in range(2):
+            assert len(view.cavity_arrow_meshes)==8
+            for arrow in view.cavity_arrow_meshes:
+                assert (np.linalg.norm(arrow.points,axis=1)<1).all()
+            view.reverse_charge()
+    finally:view.plot.close()
