@@ -1,0 +1,87 @@
+name: PR44 offline PyVista provisioning (AUTHOR infrastructure, NOT review)
+
+on:
+  push:
+    branches: [support/pr44-offline-pyvista-review]
+    paths: [.github/workflows/pr44-offline-review-runtime.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  provision:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      PYVISTA_OFF_SCREEN: 'true'
+      VTK_DEFAULT_OPENGL_WINDOW: vtkEGLRenderWindow
+      LIBGL_ALWAYS_SOFTWARE: '1'
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.13.5'
+      - name: Obtain five original pure-Python wheels at previously recorded versions
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p output/pr44-runtime/wheels
+          printf '%s\n' 'pyvista==0.48.4' 'scooby==0.12.1' 'cyclopts==5.5.2' 'rich-rst==2.2.0' 'docstring-parser==0.18.0' > output/pr44-runtime/requirements-overlay.txt
+          python -m pip download --only-binary=:all: --no-deps --dest output/pr44-runtime/wheels -r output/pr44-runtime/requirements-overlay.txt 2>&1 | tee output/pr44-runtime/download.log
+          python - <<'PY'
+          import email, hashlib, json, os, platform, sys, zipfile
+          from pathlib import Path
+          root = Path('output/pr44-runtime')
+          records = []
+          wheels = sorted((root/'wheels').glob('*.whl'))
+          assert len(wheels) == 5
+          for wheel in wheels:
+              with zipfile.ZipFile(wheel) as z:
+                  assert z.testzip() is None
+                  name = next(n for n in z.namelist() if n.endswith('.dist-info/METADATA'))
+                  meta = email.message_from_bytes(z.read(name))
+                  assert not any(n.lower().endswith(('.ttf','.otf','.woff','.woff2')) for n in z.namelist())
+              records.append({'file': str(wheel.relative_to(root)), 'sha256': hashlib.sha256(wheel.read_bytes()).hexdigest(), 'bytes': wheel.stat().st_size, 'package': meta['Name'], 'version': meta['Version'], 'requires_dist': meta.get_all('Requires-Dist', [])})
+          manifest = {'purpose': 'AUTHOR runtime provisioning only; NOT independent review or source qualification', 'candidate_unchanged': 'e253d0acf15e7505f1da8ab95cb519b59b0d720b', 'candidate_tree': '8a4a14d70ba824e8a338add08356003e79a248bc', 'provisioning_commit': os.environ['GITHUB_SHA'], 'workflow_run_id': os.environ['GITHUB_RUN_ID'], 'python': sys.version, 'platform': platform.platform(), 'wheels': records, 'prerequisites': 'Existing compatible VTK, NumPy, matplotlib, Pillow, pooch, rich and their dependencies. Install these five wheels into a fresh isolated --target overlay with --no-index --no-deps. Do not alter the user environment.'}
+          (root/'manifest.json').write_text(json.dumps(manifest, indent=2)+'\n', encoding='utf-8')
+          (root/'SHA256SUMS').write_text(''.join(r['sha256']+'  '+r['file']+'\n' for r in records), encoding='utf-8')
+          PY
+      - name: Author-only dependency and offscreen renderer smoke (NO project tests)
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libegl1 libgl1-mesa-dri libopengl0
+          python -m pip install --find-links output/pr44-runtime/wheels 'pyvista==0.48.4' 'vtk==9.6.2' 'numpy==2.3.5' 'scipy==1.17.0' 'pytest==9.0.2' 'scooby==0.12.1' 'cyclopts==5.5.2' 'rich-rst==2.2.0' 'docstring-parser==0.18.0' 2>&1 | tee output/pr44-runtime/install-hosted.log
+          python -m pip freeze > output/pr44-runtime/environment-hosted.txt
+          python - <<'PY' 2>&1 | tee output/pr44-runtime/renderer-smoke.log
+          import hashlib, json, sys
+          from pathlib import Path
+          import pyvista as pv
+          import vtk
+          root = Path('output/pr44-runtime')
+          assert pv.__version__ == '0.48.4'
+          assert vtk.vtkVersion.GetVTKVersion() == '9.6.2'
+          p = pv.Plotter(off_screen=True, window_size=(400,300))
+          try:
+              p.add_mesh(pv.Sphere())
+              p.show(interactive=False, auto_close=False)
+              p.screenshot(str(root/'runtime-smoke.png'))
+          finally:
+              p.close()
+          record = {'purpose':'AUTHOR dependency smoke only; NO independent verdict and NO candidate tests', 'pyvista':pv.__version__, 'vtk':vtk.vtkVersion.GetVTKVersion(), 'python':sys.version, 'screenshot_sha256':hashlib.sha256((root/'runtime-smoke.png').read_bytes()).hexdigest()}
+          (root/'renderer-smoke.json').write_text(json.dumps(record, indent=2)+'\n', encoding='utf-8')
+          print(json.dumps(record))
+          PY
+      - name: Retain original package bytes and provisioning failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: pr44-offline-pyvista-${{ github.sha }}
+          path: output/pr44-runtime/
+          retention-days: 30
+          if-no-files-found: error
