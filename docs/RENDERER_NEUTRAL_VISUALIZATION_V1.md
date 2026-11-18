@@ -60,6 +60,35 @@ values; `json.dumps(data.to_dict(), allow_nan=False)` is supported. Snapshot
 creation is intentionally eager and small-scene oriented. It is **not** a
 streaming protocol or a promise of graphics performance for huge datasets.
 
+## Boundary corrections from independent review
+
+Direction validity is determined from finite components and a genuinely nonzero
+vector, not a squared norm that can overflow or underflow. Normal-scale vectors
+retain the original arithmetic for rendering parity. Outside its safe range,
+only the schematic direction is normalized after scaling by the largest absolute
+component. This also handles a finite vector whose magnitude exceeds float64.
+The original SI field and potential arrays are untouched; there is no new source
+cutoff, field rescaling, softening or solver tolerance. Undefined and exactly zero
+vectors still have no direction arrow. This is not arbitrary-scale certification
+of the analytic field laws or of every renderer's scalar-color implementation.
+
+The standalone builder validates and detaches all supplied trajectory position
+arrays **before** field sampling: each must contain exactly `scene.samples`
+finite real 3-vectors. Invalid shapes, missing positions or nonfinite data raise
+`ValueError` rather than exporting an unindexable animation. Solver-produced
+positions receive the same shape/finiteness check before snapshot return.
+Position-only records remain supported by this small presentation API; it does
+not certify source authenticity, velocities, energies, particle count, authored
+initial conditions or timestamps. `make_plotter(..., recorded=...)` continues
+using the existing, stronger `study.validate_recorded` guard for that full-scene
+contract. Neither validation reintegrates a valid recording.
+
+`tests/test_visualization_boundary_regressions.py` retains extreme-magnitude,
+subnormal, mixed-direction/missingness and malformed-recording regressions.
+The existing tests remain intact. Actual PyVista tests compare ordinary and
+extreme direction-glyph meshes and verify saved-frame playback independently of
+the data builder. Author checks and independent correction review are distinct.
+
 ## Adding a second renderer later
 
 A future browser adapter can consume `build_visualization(scene)` data, or a

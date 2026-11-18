@@ -52,6 +52,47 @@ def _array(values):
     return a
 
 
+def _direction_glyphs(vectors):
+    """Select finite nonzero fields; normalize drawing directions, not physics.
+
+    Retain legacy arithmetic at normal scales for exact rendering parity. At
+    extreme scales, divide by the largest component before taking the norm;
+    no square or unrepresentable physical magnitude is then needed.
+    """
+    vectors = np.asarray(vectors, dtype=float)
+    valid = np.isfinite(vectors).all(axis=1) & np.any(vectors != 0, axis=1)
+    selected = vectors[valid]
+    largest = np.max(np.abs(selected), axis=1)
+    limits = np.finfo(float)
+    ordinary = ((largest >= np.sqrt(limits.tiny)) &
+                (largest <= np.sqrt(limits.max) / 2))
+    directions = np.empty_like(selected)
+    # Insignificant component ratios/products may round below float64; the
+    # finite, nonzero largest component always survives. Raw fields are intact.
+    with np.errstate(under="ignore"):
+        normal = selected[ordinary]
+        directions[ordinary] = normal / np.linalg.norm(normal, axis=1)[:, None]
+        scaled = selected[~ordinary] / largest[~ordinary, None]
+        directions[~ordinary] = scaled / np.linalg.norm(scaled, axis=1)[:, None]
+    return valid, directions
+
+
+def _path_positions(trajectory, samples):
+    """Detach and validate the positions that every portable frame will index."""
+    message = f"trajectory positions must be {samples} finite real samples of shape ({samples}, 3)"
+    try:
+        raw = np.asarray(trajectory.position_m)
+        if raw.shape != (samples, 3) or raw.dtype.kind not in "fiu":
+            raise ValueError(message)
+        with np.errstate(over="ignore", invalid="ignore"):
+            positions = _array(raw)
+    except (AttributeError, TypeError, ValueError, OverflowError) as exc:
+        raise ValueError(message) from exc
+    if not np.isfinite(positions).all():
+        raise ValueError(message)
+    return positions
+
+
 def _json_array(values):
     """JSON has no NaN: undefined field probes are explicit null values."""
     a = np.asarray(values)
@@ -230,6 +271,14 @@ def build_visualization(scene, *, resolution=41, recorded=None,
     """
     if type(resolution) is not int or not 5 <= resolution <= 101:
         raise ValueError("resolution must be an integer from 5 through 101")
+    # Validate and detach *all* supplied position arrays before any field
+    # sampling. The standalone builder must never advertise unindexable frames.
+    saved_positions = None
+    if recorded is not None:
+        try:
+            saved_positions = tuple(_path_positions(t, scene.samples) for t in recorded)
+        except TypeError as exc:
+            raise ValueError("recorded trajectories must be an iterable of position records") from exc
     kind = scene.model.kind
     bounds = tuple(scene.bounds_m)
     a = np.asarray(bounds, dtype=float)
@@ -251,11 +300,9 @@ def build_visualization(scene, *, resolution=41, recorded=None,
     axes = [np.linspace(v0, v1, 7) for v0, v1 in zip(lower, upper)]
     points = np.stack(np.meshgrid(*axes, indexing="ij"), axis=-1).reshape(-1, 3)
     field_vectors = sampler(scene.model, points)
-    norm = np.linalg.norm(field_vectors, axis=1)
-    valid = np.isfinite(field_vectors).all(axis=1) & (norm > 0)
+    valid, directions = _direction_glyphs(field_vectors)
     field = FieldSamples(_array(points), _array(field_vectors), units.field,
-                         _array(points[valid]), _array(field_vectors[valid] / norm[valid, None]),
-                         span / 35)
+                         _array(points[valid]), _array(directions), span / 35)
 
     geometries = []
     missing = set()
@@ -272,9 +319,10 @@ def build_visualization(scene, *, resolution=41, recorded=None,
                 has_uniform = True
             geometries.append(geo)
 
-    values = scene.trajectories() if recorded is None else recorded
-    trajectories = tuple(TrajectoryVisual(f"particle_{i}", _array(t.position_m), 0.025 * span)
-                         for i, t in enumerate(values))
+    if saved_positions is None:
+        saved_positions = tuple(_path_positions(t, scene.samples) for t in scene.trajectories())
+    trajectories = tuple(TrajectoryVisual(f"particle_{i}", positions, 0.025 * span)
+                         for i, positions in enumerate(saved_positions))
     notes = []
     if trajectories:
         notes.extend((
