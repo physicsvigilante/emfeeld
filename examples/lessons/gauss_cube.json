@@ -1,0 +1,39 @@
+{
+  "gauss_lesson_version": 1,
+  "surface": {
+    "type": "cube",
+    "center_m": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "side_m": 2.0,
+    "rotation": [
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0
+      ]
+    ]
+  },
+  "charges": [
+    {
+      "charge_C": 1e-09,
+      "position_m": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    }
+  ]
+}
