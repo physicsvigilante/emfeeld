@@ -24,6 +24,27 @@ from .gauss_lesson import (GaussState, GaussianCube, GaussianSphere, HeldCharge,
 from .output_safety import protect_saved_evidence
 
 
+# A teaching attention threshold, NOT a numerical acceptance tolerance.
+# Sum of absolute source charges remains meaningful when net enclosed charge is 0.
+SAMPLING_CAUTION_FRACTION = 0.01
+MINIMUM_WINDOW_SIZE = (840, 560)
+
+
+def _sampling_caution(state, report):
+    """Read-only display advice; never changes availability, samples or exact flux."""
+    if not isinstance(state.surface, GaussianSphere) or report['status'] != 'available':
+        return None
+    scale = math.fsum(abs(c.charge_C) for c in state.charges) / epsilon_0
+    discrepancy = abs(report['sampling_error_N_m2_per_C'])
+    threshold = SAMPLING_CAUTION_FRACTION * scale
+    return {'large_discrepancy': discrepancy > threshold,
+            'absolute_discrepancy_N_m2_per_C': discrepancy,
+            'charge_flux_scale_N_m2_per_C': scale,
+            'attention_threshold_N_m2_per_C': threshold,
+            'threshold_fraction': SAMPLING_CAUTION_FRACTION,
+            'is_accuracy_certificate': False}
+
+
 def surface_mesh(state, pv, resolution):
     """Full closed mesh plus probes on the *analytic* surface, in SI coordinates."""
     s = state.surface
@@ -74,22 +95,25 @@ class GaussLesson:
         self.cutaway, self.show_values = False, True
         self.yaw, self.tilt = 0., 0.
         self.base_rotation = np.asarray(state.surface.rotation if isinstance(state.surface, GaussianCube) else np.eye(3))
-        self.plot = pv.Plotter(shape=(1,2), col_weights=(.68,.32), border=False,
+        self.plot = pv.Plotter(shape=(1,2), col_weights=(.62,.38), border=False,
                                window_size=(1440,960), off_screen=off_screen)
         self.plot.subplot(0,0); self.plot.set_background('white', all_renderers=False)
         self.plot.subplot(0,1); self.plot.set_background('#f2f5f8', all_renderers=False)
         self._building = True
         self.sliders = []
+        self._annotation_actors = {}
+        self._layout_pixels = None
+        self._scalar_bar = None
         specs = [(lambda v: self.set_coordinate(0,v),(-3,3),0,'x / initial scale'),
                  (lambda v: self.set_coordinate(1,v),(-3,3),0,'y / initial scale'),
                  (lambda v: self.set_coordinate(2,v),(-3,3),0,'z / initial scale'),
-                 (self.set_size,(.5,2),1,'Surface size / initial size'),
-                 (self.set_yaw,(-180,180),0,'Cube yaw [degrees]'),
-                 (self.set_tilt,(-90,90),0,'Cube tilt [degrees]')]
+                 (self.set_size,(.5,2),1,'Size / initial size'),
+                 (self.set_yaw,(-180,180),0,'Cube yaw [deg]'),
+                 (self.set_tilt,(-90,90),0,'Cube tilt [deg]')]
         self.slider_titles=[spec[3] for spec in specs]
         for i,(callback,limits,value,title) in enumerate(specs):
             self.sliders.append(self.plot.add_slider_widget(callback,limits,value=value,title=title,
-                pointa=(.12,.47-i*.08),pointb=(.88,.47-i*.08),title_height=.016,
+                pointa=(.12,.47-i*.08),pointb=(.88,.47-i*.08),title_height=.024,
                 fmt='%.3f',interaction_event='end',color='#17394d',
                 slider_width=.018,tube_width=.004))
         for widget in self.sliders:
@@ -101,6 +125,9 @@ class GaussLesson:
             self.plot.add_key_event(key,callback)
         self._building = False
         self.redraw(reset_camera=True)
+        # VTK StartEvent covers native window resizes as well as offscreen renders.
+        # This callback changes annotation sizes only; it never recomputes physics.
+        self._resize_observer = self.plot.ren_win.AddObserver('StartEvent', self._update_annotation_layout)
 
     def _apply(self, proposed):
         old = self.state
@@ -197,10 +224,37 @@ class GaussLesson:
                 span=max(3.,abs(float(value))*1.2)
                 rep.SetMinimumValue(-span);rep.SetMaximumValue(span)
             rep.SetValue(float(value))
-            rep.SetTitleText(f'{self.slider_titles[i]}: {value:.3f}')
+            rep.SetTitleText(f'{self.slider_titles[i]}: {value:.8g}')
+
+    def _add_annotation(self, name, text, position, *, role='body', color='#17394d'):
+        actor = self.plot.add_text(text, name=name, position=position, viewport=True,
+                                   font_size=8, color=color, render=False)
+        actor.GetTextProperty().SetVerticalJustificationToTop()
+        self._annotation_actors[name] = (actor, role)
+        return actor
+
+    def _update_annotation_layout(self, *_):
+        """Resize only text; no camera, physical state, flux or mesh changes."""
+        size = tuple(self.plot.window_size)
+        if size == self._layout_pixels:
+            return
+        factor = min(size[0] / 1440., size[1] / 960.)
+        sizes = {'title': max(18, round(28 * factor)),
+                 'body': max(12, round(18 * factor)),
+                 'help': max(11, round(16 * factor))}
+        for actor, role in self._annotation_actors.values():
+            actor.GetTextProperty().SetFontSize(sizes[role])
+        if self._scalar_bar is not None:
+            self._scalar_bar.GetTitleTextProperty().SetFontSize(sizes['body'])
+            self._scalar_bar.GetLabelTextProperty().SetFontSize(sizes['help'])
+        self._layout_pixels = size
+        self.annotation_font_pixels = sizes
 
     def redraw(self, *, reset_camera=False):
         p,pv=self.plot,self.pv
+        self._annotation_actors = {}
+        self._layout_pixels = None
+        self._scalar_bar = None
         p.subplot(0,0)
         camera=None if reset_camera else p.camera_position
         p.renderer.clear();p.scalar_bars.clear()
@@ -220,7 +274,9 @@ class GaussLesson:
         if self.normal_field is not None:
             p.add_mesh(self.visible_mesh,scalars='E dot n [N/C]',clim=self.clim,cmap='coolwarm',
                 opacity=.48,show_edges=False,scalar_bar_args={'title':'Local E dot n [N/C]',
-                'color':'#17394d','position_y':.10,'position_x':.15,'width':.70,'height':.06})
+                'color':'#17394d','position_y':.20,'position_x':.15,'width':.70,'height':.05,
+                'title_font_size':18,'label_font_size':16,'unconstrained_font_size':True})
+            self._scalar_bar = p.scalar_bars['Local E dot n [N/C]']
         else:p.add_mesh(self.visible_mesh,color='lightgray',opacity=.4)
         # A world-axis bounding box is NOT the Gaussian surface. Draw only
         # the real rotated cube edges; a sphere has no auxiliary cube around it.
@@ -252,24 +308,25 @@ class GaussLesson:
             p.add_point_labels(np.asarray([pos]),[f'q{i+1}: {c.charge_C*1e9:+g} nC'],
                 font_size=13,point_size=0,always_visible=True)
         shape='CUBE' if isinstance(self.state.surface,GaussianCube) else 'SPHERE'
-        p.add_text(f'GAUSS LAW - {shape}\nAn imaginary closed surface, not a conductor',
-                   name='title',font_size=16,color='#17394d')
-        p.add_text('Black arrows: outward n. Green: E direction (fixed display length).\n'
-                   'Colors are local E dot n, NOT integrated face flux.\n'
-                   'Cutaway is display only: flux uses the complete CLOSED surface.\n'
-                   'S: shape; N: sign; D: pair; A: select charge; M: move surface\n'
-                   'C: cutaway; V: predict/reveal; R: sphere resolution; 0: reset',
-                   position='lower_left',font_size=10,color='#17394d')
-        p.add_axes(xlabel='x',ylabel='y',zlabel='z')
+        self._add_annotation('title', f'GAUSS LAW - {shape}\nImaginary closed surface; not a conductor',
+                             (.02,.98), role='title')
+        self._add_annotation('instructions',
+                   'Black arrows: outward n. Green: E direction (fixed lengths).\n'
+                   'Colors: local E dot n, NOT integrated face flux.\n'
+                   'Cutaway is visual only; the mathematical surface is CLOSED.\n'
+                   'S: shape; N: sign; D: pair; A: select; M: move surface\n'
+                   'C: cutaway; V: predict/reveal; R: refine; 0: reset',
+                   (.02,.15), role='help')
+        p.add_axes(xlabel='x',ylabel='y',zlabel='z',viewport=(.01,.30,.17,.46))
         if camera is None:
             p.camera_position=[tuple(center+np.array([4.8,-7.2,4.2])),tuple(center),(0,0,1)]
         else:p.camera_position=camera
         p.subplot(0,1)
         r=self.report
         lines=['CLOSED-SURFACE FLUX',f'Shape: {shape}; size scale = {self.state.scale_m:g} m',
-               f'Center [m]: {tuple(float(v) for v in self.state.surface.center_m)}',
+               'Center [m]: (' + ', '.join(f'{v:.4g}' for v in self.state.surface.center_m) + ')',
                f'Controls move: {"surface" if self.move_surface else "charge q"+str(self.active+1)}',
-               'Each move is a new static configuration.','']
+               'Moves select static configurations.','']
         if r['status']!='available':
             lines+=['UNDEFINED: charge on / unresolved','against the surface. No half-charge rule.']
         elif not self.show_values:
@@ -285,8 +342,20 @@ class GaussLesson:
                 lines += [f'Sampled total = {r["sampled_total_N_m2_per_C"]:+.8g}',
                     f'Error (sample - exact) = {r["sampling_error_N_m2_per_C"]:+.3g}',
                     f'Quadrature: {self.order} x {2*self.order}; R refines',
-                    'Samples are NOT rescaled to the exact total.']
-        p.add_text('\n'.join(lines),name='readout',position='upper_left',font_size=10,color='#17394d')
+                    'Samples are unadjusted, not certified.']
+        self._add_annotation('readout', '\n'.join(lines), (.025,.98))
+        self.sampling_caution = _sampling_caution(self.state, r)
+        caution_visible = (self.show_values and self.sampling_caution is not None
+                           and self.sampling_caution['large_discrepancy'])
+        self.caution_actor = self._add_annotation('sampling-caution',
+            'SAMPLING CAUTION\nLarge sample/exact mismatch.\n'
+            'Use the exact Gauss-law total.\nR refines; error may persist.' if caution_visible else '',
+            (.04,.62), color='#803000')
+        prop = self.caution_actor.GetTextProperty()
+        prop.SetBackgroundColor(1., .91, .72)
+        prop.SetBackgroundOpacity(1.)
+        self.caution_actor.SetVisibility(bool(caution_visible))
+        self._update_annotation_layout()
         self._sync_widgets()
         p.subplot(0,0);p.render()
 
@@ -296,6 +365,11 @@ class GaussLesson:
                 'values_visible':self.show_values,'quadrature_order':self.order,
                 'resolution':self.resolution,'yaw_degrees':self.yaw,'tilt_degrees':self.tilt,
                 'origin_m':self.origin.tolist(),'unit_m':self.unit,
+                'window_size_pixels':list(self.plot.window_size),
+                'minimum_supported_window_size_pixels':list(MINIMUM_WINDOW_SIZE),
+                'annotation_font_pixels':dict(self.annotation_font_pixels),
+                'sampling_caution':self.sampling_caution,
+                'sampling_caution_visible':bool(self.caution_actor.GetVisibility()),
                 'camera':[list(v) for v in self.plot.renderers[0].camera_position],
                 'slider_values':[w.GetRepresentation().GetValue() for w in self.sliders],
                 'slider_titles':[w.GetRepresentation().GetTitleText() for w in self.sliders],
