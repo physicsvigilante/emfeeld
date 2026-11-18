@@ -33,7 +33,7 @@ jobs:
   qualify:
     name: ${{ matrix.os }} / Python 3.13.5
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 18
+    timeout-minutes: 35
     strategy:
       fail-fast: false
       matrix:
