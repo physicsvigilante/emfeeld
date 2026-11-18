@@ -118,14 +118,14 @@ class CavityLesson:
         self.plot.subplot(0,1);self.plot.set_background('#f1f5f8',all_renderers=False)
         self._building=True
         self.sliders=[]
-        specs=[(self.set_offset,(0,MAX_OFFSET),self.offset,'Charge offset a/R',.27),
-               (self.set_theta,(0,180),self.theta,'Direction: polar angle [deg]',.19),
-               (self.set_phi,(-180,180),self.phi,'Direction: azimuth [deg]',.11),
+        specs=[(self.set_offset,(0,MAX_OFFSET),self.offset,'Charge offset a/R',.44),
+               (self.set_theta,(0,180),self.theta,'Polar angle [deg]',.32),
+               (self.set_phi,(-180,180),self.phi,'Azimuth [deg]',.20),
                (self.set_Q_nC,(-self._Q_range(),self._Q_range()),self.isolated_Q*1e9,
-                'Isolated Q [nC] (inactive if grounded)',.03)]
+                'Isolated Q [nC]',.08)]
         for callback,rng,value,title,y in specs:
             self.sliders.append(self.plot.add_slider_widget(callback,rng,value=value,title=title,
-                pointa=(.76,y),pointb=(.96,y),title_height=.017,fmt='%.2f',
+                pointa=(.12,y),pointb=(.88,y),title_height=.017,fmt='%.2f',
                 interaction_event='end',color='#17394d',slider_width=.025,tube_width=.005))
         self.plot.add_key_event('g',self.toggle_grounded)
         self.plot.add_key_event('c',self.toggle_cutaway)
@@ -313,7 +313,8 @@ class CavityLesson:
               f'G  Ground / isolate\nN  Reverse q\n'
               f'C  Cutaway / full shell\nL  Hide / show E lines\n'
               f'Drag left view to rotate; wheel to zoom.\n'
-              f'No physical image charge is drawn.')
+              f'No physical image charge is drawn.\n'
+              f'Q control stores isolated setting only.')
         p.add_text(text,position='upper_left',font_size=10,color='#17394d',name='lesson_text')
         p.subplot(0,0)
         p.render()

@@ -45,6 +45,14 @@ def qualify(output):
             for widget in view.sliders:
                 assert widget.GetEnabled()
                 assert view.plot.renderers[1].HasViewProp(widget.GetRepresentation())
+                # Widget coordinates are relative to this renderer's viewport,
+                # not the entire window. Keep useful span and label margins.
+                rep=widget.GetRepresentation()
+                left=rep.GetPoint1Coordinate().GetValue()
+                right=rep.GetPoint2Coordinate().GetValue()
+                assert .08 <= left[0] <= .2 and .8 <= right[0] <= .92
+                assert right[0]-left[0] >= .6
+                assert .06 <= left[1] <= .48 and left[1]==right[1]
             np.testing.assert_allclose(
                 [w.GetRepresentation().GetValue() for w in view.sliders],
                 [np.linalg.norm(view.model.charge_position_m)/view.model.inner_radius_m,
