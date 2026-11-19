@@ -52,3 +52,39 @@ The browser proof must receive a focused independent physical-display and real-
 WebGL review, fresh merged-preview CI and its own integration checks before any
 production release. No specialized Gauss, conductor-cavity or dipole viewer is
 migrated, and no existing Python physics or general PyVista file is modified.
+
+
+## Corrected browser-admission boundary (PR53 R2-01 through R2-03)
+
+The browser now requires the exported V1 meaning roles (including shape-specific
+source roles, potential, marker and annotation roles), nonempty unique IDs within
+each list, SI timeline units, literal Boolean display flags, normalized source
+line/plane directions, and matching physical-field array shapes. Unknown or absent
+required meaning metadata is refused, not inferred or rewritten. This validates
+the consumed snapshot contract, not the physical correctness of arbitrary data.
+
+The browser has an explicitly bounded **display domain**, not a new physics limit:
+ordered bounds must have finite positive binary64 spans; the midpoint is computed
+as `lo + (hi-lo)/2`, avoiding same-sign sum overflow. Transformed source centers,
+all saved trajectory points, potential vertices and arrow origins must be finite,
+within +/-1e6 display units, and must not turn a nonzero offset into binary32 zero.
+Transformed radii and line/plane spans must be in [1e-6, 1e3]; arrow lengths must
+be in [1e-3, 1e3] to avoid Three.js ArrowHelper's built-in minimum shaft silently
+stretching them. Lengths are fractions of the largest authored bounds span.
+Unrepresentable ranges/underflow are refused before scene construction; no
+clamping of physical data or resampling occurs. These are numerical rendering
+limits, not a guarantee that every object is inside the camera or pixel-visible.
+Signed extreme potential color ranges use overflow-safe display-only ratios.
+
+Only the adapter's displayed text for `playback_help` is replaced by the actual
+browser button/slider instructions. Original annotation and snapshot bytes are
+unchanged. Refusal clears scene actors, stale physical readouts and controls;
+a later valid selection can recover, including after an initially invalid scene.
+
+The Chromium qualifier supplies 25 altered JSON payloads with matching test
+checksums to exercise validation rather than only checksum failure. It checks
+visible errors, zero actor construction, empty stale readouts and disabled
+controls, plus two real scene-selection/replay recovery paths. The original
+three-scene controls, marker/origin transforms, screenshots and payload-immutability
+checks remain. Hosted author automation is not reviewer-owned browser acceptance;
+independent review and actual-main qualification remain separate gates.

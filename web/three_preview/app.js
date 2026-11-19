@@ -1,11 +1,11 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { validateSnapshot, displayTransform, toDisplay, savedFrame, potentialTriangles, replayIndex } from './model.js';
+import { validateSnapshot, displayTransform, toDisplay, savedFrame, potentialTriangles, replayIndex, browserNotes } from './model.js';
 
 const $=id=>document.getElementById(id), host=$('canvas');
 let data, transform, sourceRecord, group, markers=[], arrows=[], potentialMesh, lastIndex=0;
 let playing=false, startMs=0, startIndex=0, omitted=0, manifest;
-let renderer, camera, controls, world;
+let renderer, camera, controls, world, constructionCount=0;
 const vec=a=>new THREE.Vector3(...a);
 const display=v=>vec(toDisplay(v,transform));
 const bytesHash=async bytes=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)))
@@ -14,6 +14,10 @@ function fail(error){
   playing=false; $('play').textContent='Play'; $('play').disabled=true; $('frame').disabled=true;
   $('error').hidden=false; $('error').textContent='Preview unavailable: '+error.message;
   if(group) {clearGroup(); renderer.render(world,camera);}
+  data=null;transform=null;sourceRecord=null;lastIndex=0;omitted=0;
+  $('reset').disabled=$('potential').disabled=true;
+  $('title').textContent='Preview unavailable';
+  for(const id of ['range','time','positions','provenance','notes']) $(id).textContent='';
   window.emfeeldPreviewError=error.message;
 }
 function clearGroup(){
@@ -41,7 +45,7 @@ function label(text,position){
   s.position.copy(position);s.scale.set(.1,.05,1);group.add(s);
 }
 function construct(){
-  clearGroup();group=new THREE.Group();world.add(group);transform=displayTransform(data);
+  clearGroup();constructionCount++;group=new THREE.Group();world.add(group);transform=displayTransform(data);
   for(const g of data.geometry){
     const c=display(g.center_m);
     if(g.shape==='point')sphere(c,.012,0x526572);
@@ -75,7 +79,9 @@ function construct(){
     for(const triangle of surface.triangles)for(const v of triangle){
       positions.push(...display(v.position_m).toArray());
       // Color interpolation only, not a new field estimate or physics value.
-      const fraction=hi===lo ? .5 :(v.value-lo)/(hi-lo);
+      const range=hi-lo;
+      const fraction=hi===lo ? .5 : Number.isFinite(range)
+        ? (v.value-lo)/range : (v.value/2-lo/2)/(hi/2-lo/2);
       const color=new THREE.Color().setHSL((1-fraction)*.66,.7,.54);colors.push(color.r,color.g,color.b);
     }
     const geometry=new THREE.BufferGeometry();
@@ -92,14 +98,14 @@ function construct(){
     label(['x','y','z'][i],axesOrigin.clone().addScaledVector(vec(a),.24));
   });
   $('title').textContent=data.title;
-  $('notes').textContent=data.annotations.map(a=>a.text).join('\n\n')+
+  $('notes').textContent=browserNotes(data)+
       (data.missing_geometry.length?'\nUndrawn sources: '+data.missing_geometry.join(', '):'');
   $('provenance').textContent=`Snapshot SHA-256: ${sourceRecord.sha256}\nSchema: VisualizationData V1\n`
     +`Source example: ${sourceRecord.input}\nField: ${data.units.field}; position: m\n`
     +`Display transform: (world-origin)/scale\nOrigin [m]: ${transform.origin_m}\nScale [m]: ${transform.scale_m}\n`
     +'No browser-side field law or integrator.';
   $('frame').max=data.animation.samples-1;setFrame(0);
-  $('frame').disabled=$('play').disabled=!markers.length;$('reset').disabled=false;
+  $('frame').disabled=$('play').disabled=!markers.length;$('reset').disabled=$('potential').disabled=false;
   resetCamera();
 }
 function setFrame(index){
@@ -112,11 +118,13 @@ function resetCamera(){camera.position.set(1.45,-1.8,1.3);camera.up.set(0,0,1);c
 function resize(){const w=host.clientWidth,h=host.clientHeight;renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();}
 async function loadScene(index){
   playing=false;$('play').textContent='Play';$('scene').disabled=true;$('error').hidden=true;
+  for(const id of ['play','frame','reset','potential']) $(id).disabled=true;
   try{
     sourceRecord=manifest.scenes[index];const response=await fetch(sourceRecord.file);
     if(!response.ok)throw Error('Snapshot request failed');const bytes=await response.arrayBuffer();
     if(await bytesHash(bytes)!==sourceRecord.sha256)throw Error('Snapshot checksum mismatch');
     data=validateSnapshot(JSON.parse(new TextDecoder().decode(bytes)));construct();
+    delete window.emfeeldPreviewError;
   }finally{$('scene').disabled=false;}
 }
 try{
@@ -136,12 +144,13 @@ try{
     playing=!playing;if(playing){if(lastIndex===data.animation.samples-1)setFrame(0);startIndex=lastIndex;startMs=performance.now();}
     $('play').textContent=playing?'Pause':'Play';
   });
-  await loadScene(0);
   // Inspection hook returns copies/current THREE actor transforms, not a physics API.
   window.emfeeldPreview={inspect:()=>({three_revision:THREE.REVISION,
     webgl_version:renderer.getContext().getParameter(renderer.getContext().VERSION),
-    snapshot:structuredClone(data),frame:savedFrame(data,lastIndex),transform:structuredClone(transform),
+    available:!!group && !!data,actor_count:group?.children.length ?? 0,construction_count:constructionCount,
+    snapshot:data ? structuredClone(data) : null,frame:data ? savedFrame(data,lastIndex) : null,transform:transform ? structuredClone(transform) : null,
     marker_display:markers.map(m=>m.position.toArray()),arrow_origins:arrows.map(a=>a.position.toArray()),
+    potential_visible:potentialMesh ? potentialMesh.visible : null,
     omitted_cells:omitted,source:structuredClone(sourceRecord),camera:camera.position.toArray()}),
     setFrame};
   function tick(now){requestAnimationFrame(tick);
@@ -150,4 +159,5 @@ try{
     controls.update();renderer.render(world,camera);
   }
   requestAnimationFrame(tick);
+  await loadScene(0);
 }catch(error){fail(error);}
