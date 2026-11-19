@@ -124,12 +124,33 @@ def basis(state: WireState):
     return u, e1, e2
 
 
+def _contains_raw_bool(value):
+    """Reject Python/NumPy booleans before NumPy upcasts mixed vectors.
+
+    An existing integer ndarray cannot reveal whether its maker previously
+    converted a boolean; this protects the direct public probe entry point.
+    """
+    if isinstance(value, (bool, np.bool_)):
+        return True
+    if isinstance(value, np.ndarray):
+        if value.dtype.kind == 'b':
+            return True
+        if value.dtype.kind == 'O':
+            return any(_contains_raw_bool(item) for item in value.flat)
+        return False
+    if isinstance(value, (list, tuple)):
+        return any(_contains_raw_bool(item) for item in value)
+    return False
+
+
 def magnetic_field(state: WireState, points_m):
     """Field B in tesla at physical points, not a visualization arrow.
 
     Singular at current-bearing ideal wire axis, including numerically
     unresolved near-axis displacement. Zero current returns exactly zero.
     """
+    if _contains_raw_bool(points_m):
+        raise ValueError('magnetic field probes must not contain booleans')
     raw = np.asarray(points_m)
     if raw.dtype.kind not in 'fiu':
         raise ValueError('magnetic field probes must be real numeric vectors')

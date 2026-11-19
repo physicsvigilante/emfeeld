@@ -116,6 +116,26 @@ class WireLesson:
         ring=np.asarray(data.loop_display_xyz)
         p.add_mesh(pv.lines_from_points(np.vstack((ring,ring[0])),close=False),
                    color='#2374b9',line_width=4,reset_camera=False)
+        # Draw an unambiguous POSITIVE circulation arrow even at I=0: this is
+        # the oriented integration path, NOT the field direction. Its direction
+        # comes exclusively from the renderer-neutral, SI tangent_unit data.
+        # Centre the blue arrow on a polygon edge, separately from the green
+        # B arrows; never derive it from a B vector or its sign.
+        i=len(ring)//5
+        j=(i+1)%len(ring)
+        centre=(ring[i]+ring[j])/2
+        positive_tangent=np.asarray(data.tangent_unit[i]+data.tangent_unit[j])
+        positive_tangent=positive_tangent/np.linalg.norm(positive_tangent)
+        arrow_length=.40  # schematic display units, never an SI arc weight
+        arrow_start=centre-.5*arrow_length*positive_tangent
+        self.positive_loop_arrow_direction=positive_tangent.copy()
+        self.positive_loop_arrow_origin=arrow_start.copy()
+        self.positive_loop_arrow_mesh=pv.Arrow(
+            start=arrow_start,direction=positive_tangent,scale=arrow_length,
+            shaft_radius=.050,tip_radius=.135,tip_length=.32)
+        self.positive_loop_arrow_actor=p.add_mesh(
+            self.positive_loop_arrow_mesh,color='#2374b9',
+            name='positive_ampere_circulation_arrow',reset_camera=False)
         # Actual B direction-only arrows are computed in presentation from SI B;
         # their drawn lengths are NOT magnetic strengths or integral weights.
         for origin,vec in zip(data.arrow_display_origins_xyz,data.arrow_display_vectors):
@@ -126,7 +146,7 @@ class WireLesson:
                            color='#079e86',reset_camera=False)
         p.add_text('MAGNETIC FIELD  |  INFINITE STRAIGHT WIRE',
                    position='upper_left',font_size=12,color='#163f58')
-        p.add_text('Blue: oriented Ampere circle  |  Green: schematic B direction\n'
+        p.add_text('Blue arrow: FIXED + Ampere circulation  |  Green: B direction\n'
                    'Orange: signed current  |  Wire truncated ONLY for display\n'
                    'Field and loop units are SI; glyph sizes are NOT B magnitude',
                    position='lower_left',font_size=10,color='#324e61')
@@ -184,6 +204,9 @@ class WireLesson:
                 'current_slider_radius_factor':self.slider.GetRepresentation().GetValue(),
                 'original_and_current_states_distinct':self.initial!=self.state,
                 'schematic_wire_display_endpoints':self.prepared.wire_display_endpoints_xyz.tolist(),
+                'positive_loop_arrow_origin_display':self.positive_loop_arrow_origin.tolist(),
+                'positive_loop_arrow_direction_display':self.positive_loop_arrow_direction.tolist(),
+                'loop_direction_is_positive_circulation_not_B':True,
                 'schematic_B_glyph_length':.42}
 
 

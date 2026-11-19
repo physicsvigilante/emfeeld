@@ -148,3 +148,46 @@ def test_headless_case_report_without_native_graphics(tmp_path):
     assert j['authored_state']['current_A']==5
     assert j['renderer'].startswith('none')
     assert not (tmp_path/'headless/view.png').exists()
+
+
+def test_native_positive_ampere_arrow_persists_through_negative_and_zero(tmp_path):
+    initial=WireState(origin_m=(.2,-.1,.5),axis_direction=(1,2,3),
+                      current_A=7,loop_radius_m=.29,samples_per_loop=72)
+    obj=WireLesson(initial,off_screen=True,window_size=(1040,680))
+    try:
+        obj.plot.show(auto_close=False,interactive=False)
+        base_data=obj.prepared
+        base_arrow=obj.positive_loop_arrow_mesh.points.copy()
+        base_direction=obj.positive_loop_arrow_direction.copy()
+        blue=tuple(obj.positive_loop_arrow_actor.GetProperty().GetColor())
+        assert len(base_arrow)>20 and base_direction.shape==(3,)
+        assert np.linalg.norm(base_direction)==pytest.approx(1)
+        i=initial.samples_per_loop//5
+        j=(i+1)%initial.samples_per_loop
+        tangents=base_data.tangent_unit
+        expected=(tangents[i]+tangents[j])/np.linalg.norm(tangents[i]+tangents[j])
+        assert np.allclose(base_direction,expected,atol=1e-15)
+        assert np.dot(base_direction,base_data.tangent_unit[i])>.999
+        assert blue[2]>blue[0]  # distinctly blue, not green B or orange current
+        assert 'positive_ampere_circulation_arrow' in obj.plot.renderer.actors
+        for key,expected_current,label in [('n',-7,'negative'),('4',0,'zero'),('0',7,'reset')]:
+            _key(obj,key)
+            assert obj.state.current_A==expected_current
+            assert 'positive_ampere_circulation_arrow' in obj.plot.renderer.actors
+            assert np.array_equal(obj.positive_loop_arrow_direction,base_direction)
+            assert np.allclose(obj.positive_loop_arrow_mesh.points,base_arrow,atol=1e-14)
+            assert tuple(obj.positive_loop_arrow_actor.GetProperty().GetColor())==blue
+            if expected_current == 0:
+                assert np.count_nonzero(obj.prepared.arrow_display_vectors)==0
+            else:
+                sign=np.sign(np.einsum('ij,ij->i',obj.prepared.magnetic_field_T,
+                                       obj.prepared.tangent_unit))
+                assert np.all(sign==np.sign(expected_current))
+            raw=(json.dumps(initial.to_dict(),indent=2)+'\n').encode()
+            receipt=save_snapshot(initial,tmp_path/label,lesson=obj,source_bytes=raw)
+            assert receipt['display']['loop_direction_is_positive_circulation_not_B']
+            assert np.allclose(receipt['display']['positive_loop_arrow_direction_display'],
+                               expected)
+            assert (tmp_path/label/'view.png').is_file()
+    finally:
+        obj.plot.close()

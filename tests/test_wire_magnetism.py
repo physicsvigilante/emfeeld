@@ -130,3 +130,22 @@ def test_json_duplicates_unknowns_and_schema_refuse(tmp_path):
 def test_invalid_teaching_case_refuses():
     with pytest.raises(ValueError):teaching_case(WireState(),'5')
     with pytest.raises(ValueError):teaching_case(WireState(loop_radius_m=75),'2')
+
+
+@pytest.mark.parametrize('probes', [
+    [True, 0, 0],
+    [0, False, 1],
+    ((1.0, 0.0, 0.0), (2.0, np.bool_(False), 0.0)),
+    np.array([[1.0, False, 0.0]], dtype=object),
+    np.array([np.bool_(True), 0.0, 0.0], dtype=object),
+])
+@pytest.mark.parametrize('current', (0, 3))
+def test_direct_python_mixed_boolean_probe_refused_before_numeric_coercion(probes,current):
+    with pytest.raises(ValueError,match='must not contain booleans'):
+        magnetic_field(WireState(current_A=current), probes)
+
+
+def test_numeric_probe_equivalents_still_work_with_zero_and_nonzero_current():
+    for x in ([1, 0, 0], (1., 0., 0.), np.array([1, 0, 0], dtype=np.int64)):
+        assert magnetic_field(WireState(current_A=0), x).shape == (3,)
+        assert magnetic_field(WireState(current_A=3), x)[1] > 0

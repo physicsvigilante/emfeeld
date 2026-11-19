@@ -32,6 +32,7 @@ def qualify(output):
     try:
         view=WireLesson(original,off_screen=True,window_size=(1200,760))
         view.plot.show(auto_close=False,interactive=False)
+        positive_loop_arrow=None
         for code,label in [('1','base'),('2','double_radius'),
                            ('3','reversed_current'),('4','zero_current')]:
             key(view,code)
@@ -41,6 +42,16 @@ def qualify(output):
                 assert hidden['display']['show_values'] is False
             key(view,'v')
             result=save_snapshot(original,output/label,lesson=view,source_bytes=raw)
+            marker=view.positive_loop_arrow_direction
+            assert result['display']['loop_direction_is_positive_circulation_not_B']
+            if positive_loop_arrow is None:
+                positive_loop_arrow=(marker.copy(),view.positive_loop_arrow_mesh.points.copy())
+            else:
+                assert np.array_equal(marker,positive_loop_arrow[0])
+                assert np.allclose(view.positive_loop_arrow_mesh.points,
+                                   positive_loop_arrow[1],atol=1e-14)
+            if code=='4':
+                assert not np.any(view.prepared.arrow_display_vectors)
             assert result['current_state']==teaching_case(original,code).to_dict()
             assert result['physics']['expected_mu0_I_T_m']==view.prepared.report['expected_mu0_I_T_m']
             assert result['display']['show_values']
