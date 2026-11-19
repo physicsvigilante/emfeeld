@@ -46,6 +46,9 @@ The CI artifact preserves source, dependency lock, actual results and a runnable
 folder. Failure logs remain failures. This is author automation, not independent
 review, human Windows testing or pixel equivalence to PyVista.
 
-This branch is stacked on draft PR52; it is not safe to merge before that data
-boundary's independent review. No specialized Gauss, conductor-cavity or dipole
-viewer is migrated, and no existing physics or general PyVista file is modified.
+This draft targets `main` after the renderer-neutral PR52 integration; the distinct
+dipole PR51 and renderer-neutral releases retain their separate actual-main gates.
+The browser proof must receive a focused independent physical-display and real-
+WebGL review, fresh merged-preview CI and its own integration checks before any
+production release. No specialized Gauss, conductor-cavity or dipole viewer is
+migrated, and no existing Python physics or general PyVista file is modified.
