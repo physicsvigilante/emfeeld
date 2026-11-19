@@ -1,0 +1,9 @@
+{
+  "name": "emfeeld-three-preview",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Opt-in rendering-only proof of concept; not an EMFEELD physics engine",
+  "dependencies": {"three": "0.180.0"},
+  "scripts": {"test": "node --test model.test.js"}
+}
