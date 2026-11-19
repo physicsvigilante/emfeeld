@@ -1,0 +1,9 @@
+{
+  "lesson_version": 1,
+  "lesson_type": "ideal_parallel_plate_capacitor",
+  "area_m2": 0.01,
+  "gap_m": 0.005,
+  "relative_permittivity": 1.0,
+  "mode": "isolated_charge",
+  "charge_C": 1e-9
+}
