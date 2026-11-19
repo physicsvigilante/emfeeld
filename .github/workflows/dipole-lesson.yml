@@ -1,0 +1,53 @@
+name: JEE electric dipole 3D qualification
+on:
+  pull_request:
+    branches: [main]
+    paths: ['src/**', 'tests/**', 'viewer_tests/**', 'tools/**', 'examples/lessons/**', '.github/workflows/dipole-lesson.yml', 'pyproject.toml']
+  push:
+    branches: [main]
+    paths: ['src/**', 'tests/**', 'viewer_tests/**', 'tools/**', 'examples/lessons/**', '.github/workflows/dipole-lesson.yml', 'pyproject.toml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  lesson:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    env:
+      PYVISTA_OFF_SCREEN: 'true'
+      VTK_DEFAULT_OPENGL_WINDOW: vtkEGLRenderWindow
+      LIBGL_ALWAYS_SOFTWARE: '1'
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.13.5'
+      - name: Install existing viewer dependencies only
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libegl1 libgl1-mesa-dri libopengl0
+          python -m pip install 'numpy==2.3.5' 'scipy==1.17.0' 'pytest==9.0.2' 'pyvista==0.48.4' 'vtk==9.6.2'
+          python -m pip install --no-deps -e .
+          mkdir -p output/dipole-qualification
+          python -m pip freeze > output/dipole-qualification/environment.txt
+          git archive HEAD -o output/dipole-qualification/tested-source.tar
+          git rev-parse HEAD HEAD^{tree} > output/dipole-qualification/identities.txt
+      - name: Analytic, output-safety and real widget tests
+        run: |
+          set -o pipefail
+          python -W error -m pytest -q tests/test_dipole_lesson.py tests/test_dipole_io.py viewer_tests/test_dipole_runtime.py viewer_tests/test_dipole_preset_runtime.py 2>&1 | tee output/dipole-qualification/tests.log
+      - name: Retain fourteen real dipole scenes and actual state
+        run: |
+          set -o pipefail
+          python tools/qualify_dipole_lesson.py --output output/dipole-qualification/scenes 2>&1 | tee output/dipole-qualification/render.log
+      - name: Preserve original evidence including failures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: dipole-lesson-${{ github.sha }}
+          path: output/dipole-qualification/
+          retention-days: 30
+          if-no-files-found: warn

@@ -1,0 +1,25 @@
+{
+  "lesson_version": 1,
+  "lesson_type": "electric_dipole",
+  "charge_C": 1e-09,
+  "positive_position_m": [
+    1.0,
+    2.0,
+    1.0
+  ],
+  "negative_position_m": [
+    0.0,
+    1.0,
+    0.0
+  ],
+  "external_field_N_C": [
+    2.0,
+    3.0,
+    0.0
+  ],
+  "torque_origin_m": [
+    0.0,
+    0.0,
+    0.0
+  ]
+}
