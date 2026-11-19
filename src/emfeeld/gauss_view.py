@@ -20,63 +20,21 @@ import scipy
 from scipy.constants import epsilon_0
 
 from .gauss_lesson import (GaussState, GaussianCube, GaussianSphere, HeldCharge,
-    _HeldCoulombField, _finite_scalar, load_lesson, parse_lesson, measure)
+    _finite_scalar, load_lesson, parse_lesson, measure)
+from .gauss_presentation import (FACE_NAMES, PresentationCache, build_surface,
+    SAMPLING_CAUTION_FRACTION, sampling_caution as _sampling_caution)
+from .gauss_teaching import CASES, teaching_state
 from .output_safety import protect_saved_evidence
 
 
-# A teaching attention threshold, NOT a numerical acceptance tolerance.
-# Sum of absolute source charges remains meaningful when net enclosed charge is 0.
-SAMPLING_CAUTION_FRACTION = 0.01
 MINIMUM_WINDOW_SIZE = (840, 560)
 
 
-def _sampling_caution(state, report):
-    """Read-only display advice; never changes availability, samples or exact flux."""
-    if not isinstance(state.surface, GaussianSphere) or report['status'] != 'available':
-        return None
-    scale = math.fsum(abs(c.charge_C) for c in state.charges) / epsilon_0
-    discrepancy = abs(report['sampling_error_N_m2_per_C'])
-    threshold = SAMPLING_CAUTION_FRACTION * scale
-    return {'large_discrepancy': discrepancy > threshold,
-            'absolute_discrepancy_N_m2_per_C': discrepancy,
-            'charge_flux_scale_N_m2_per_C': scale,
-            'attention_threshold_N_m2_per_C': threshold,
-            'threshold_fraction': SAMPLING_CAUTION_FRACTION,
-            'is_accuracy_certificate': False}
-
-
 def surface_mesh(state, pv, resolution):
-    """Full closed mesh plus probes on the *analytic* surface, in SI coordinates."""
-    s = state.surface
-    center = np.asarray(s.center_m)
-    if isinstance(s, GaussianCube):
-        vertices, normals = [], []
-        edge = np.linspace(-1., 1., resolution + 1)
-        axes = np.eye(3)
-        for axis in range(3):
-            for sign in (1., -1.):
-                n = sign * axes[axis]
-                u, v = axes[(axis+1)%3], sign * axes[(axis+2)%3]
-                for a, b in zip(edge[:-1], edge[1:]):
-                    for c, d in zip(edge[:-1], edge[1:]):
-                        vertices.extend([n+a*u+c*v, n+b*u+c*v, n+b*u+d*v, n+a*u+d*v])
-                        normals.append(n)
-        rotation = np.asarray(s.rotation)
-        points = center + state.scale_m * (np.asarray(vertices) @ rotation.T)
-        cells = np.c_[np.full(len(normals), 4), np.arange(len(points)).reshape(-1,4)]
-        mesh = pv.PolyData(points, cells)
-        probes = points.reshape(-1,4,3).mean(axis=1)
-        normals = np.asarray(normals) @ rotation.T
-    else:
-        mesh = pv.Sphere(radius=1., theta_resolution=3*resolution, phi_resolution=2*resolution)
-        unit = np.asarray(mesh.points, dtype=float)
-        unit /= np.linalg.norm(unit, axis=1)[:,None]
-        mesh.points = unit
-        normals = np.asarray(mesh.cell_centers().points, dtype=float)
-        normals /= np.linalg.norm(normals, axis=1)[:,None]
-        probes = center + state.scale_m * normals
-        mesh.points = center + state.scale_m * unit
-    return mesh, probes, normals
+    """Compatibility adapter: construct drawing objects from renderer-neutral SI geometry."""
+    geometry = build_surface(state, resolution=resolution)
+    mesh = pv.PolyData(geometry.points_m.copy(), geometry.cells.copy())
+    return mesh, geometry.probes_m, geometry.outward_normals
 
 
 class GaussLesson:
@@ -91,6 +49,10 @@ class GaussLesson:
         self.origin = np.asarray(state.surface.center_m)
         self.unit = state.scale_m
         self.resolution, self.order = resolution, 24
+        self._presentation_cache = PresentationCache()
+        self.presentation = None
+        self.selected_face = None
+        self.teaching_case = None
         self.active, self.move_surface = 0, False
         self.cutaway, self.show_values = False, True
         self.yaw, self.tilt = 0., 0.
@@ -121,8 +83,12 @@ class GaussLesson:
             widget.GetRepresentation().SetSliderLength(.025)
         for key, callback in {'s':self.toggle_shape,'n':self.reverse_charge,'d':self.toggle_pair,
                 'a':self.next_charge,'m':self.toggle_move_surface,'v':self.toggle_values,
-                'c':self.toggle_cutaway,'r':self.refine,'0':self.reset}.items():
+                'c':self.toggle_cutaway,'r':self.refine,'0':self.reset,
+                'f':self.next_face}.items():
             self.plot.add_key_event(key,callback)
+        # Bind the actual keys, not a separate test-only dispatcher.
+        for key, case in zip(('1', '2', '3', '4'), CASES):
+            self.plot.add_key_event(key, lambda name=case.key: self.select_case(name))
         self._building = False
         self.redraw(reset_camera=True)
         # VTK StartEvent covers native window resizes as well as offscreen renders.
@@ -130,12 +96,13 @@ class GaussLesson:
         self._resize_observer = self.plot.ren_win.AddObserver('StartEvent', self._update_annotation_layout)
 
     def _apply(self, proposed):
-        old = self.state
+        old, old_case = self.state, self.teaching_case
         self.state = proposed
+        self.teaching_case = None  # An edit is no longer the exact preset.
         try:
             self.redraw()
         except Exception:
-            self.state = old
+            self.state, self.teaching_case = old, old_case
             self.redraw()
             raise
 
@@ -211,8 +178,36 @@ class GaussLesson:
     def toggle_cutaway(self): self.cutaway=not self.cutaway;self.redraw()
     def refine(self): self.order={24:48,48:96,96:192,192:24}[self.order];self.redraw()
 
+    def select_face(self, name):
+        if name is not None and name not in FACE_NAMES:
+            raise ValueError('unknown cube-local face')
+        if name is not None and not isinstance(self.state.surface, GaussianCube):
+            raise ValueError('face selection requires a cube')
+        self.selected_face = name
+        self.redraw()
+
+    def next_face(self):
+        if not isinstance(self.state.surface, GaussianCube):
+            return
+        choices = (None,) + FACE_NAMES
+        self.select_face(choices[(choices.index(self.selected_face) + 1) % len(choices)])
+
+    def select_case(self, name):
+        proposed = teaching_state(self.initial, name)
+        # Prepare before changing controller state, including active index.
+        self._presentation_cache.get(proposed, resolution=self.resolution, order=self.order)
+        self.state = proposed
+        self.active = 0
+        self.move_surface = False
+        self.yaw = self.tilt = 0.
+        self.selected_face = None
+        self.teaching_case = name
+        self.show_values = False  # Predict first; V reveals computed values.
+        self.redraw(reset_camera=True)
+
     def reset(self):
         self.active=0;self.move_surface=False;self.yaw=self.tilt=0.
+        self.selected_face=None;self.teaching_case=None
         self.state=self.initial;self.redraw(reset_camera=True)
 
     def _sync_widgets(self):
@@ -251,6 +246,10 @@ class GaussLesson:
         self.annotation_font_pixels = sizes
 
     def redraw(self, *, reset_camera=False):
+        # Complete data preparation before clearing actors; drawing never evaluates E/flux.
+        data = self._presentation_cache.get(self.state, resolution=self.resolution, order=self.order)
+        self.presentation = data
+        geometry = data.surface
         p,pv=self.plot,self.pv
         self._annotation_actors = {}
         self._layout_pixels = None
@@ -258,15 +257,12 @@ class GaussLesson:
         p.subplot(0,0)
         camera=None if reset_camera else p.camera_position
         p.renderer.clear();p.scalar_bars.clear()
-        self.report=measure(self.state,order=self.order)
-        self.full_mesh,self.probes,self.normals=surface_mesh(self.state,pv,self.resolution)
-        self.fields=None;self.normal_field=None;self.clim=None
-        if self.report['status']=='available':
-            self.fields=_HeldCoulombField(self.state.charges).field(self.probes)
-            self.normal_field=np.einsum('ij,ij->i',self.fields,self.normals)
-            self.full_mesh.cell_data['E dot n [N/C]']=self.normal_field
-            peak=max(float(np.max(np.abs(self.normal_field))),1e-30)
-            self.clim=(-peak,peak)
+        self.report = dict(data.report)
+        self.full_mesh = pv.PolyData(geometry.points_m.copy(), geometry.cells.copy())
+        self.probes, self.normals = geometry.probes_m, geometry.outward_normals
+        self.fields, self.normal_field, self.clim = data.field_N_C, data.normal_field_N_C, data.color_limits_N_C
+        if self.normal_field is not None:
+            self.full_mesh.cell_data['E dot n [N/C]'] = self.normal_field.copy()
         display=self.full_mesh.copy()
         display.points=(display.points-self.origin)/self.unit
         center=(np.asarray(self.state.surface.center_m)-self.origin)/self.unit
@@ -282,14 +278,24 @@ class GaussLesson:
         # the real rotated cube edges; a sphere has no auxiliary cube around it.
         self.outline_mesh = None
         if isinstance(self.state.surface, GaussianCube):
-            corners = np.array([[x,y,z] for x in (-1.,1.) for y in (-1.,1.) for z in (-1.,1.)])
-            edges = [(i,j) for i in range(8) for j in range(i+1,8)
-                     if np.count_nonzero(corners[i] != corners[j]) == 1]
-            world = (np.asarray(self.state.surface.center_m)
-                     + self.state.scale_m * (corners @ np.asarray(self.state.surface.rotation).T))
-            self.outline_mesh = pv.PolyData((world-self.origin)/self.unit,
-                lines=np.c_[np.full(12,2),np.asarray(edges)].ravel())
+            self.outline_mesh = pv.PolyData((geometry.outline_points_m-self.origin)/self.unit,
+                lines=np.c_[np.full(12,2),geometry.outline_edges].ravel())
             p.add_mesh(self.outline_mesh,color='#647383',line_width=1)
+        else:
+            self.selected_face = None
+        self.selected_face_mesh = None
+        self.selected_face_flux = None
+        if self.selected_face is not None:
+            face = FACE_NAMES.index(self.selected_face)
+            cells = geometry.cells[geometry.face_indices == face]
+            self.selected_face_mesh = pv.PolyData((geometry.points_m-self.origin)/self.unit, cells.copy()).clean()
+            # Only a boundary outline: do not replace E dot n colors or the closed surface.
+            # Cube quads have duplicate vertices; clean before extracting the perimeter.
+            edge = self.selected_face_mesh.clean().extract_feature_edges(boundary_edges=True,
+                feature_edges=False, manifold_edges=False, non_manifold_edges=False)
+            p.add_mesh(edge, color='#b16b00', line_width=4)
+            if self.report['status'] == 'available' and self.show_values:
+                self.selected_face_flux = self.report['face_flux_N_m2_per_C'][face]
         self.arrow_meshes=[]
         if self.fields is not None:
             indices=np.linspace(0,len(self.probes)-1,12,dtype=int)
@@ -314,9 +320,19 @@ class GaussLesson:
                    'Black arrows: outward n. Green: E direction (fixed lengths).\n'
                    'Colors: local E dot n, NOT integrated face flux.\n'
                    'Cutaway is visual only; the mathematical surface is CLOSED.\n'
-                   'S: shape; N: sign; D: pair; A: select; M: move surface\n'
-                   'C: cutaway; V: predict/reveal; R: refine; 0: reset',
+                   'S: shape; N: sign; D: pair; A: charge; M: surface\n'
+                   'C: cutaway; V: reveal; R: refine; F: face; 1-4: cases; 0: reset',
                    (.02,.15), role='help')
+        case = next((case for case in CASES if case.key == self.teaching_case), None)
+        teaching = '1-4: synthetic teaching cases (replace charges)'
+        if case is not None:
+            teaching = case.title + ' [synthetic]\n' + case.question_for(self.state.surface)
+        if self.selected_face is not None:
+            value = ('hidden; V reveals' if not self.show_values else
+                     'undefined at boundary' if self.selected_face_flux is None else
+                     f'{self.selected_face_flux:+.7g} N m^2/C')
+            teaching += f'\nSelected {self.selected_face} (cube-local): {value}'
+        self._add_annotation('teaching', teaching, (.02,.86), role='help')
         p.add_axes(xlabel='x',ylabel='y',zlabel='z',viewport=(.01,.30,.17,.46))
         if camera is None:
             p.camera_position=[tuple(center+np.array([4.8,-7.2,4.2])),tuple(center),(0,0,1)]
@@ -335,7 +351,7 @@ class GaussLesson:
             lines += [f'Enclosed charge = {r["enclosed_charge_C"]*1e9:+.6g} nC',
                       f'Exact total = {r["exact_total_N_m2_per_C"]:+.8g} N m^2/C']
             if 'face_names' in r:
-                lines+=['Signed face flux [N m^2/C]:']
+                lines+=['Cube-local face flux [N m^2/C]:']
                 lines += [f'  {name}: {value:+.7g}' for name,value in zip(r['face_names'],r['face_flux_N_m2_per_C'])]
                 lines += [f'Sum = {r["sum_faces_N_m2_per_C"]:+.8g}']
             else:
@@ -344,7 +360,7 @@ class GaussLesson:
                     f'Quadrature: {self.order} x {2*self.order}; R refines',
                     'Samples are unadjusted, not certified.']
         self._add_annotation('readout', '\n'.join(lines), (.025,.98))
-        self.sampling_caution = _sampling_caution(self.state, r)
+        self.sampling_caution = None if data.caution is None else dict(data.caution)
         caution_visible = (self.show_values and self.sampling_caution is not None
                            and self.sampling_caution['large_discrepancy'])
         self.caution_actor = self._add_annotation('sampling-caution',
@@ -362,6 +378,11 @@ class GaussLesson:
     def display_state(self):
         return {'active_charge':self.active,'move_surface':self.move_surface,
                 'cutaway':self.cutaway,'mathematical_surface_closed':True,
+                'selected_cube_local_face':self.selected_face,
+                'selected_face_flux_N_m2_per_C':self.selected_face_flux,
+                'teaching_case':self.teaching_case,
+                'teaching_case_provenance':None if self.teaching_case is None else 'synthetic_not_exam_original',
+                'presentation_build_count':self._presentation_cache.build_count,
                 'values_visible':self.show_values,'quadrature_order':self.order,
                 'resolution':self.resolution,'yaw_degrees':self.yaw,'tilt_degrees':self.tilt,
                 'origin_m':self.origin.tolist(),'unit_m':self.unit,
@@ -385,7 +406,9 @@ def save_snapshot(state,output,*,lesson=None,source_bytes=None,order=24):
     protect_saved_evidence(output,new_directory=True)
     if lesson is not None:
         state=lesson.state;order=lesson.order
-    physics=measure(state,order=order)
+        physics=dict(lesson._presentation_cache.get(state, resolution=lesson.resolution, order=order).report)
+    else:
+        physics=measure(state,order=order)
     if source_bytes is not None and not isinstance(source_bytes,bytes):
         raise ValueError("source_bytes must be original bytes")
     authored=None if source_bytes is None else parse_lesson(source_bytes)
@@ -425,6 +448,8 @@ def save_snapshot(state,output,*,lesson=None,source_bytes=None,order=24):
 def main(argv=None):
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('lesson_file',type=Path)
+    parser.add_argument('--case',choices=[c.key for c in CASES],
+                        help='select an explicit synthetic teaching configuration')
     group=parser.add_mutually_exclusive_group()
     group.add_argument('--snapshot',type=Path);group.add_argument('--headless',type=Path)
     group.add_argument('--validate-only',action='store_true')
@@ -432,10 +457,13 @@ def main(argv=None):
     try:
         if output is not None:protect_saved_evidence(output,new_directory=True)
         raw=args.lesson_file.read_bytes();state=parse_lesson(raw)
+        initial=state
+        if args.case: state=teaching_state(initial,args.case)
         if args.validate_only:
             print(json.dumps({'valid':True,'flux_status':measure(state)['status']}));return 0
         if args.headless:save_snapshot(state,output,source_bytes=raw);return 0
-        lesson=GaussLesson(state,off_screen=bool(args.snapshot))
+        lesson=GaussLesson(initial,off_screen=bool(args.snapshot))
+        if args.case: lesson.select_case(args.case)
         try:
             if args.snapshot:
                 lesson.plot.show(auto_close=False,interactive=False)
