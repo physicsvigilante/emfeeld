@@ -37,6 +37,20 @@ bounded representable display/physics domain; unknown, duplicate, string,
 boolean or nonfinite JSON inputs are refused. This is not arbitrary-precision
 or generic hostile JSON security.
 
+**Explicit nonzero teaching bounds (zero is valid):** an independently authored
+free charge must have `1e-18 <= |Q| <= 1e-4 C`, or a voltage-controlled
+configuration `1e-12 <= |V| <= 1e5 V`. **Both derived Q and V must also remain
+above these lower bounds when nonzero**, so a physically positive stored energy,
+field, free surface density or dielectric polarization cannot silently collapse
+to zero through underflow; switching control modes is safe for admitted states.
+If an extreme geometry/control combination violates either derived bound, it is
+refused even when its controlling input alone falls within range. Numeric JSON
+literals such as `1e-400` are refused before float64 conversion rather than
+being interpreted as exact zero. The bounds are practical lesson/admission
+limits, not additional laws of capacitance or universal precision guarantees.
+The dielectric slider spans the complete admitted `1 <= kappa <= 10` and must
+agree with the live physical state after native interaction and reset.
+
 ## Architecture
 
 `src/emfeeld/capacitor_lesson.py`: immutable typed physical state, measurement

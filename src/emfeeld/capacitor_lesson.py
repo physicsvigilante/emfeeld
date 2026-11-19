@@ -7,6 +7,7 @@ plate boundary-value solution or a time-dependent battery/charging model.
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
+from decimal import Decimal
 import json
 import math
 from pathlib import Path
@@ -15,8 +16,27 @@ from scipy.constants import epsilon_0
 
 SCHEMA_VERSION = 1
 MODES = ('isolated_charge', 'battery_voltage')
+# Honest finite, engineering-scale lesson domain. Exact zero is allowed.
+# The lower bounds also apply to *derived* Q and V so switching between
+# isolated and battery control never silently discards a nonzero quantity.
+MIN_NONZERO_CHARGE_C = 1e-18
+MIN_NONZERO_VOLTAGE_V = 1e-12
 _KEYS = {'lesson_version', 'lesson_type', 'area_m2', 'gap_m',
          'relative_permittivity', 'mode', 'charge_C', 'voltage_V'}
+
+
+def _json_float(token):
+    """Reject a nonzero authored JSON number if float64 would make it zero.
+
+    Python's default json.loads(parse_float=float) silently accepts 1e-400 as
+    0.0. Retain the original numeric token until representability is checked.
+    This is a parser boundary, not an arbitrary-precision physics calculation.
+    """
+    number = float(token)
+    if (not math.isfinite(number)
+            or (number == 0.0 and Decimal(token) != 0)):
+        raise ValueError('capacitor JSON number is not representable as float64: ' + token)
+    return number
 
 
 def _number(value, name):
@@ -57,15 +77,15 @@ class CapacitorState:
             if self.voltage_V is not None or self.charge_C is None:
                 raise ValueError('isolated charge requires charge_C only (voltage_V absent)')
             q = _number(self.charge_C, 'charge_C')
-            if abs(q) > 1e-4:
-                raise ValueError('|charge_C| must be <= 1e-4 C')
+            if abs(q) > 1e-4 or (q != 0 and abs(q) < MIN_NONZERO_CHARGE_C):
+                raise ValueError('|charge_C| must be zero or 1e-18..1e-4 C')
             object.__setattr__(self, 'charge_C', q)
         else:
             if self.charge_C is not None or self.voltage_V is None:
                 raise ValueError('battery mode requires voltage_V only (charge_C absent)')
             voltage = _number(self.voltage_V, 'voltage_V')
-            if abs(voltage) > 1e5:
-                raise ValueError('|voltage_V| must be <= 1e5 V')
+            if abs(voltage) > 1e5 or (voltage != 0 and abs(voltage) < MIN_NONZERO_VOLTAGE_V):
+                raise ValueError('|voltage_V| must be zero or 1e-12..1e5 V')
             object.__setattr__(self, 'voltage_V', voltage)
         # Refuse physics that cannot be represented or falls outside teaching bounds.
         measure(self)
@@ -100,9 +120,19 @@ def measure(state):
     e = v/state.gap_m
     energy = 0.5*q*v
     polarization = epsilon_0*(state.relative_permittivity-1)*e
-    if (not all(math.isfinite(x) for x in (cap,q,v,e,energy,polarization))
+    density = q/state.area_m2
+    # All physically nonzero derived quantities must remain representably
+    # nonzero, *including when changing control mode*. A dielectric with
+    # kappa=1 has exactly zero P by physics, not due to numerical underflow.
+    if (not all(math.isfinite(x) for x in (cap,q,v,e,energy,polarization,density))
             or cap <= 0 or energy < 0 or abs(e) > 1e9):
         raise ValueError('ideal capacitor measurement outside finite bounded range')
+    controlling_value = state.charge_C if state.mode == 'isolated_charge' else state.voltage_V
+    if controlling_value != 0:
+        if (abs(q) < MIN_NONZERO_CHARGE_C or abs(v) < MIN_NONZERO_VOLTAGE_V
+                or e == 0 or energy == 0 or density == 0
+                or (state.relative_permittivity > 1 and polarization == 0)):
+            raise ValueError('nonzero capacitor measurement underflow or below teaching bounds')
     return {
         'capacitance_F': cap,
         'free_lower_plate_charge_C': q,
@@ -110,8 +140,8 @@ def measure(state):
         'potential_lower_minus_upper_V': v,
         'field_z_between_N_C': e,
         'stored_field_energy_J': energy,
-        'free_surface_density_lower_C_m2': q/state.area_m2,
-        'free_surface_density_upper_C_m2': -q/state.area_m2,
+        'free_surface_density_lower_C_m2': density,
+        'free_surface_density_upper_C_m2': -density,
         'polarization_z_C_m2': polarization,
         'bound_surface_density_lower_C_m2': -polarization,
         'bound_surface_density_upper_C_m2': polarization,
@@ -171,7 +201,7 @@ def load_lesson(path):
     def nonfinite(value):
         raise ValueError('nonfinite JSON capacitor number: '+value)
     data=json.loads(Path(path).read_text(encoding='utf-8'),object_pairs_hook=unique,
-                    parse_constant=nonfinite)
+                    parse_constant=nonfinite, parse_float=_json_float)
     return from_dict(data)
 
 

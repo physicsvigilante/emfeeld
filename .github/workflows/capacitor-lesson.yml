@@ -38,8 +38,8 @@ jobs:
       - name: Analytic, SI reference, refusal and actual PyVista tests
         run: |
           set -o pipefail
-          python -W error -m pytest -q tests/test_capacitor_lesson.py tests/test_capacitor_presentation.py viewer_tests/test_capacitor_runtime.py 2>&1 | tee output/capacitor-qualification/tests.log
-      - name: Retain six genuine static capacitor scenes and original/current receipts
+          python -W error -m pytest -q tests/test_capacitor_lesson.py tests/test_capacitor_presentation.py tests/test_capacitor_r2_boundary.py viewer_tests/test_capacitor_runtime.py viewer_tests/test_capacitor_r2_runtime.py 2>&1 | tee output/capacitor-qualification/tests.log
+      - name: Retain capacitor scenes, original/current receipts and kappa-10 native slider
         run: |
           set -o pipefail
           python tools/qualify_capacitor.py --output output/capacitor-qualification/scenes 2>&1 | tee output/capacitor-qualification/render.log

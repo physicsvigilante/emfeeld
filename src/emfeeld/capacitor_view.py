@@ -58,7 +58,7 @@ class CapacitorLesson:
         self._right_note=None
         self.sliders=[]
         for callback,limits,value,title,y in [
-            (self.set_kappa,(1.,8.),state.relative_permittivity,'Dielectric kappa',.27),
+            (self.set_kappa,(1.,10.),state.relative_permittivity,'Dielectric kappa',.27),
             (self.set_gap_factor,(.5,1.5),1.,'Gap / initial',.16),
         ]:
             slider=self.plot.add_slider_widget(

@@ -65,6 +65,24 @@ def qualify(output):
         r=save_snapshot(initial,output/'adjusted',lesson=view,source_bytes=raw)
         assert r['physics']==measure(view.state)
         records.append({'label':'adjusted','screenshot':'adjusted/view.png'})
+        # Reviewer F2: a genuine end-interaction event must reach the model's
+        # full admitted kappa=10 limit, without widget clamping at 8.
+        view.reset()
+        widget=view.sliders[0]
+        rep=widget.GetRepresentation()
+        assert rep.GetMinimumValue()==1. and rep.GetMaximumValue()==10.
+        rep.SetValue(10.)
+        widget.InvokeEvent('EndInteractionEvent')
+        assert view.state.relative_permittivity==10.
+        assert rep.GetValue()==10.
+        r=save_snapshot(initial,output/'kappa10_native_slider',lesson=view,source_bytes=raw)
+        assert r['physics']==measure(view.state)
+        assert r['display']['original_and_current_states_distinct']
+        records.append({'label':'kappa10_native_slider',
+                        'screenshot':'kappa10_native_slider/view.png',
+                        'exact_current_receipt':r['screenshot']['sha256']})
+        view.reset()
+        assert view.state==initial and rep.GetValue()==initial.relative_permittivity
         report={'status':'PASS','cases':records,'real_pyvista':True,
                 'static_equilibria_not_time_evolution':True,
                 'fringing_ignored':True,'human_teacher_acceptance':'not_evaluated'}
