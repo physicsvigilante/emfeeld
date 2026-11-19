@@ -60,6 +60,37 @@ def refusal_cases(source):
         d = copy.deepcopy(source)
         d['geometry'][0].update(shape=shape, role='truncated_infinite_source', direction=[0,0,0], display_span_m=1)
         cases.append((shape+'-zero-direction', d, 'infinite-source patch'))
+    # Review-02 regressions: all ordinary fields remain valid; only these
+    # rendered primitives lose distinctions/area on Float32 buffer conversion.
+    def buffer_scene():
+        d = copy.deepcopy(source)
+        d['bounds_m'] = [-10,10,-10,10,-10,10]
+        d['animation']['samples'] = 61
+        for path in d['trajectories']:
+            path['positions_m'] = [[20*(.25+i*1e-6),0,0] for i in range(61)]
+        return d
+    def small_path(d, base=.25, step=1e-11):
+        d['trajectories'][0]['positions_m'] = [[20*(base+i*step),0,0] for i in range(61)]
+    def small_surface(d):
+        d['potential']['points_m'] = [[[5,5,0],[5,5+2e-8,0]],[[5+2e-8,5,0],[5+2e-8,5+2e-8,0]]]
+        d['potential']['values'] = [1,2,3,4]
+    d = buffer_scene(); small_path(d)
+    cases.append(('float32-path-in-bounds', d, 'Float32 trajectory segment'))
+    d = buffer_scene(); small_surface(d)
+    cases.append(('float32-potential-in-bounds', d, 'Float32 potential triangle'))
+    d = buffer_scene(); small_path(d); small_surface(d)
+    cases.append(('float32-combined-in-bounds', d, 'Float32 trajectory segment'))
+    d = buffer_scene(); small_path(d, 999999, 1e-6)
+    cases.append(('float32-path-far', d, 'Float32 trajectory segment'))
+    d = buffer_scene()
+    d['geometry'] = [dict(id='line-f32', shape='line', role='truncated_infinite_source',
+                         center_m=[19999980,0,0], direction=[1,0,0], display_span_m=2e-5)]
+    d['has_uniform_source'] = False
+    cases.append(('float32-source-line', d, 'Float32 source line segment'))
+    d = buffer_scene()
+    d['potential']['points_m'] = [[[2.5,2.5,0],[2.5,7.5,0]],[[5,5,0],[7.5,7.5+2e-8,0]]]
+    d['potential']['values'] = [1,2,3,4]
+    cases.append(('float32-triangle-collinear', d, 'Float32 potential triangle'))
     return cases
 
 
@@ -74,7 +105,7 @@ def qualify_refusals(browser, base_url, manifest, root, output, errors):
         page.route('**/refusal.json', lambda route: route.fulfill(body=payload, content_type='application/json'))
         return page
     def assert_refused(page, expected, count):
-        page.wait_for_function('!!window.emfeeldPreviewError')
+        page.wait_for_function('!!window.emfeeldPreviewError && !document.querySelector("#scene").disabled')
         message = page.evaluate('window.emfeeldPreviewError')
         assert expected in message, (expected, message)
         assert 'checksum' not in message.lower(), message
@@ -96,7 +127,8 @@ def qualify_refusals(browser, base_url, manifest, root, output, errors):
         try:
             page.goto(base_url, wait_until='networkidle')
             message = assert_refused(page, expected, 0)
-            if name in ['potential-role','arrow-underflow']:
+            if name in ['potential-role','arrow-underflow','float32-path-in-bounds',
+                        'float32-potential-in-bounds','float32-source-line','float32-triangle-collinear']:
                 page.screenshot(path=str(output/(name+'-refused.png')))
             results.append({'case':name, 'error':message, 'construction_count':0, 'actor_count':0,
                             'payload_sha256':entry['sha256']})
@@ -104,31 +136,37 @@ def qualify_refusals(browser, base_url, manifest, root, output, errors):
             page.close()
     # Real scene-change events must remove stale actors/readouts and allow recovery,
     # including when the very first scene was rejected before any construction.
-    name, snapshot, expected = cases[0]
-    payload = json.dumps(snapshot, allow_nan=False).encode()
-    bad = dict(manifest['scenes'][0], file='refusal.json', sha256=hashlib.sha256(payload).hexdigest())
     recoveries = []
-    for invalid_first in [False, True]:
-        entries = [bad,manifest['scenes'][0]] if invalid_first else [manifest['scenes'][0],bad]
-        page = new_page(entries, payload)
-        try:
-            page.goto(base_url, wait_until='networkidle')
-            if not invalid_first:
-                page.wait_for_function('window.emfeeldPreview?.inspect().available')
-                page.select_option('#scene', '1')
-            assert_refused(page, expected, 0 if invalid_first else 1)
-            page.select_option('#scene', '1' if invalid_first else '0')
-            page.wait_for_function('window.emfeeldPreview?.inspect().available && !window.emfeeldPreviewError')
-            state = page.evaluate('window.emfeeldPreview.inspect()')
-            assert state['snapshot'] == source and state['actor_count'] > 0
-            assert state['construction_count'] == (1 if invalid_first else 2)
-            assert page.locator('#error').is_hidden() and page.locator('#play').is_enabled()
-            page.click('#play')
-            page.wait_for_function('Number(document.querySelector("#frame").value)>0')
-            page.click('#play')
-            recoveries.append({'invalid_first':invalid_first, 'recovered':True, 'real_replay_advanced':True})
-        finally:
-            page.close()
+    for name, snapshot, expected in cases:
+        if name != 'potential-role' and not name.startswith('float32-'):
+            continue
+        payload = json.dumps(snapshot, allow_nan=False).encode()
+        bad = dict(manifest['scenes'][0], file='refusal.json', sha256=hashlib.sha256(payload).hexdigest())
+        for invalid_first in [False, True]:
+            entries = [bad,manifest['scenes'][0]] if invalid_first else [manifest['scenes'][0],bad]
+            page = new_page(entries, payload)
+            try:
+                page.goto(base_url, wait_until='networkidle')
+                if not invalid_first:
+                    page.wait_for_function('window.emfeeldPreview?.inspect().available && !document.querySelector("#scene").disabled')
+                    # Reject while genuine replay is active, not just an idle scene.
+                    page.click('#play')
+                    page.wait_for_function('Number(document.querySelector("#frame").value)>0')
+                    page.select_option('#scene', '1')
+                assert_refused(page, expected, 0 if invalid_first else 1)
+                page.select_option('#scene', '1' if invalid_first else '0')
+                page.wait_for_function('window.emfeeldPreview?.inspect().available && !window.emfeeldPreviewError && !document.querySelector("#scene").disabled')
+                state = page.evaluate('window.emfeeldPreview.inspect()')
+                assert state['snapshot'] == source and state['actor_count'] > 0
+                assert state['construction_count'] == (1 if invalid_first else 2)
+                assert page.locator('#error').is_hidden() and page.locator('#play').is_enabled()
+                page.click('#play')
+                page.wait_for_function('Number(document.querySelector("#frame").value)>0')
+                page.click('#play')
+                recoveries.append({'case':name, 'invalid_first':invalid_first, 'recovered':True,
+                                   'real_replay_advanced':True, 'payload_sha256':bad['sha256']})
+            finally:
+                page.close()
     return {'refusals':results, 'recovery':recoveries}
 
 

@@ -75,6 +75,22 @@ export function displayTransform(d) {
   return {origin_m:[0,2,4].map((i,k)=>b[i]+spans[k]/2),scale_m:Math.max(...spans)};
 }
 export const toDisplay = (v,t) => v.map((x,i)=>(x-t.origin_m[i])/t.scale_m);
+// Match the Float32BufferAttribute conversion used by THREE paths/surfaces.
+const samePoint = (a,b) => a.every((x,i)=>x===b[i]);
+const float32Point = p => p.map(Math.fround);
+function requireFloat32Segment(a,b,label) {
+  if (samePoint(float32Point(a),float32Point(b)))
+    throw Error(`Unrenderable Float32 ${label} segment`);
+}
+function requireFloat32Triangle(vertices) {
+  const [a,b,c]=vertices.map(float32Point);
+  const u=b.map((x,i)=>x-a[i]),v=c.map((x,i)=>x-a[i]);
+  // Cross products of bounded Float32 vertices fit safely in binary64. Checking
+  // just pairwise inequality would miss three distinct but collinear vertices.
+  const area=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]];
+  if (!area.every(finite) || area.every(x=>x===0))
+    throw Error('Unrenderable Float32 potential triangle');
+}
 function validateDisplay(d,t) {
   // Explicit prototype domain, not a physical limit or a promise of pixel visibility.
   const coordinate = x => finite(x) && Math.abs(x)<=1e6
@@ -100,16 +116,31 @@ function validateDisplay(d,t) {
     if (['sphere','shell'].includes(g.shape)) extent=length(g.radius_m,'source radius');
     if (['line','plane'].includes(g.shape)) extent=length(g.display_span_m,'source span');
     if (center.some(x=>!coordinate(x-extent) || !coordinate(x+extent))) throw Error('Unrenderable source extent');
+    if (g.shape==='line') {
+      // Same center +/- direction*span arithmetic as app.js, before any actors.
+      const offset=g.direction.map(x=>x*extent);
+      requireFloat32Segment(center.map((x,i)=>x-offset[i]),center.map((x,i)=>x+offset[i]),'source line');
+    }
   }
   for (const path of d.trajectories) {
     length(path.marker_radius_m,'marker');
-    path.positions_m.forEach(p=>point(p,'trajectory'));
+    const positions=path.positions_m.map(p=>point(p,'trajectory'));
+    for (let i=1;i<positions.length;i++) {
+      // Exact repeated samples are legitimate (e.g. a stationary particle).
+      // Compare original positions too: subtraction can lose a tiny offset even
+      // before Float32 conversion. No sampling, rounding in place or rescaling.
+      if (!samePoint(path.positions_m[i-1],path.positions_m[i]))
+        requireFloat32Segment(positions[i-1],positions[i],'trajectory');
+    }
   }
   const a=d.field.schematic_arrows;
   // Three.js ArrowHelper floors its shaft at 0.0001; do not silently stretch tiny arrows.
   length(a.display_length_m,'arrow',1e-3);
   a.origins_m.forEach(p=>point(p,'arrow'));
   d.potential.points_m.forEach(row=>row.forEach(p=>point(p,'potential')));
+  // Use the renderer's exact triangle topology; null-cell holes emit no geometry.
+  for (const triangle of potentialTriangles(d).triangles)
+    requireFloat32Triangle(triangle.map(v=>toDisplay(v.position_m,t)));
 }
 export function browserNotes(d) {
   return d.annotations.map(a=>a.id==='playback_help'

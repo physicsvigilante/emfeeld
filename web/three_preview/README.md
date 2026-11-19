@@ -81,10 +81,36 @@ browser button/slider instructions. Original annotation and snapshot bytes are
 unchanged. Refusal clears scene actors, stale physical readouts and controls;
 a later valid selection can recover, including after an initially invalid scene.
 
-The Chromium qualifier supplies 25 altered JSON payloads with matching test
+The Chromium qualifier supplies 31 altered JSON payloads with matching test
 checksums to exercise validation rather than only checksum failure. It checks
 visible errors, zero actor construction, empty stale readouts and disabled
-controls, plus two real scene-selection/replay recovery paths. The original
+controls, plus 14 real scene-selection/replay recovery paths. The original
 three-scene controls, marker/origin transforms, screenshots and payload-immutability
 checks remain. Hosted author automation is not reviewer-owned browser acceptance;
 independent review and actual-main qualification remain separate gates.
+
+
+### Review-02 follow-up: preserve Float32 primitive geometry
+
+Individual finite coordinates are insufficient: distinct binary64 points can
+become the same Float32 buffer vertex. Before any scene actor is constructed,
+validation now checks each **physically nonzero consecutive trajectory segment**
+and both rendered endpoints of a truncated line source using `Math.fround`, the
+same conversion as the renderer's Float32 buffers. Exact repeated physical saved
+positions remain valid, including stationary samples and paths that return to a
+previous point. A physically distinct pair lost during binary64 translation is
+also rejected. No original positions are rounded in place, dropped or resampled.
+
+Each actually emitted potential triangle must have **nonzero area after Float32
+conversion**. Three distinct but collinear Float32 vertices are also refused, as
+are already-degenerate rendered triangles. Null-cell holes emit no triangles and
+are not falsely tested as surfaces. This is a primitive nondegeneracy condition,
+not a claim of exact Float32 metric fidelity or guaranteed pixel visibility.
+
+Regressions retain review-02's exact in-bounds 61-sample path and nonzero triangle,
+separate each failure to avoid masking, and exercise a far-translated path, line
+source endpoint collapse, and three-distinct-vertices area loss. Genuine Chromium
+checks matched-checksum refusals, zero new construction, stale-readout clearing,
+and both invalid-startup recovery and running-replay -> refusal -> valid replay
+for all six Float32 fixtures. Historical review-01/review-02 failures remain;
+new author tests do not replace focused independent acceptance.

@@ -45,3 +45,81 @@ function scaledFixture(scale,offset=0) {
 }
 test('astronomical coordinates keep exact stored positions and saved time',()=>{const d=scaledFixture(1e11),before=JSON.stringify(d);validateSnapshot(d);assert.deepEqual(toDisplay(d.trajectories[0].positions_m[1],displayTransform(d)),[0,0,0]);assert.equal(savedFrame(d,1).time_s,1);assert.equal(JSON.stringify(d),before);});
 test('coherently huge translated scene remains drawable without midpoint overflow',()=>{const d=scaledFixture(1e306,1e308),before=JSON.stringify(d);validateSnapshot(d);const t=displayTransform(d);assert.ok(t.origin_m.every(Number.isFinite));assert.ok(toDisplay(d.trajectories[0].positions_m[1],t).every(Number.isFinite));assert.equal(JSON.stringify(d),before);});
+
+// R2-02: test actual binary32 vertex distinctions, not camera/pixel visibility.
+function bufferFixture() {
+  const d=fixture();d.bounds_m=[-10,10,-10,10,-10,10];
+  return d;
+}
+function tinyPath(d,base=.25,step=1e-11) {
+  d.animation.samples=61;
+  d.trajectories[0].positions_m=Array.from({length:61},(_,i)=>[20*(base+i*step),0,0]);
+}
+function tinySurface(d) {
+  d.potential.points_m=[[[5,5,0],[5,5+2e-8,0]],[[5+2e-8,5,0],[5+2e-8,5+2e-8,0]]];
+}
+const f32=p=>Array.from(new Float32Array(p));
+const cross=(a,b,c)=>{const u=b.map((x,i)=>x-a[i]),v=c.map((x,i)=>x-a[i]);return [u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]];};
+test('R2-02 exact in-bounds 61-sample path is refused before Float32 collapse',()=>{
+  const d=bufferFixture();tinyPath(d);const before=JSON.stringify(d),t=displayTransform(d);
+  const xs=d.trajectories[0].positions_m.map(p=>toDisplay(p,t)[0]);
+  assert.equal(new Set(xs).size,61);assert.equal(new Set(new Float32Array(xs)).size,1);
+  assert.ok(d.trajectories[0].positions_m.every(p=>p.every(x=>x>=-10 && x<=10)));
+  assert.throws(()=>validateSnapshot(d),/Float32 trajectory segment/);assert.equal(JSON.stringify(d),before);
+});
+test('R2-02 nonzero potential triangles are independently refused on Float32 collapse',()=>{
+  const d=bufferFixture();tinySurface(d);const before=JSON.stringify(d),t=displayTransform(d);
+  const vertices=potentialTriangles(d).triangles[0].map(v=>toDisplay(v.position_m,t));
+  assert.ok(cross(...vertices).some(x=>x!==0));assert.deepEqual(cross(...vertices.map(f32)),[0,0,0]);
+  assert.throws(()=>validateSnapshot(d),/Float32 potential triangle/);assert.equal(JSON.stringify(d),before);
+});
+test('R2-02 combined reviewer path and triangle example is refused',()=>{
+  const d=bufferFixture();tinyPath(d);tinySurface(d);
+  assert.throws(()=>validateSnapshot(d),/Float32 trajectory segment/);
+});
+test('R2-02 allowed far-translated coordinates cannot hide path collapse',()=>{
+  const d=bufferFixture();tinyPath(d,999999,1e-6);
+  assert.equal(new Set(d.trajectories[0].positions_m.map(p=>Math.fround(p[0]/20))).size,1);
+  assert.throws(()=>validateSnapshot(d),/Float32 trajectory segment/);
+});
+test('every path segment is checked, including a later short segment',()=>{
+  const d=bufferFixture();d.trajectories[0].positions_m=[[0,0,0],[5,0,0],[5+2e-10,0,0]];
+  assert.throws(()=>validateSnapshot(d),/Float32 trajectory segment/);
+});
+test('distinct physical samples lost even in binary64 translation are refused',()=>{
+  const d=bufferFixture();d.bounds_m=[0,20,0,20,0,20];
+  d.trajectories[0].positions_m=[[0,0,0],[1e-16,0,0],[2e-16,0,0]];
+  assert.deepEqual(toDisplay(d.trajectories[0].positions_m[0],displayTransform(d)),toDisplay(d.trajectories[0].positions_m[1],displayTransform(d)));
+  assert.throws(()=>validateSnapshot(d),/Float32 trajectory segment/);
+});
+test('truncated line source endpoints use the actual Float32 buffer coordinates',()=>{
+  const d=bufferFixture();d.geometry=[{...source('line'),center_m:[19999980,0,0],direction:[1,0,0],display_span_m:2e-5}];
+  assert.equal(Math.fround(999999-1e-6),Math.fround(999999+1e-6));
+  assert.throws(()=>validateSnapshot(d),/Float32 source line segment/);
+});
+test('three distinct Float32 vertices must also retain nonzero triangle area',()=>{
+  const d=bufferFixture();d.potential.points_m=[[[2.5,2.5,0],[2.5,7.5,0]],[[5,5,0],[7.5,7.5+2e-8,0]]];
+  const vertices=potentialTriangles(d).triangles[0].map(v=>toDisplay(v.position_m,displayTransform(d)));
+  assert.ok(cross(...vertices).some(x=>x!==0));assert.equal(new Set(vertices.map(v=>JSON.stringify(f32(v)))).size,3);
+  assert.deepEqual(cross(...vertices.map(f32)),[0,0,0]);assert.throws(()=>validateSnapshot(d),/Float32 potential triangle/);
+});
+test('stationary/repeated physical samples and returning paths remain valid',()=>{
+  for(const points of [[[5,0,0],[5,0,0],[5,0,0]],[[5,0,0],[5,0,0],[6,0,0]],[[5,0,0],[6,0,0],[5,0,0]]]) {
+    const d=bufferFixture();d.trajectories[0].positions_m=points;const before=JSON.stringify(d);
+    assert.equal(validateSnapshot(d),d);assert.equal(JSON.stringify(d),before);
+  }
+});
+test('null-omitted potential cells are not falsely rejected as rendered triangles',()=>{
+  const d=bufferFixture();tinySurface(d);d.potential.values[0]=null;
+  assert.equal(potentialTriangles(d).triangles.length,0);assert.equal(validateSnapshot(d),d);
+});
+test('small nonzero Float32 path segments and surfaces near zero remain valid',()=>{
+  const d=bufferFixture();tinyPath(d,0,1e-11);
+  d.potential.points_m=[[[0,0,0],[0,2e-8,0]],[[2e-8,0,0],[2e-8,2e-8,0]]];
+  assert.equal(validateSnapshot(d),d);
+});
+test('representable fine samples and huge-midpoint scenes are not rounded in place',()=>{
+  const d=bufferFixture();tinyPath(d,.25,1e-6);const before=JSON.stringify(d);
+  assert.equal(validateSnapshot(d),d);assert.equal(JSON.stringify(d),before);
+  assert.equal(validateSnapshot(scaledFixture(1e306,1e308)).animation.samples,3);
+});
