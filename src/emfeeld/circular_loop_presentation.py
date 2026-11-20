@@ -49,9 +49,14 @@ def prepare(state: CircularLoopState, *, display_reference_radius_m=None) -> Cir
     current_arrow = 0.5*current_sign*tangent[0] if current_sign else np.zeros(3)
     probe_sign = np.sign(np.dot(probe_field, u))
     field_arrow = 0.7*probe_sign*u if probe_sign else np.zeros(3)
+    # MappingProxyType alone is shallow: freeze the two nested SI vector lists
+    # so drawing adapters cannot mutate the recorded physics report.
+    report = measure(state)
+    report["centre_B_xyz_T"] = tuple(report["centre_B_xyz_T"])
+    report["probe_B_xyz_T"] = tuple(report["probe_B_xyz_T"])
     return CircularLoopPresentation(
         state, _readonly(points), _readonly(tangent),
         _readonly(probe_field), _readonly(centre_field),
         _readonly(circle*scale), _readonly(probe_display),
         _readonly(current_arrow), _readonly(field_arrow),
-        float(reference), float(scale), MappingProxyType(measure(state)))
+        float(reference), float(scale), MappingProxyType(report))

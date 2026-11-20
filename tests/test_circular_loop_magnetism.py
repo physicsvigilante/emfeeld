@@ -101,6 +101,10 @@ def test_immutable_buffers_detached():
             arr.reshape(-1)[0] = 99
     with pytest.raises(TypeError):
         p.report["extra"] = 1
+    for name in ("centre_B_xyz_T", "probe_B_xyz_T"):
+        assert isinstance(p.report[name], tuple)
+        with pytest.raises(TypeError):
+            p.report[name][0] = 99
     assert from_dict(state.to_dict()) == state
 
 
