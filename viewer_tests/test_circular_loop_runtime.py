@@ -100,6 +100,9 @@ def test_native_three_comparison_presets_hide_then_reveal():
             _key(view, "v")
             assert view.show_values
         assert view.radius_slider.GetRepresentation().GetValue() == pytest.approx(2)
+        assert view.display_state()["rendered_loop_radius_initial_R_units"] == pytest.approx(2)
+        assert np.linalg.norm(view.prepared.loop_display_xyz, axis=1) == pytest.approx(
+            np.full(original.samples_per_loop, 2.0))
         _key(view, "0")
         assert view.state == original
         assert view.radius_slider.GetRepresentation().GetValue() == pytest.approx(1)
