@@ -1,0 +1,18 @@
+{
+  "lesson_version": 1,
+  "lesson_type": "ideal_circular_current_loop_axis",
+  "centre_m": [
+    0,
+    0,
+    0
+  ],
+  "normal_direction": [
+    0,
+    0,
+    1
+  ],
+  "current_A": 5,
+  "radius_m": 0.2,
+  "probe_z_m": 0.15,
+  "samples_per_loop": 72
+}
