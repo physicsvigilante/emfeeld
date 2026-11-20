@@ -45,7 +45,7 @@ For one real offscreen scene:
 python -m emfeeld.circular_loop_view examples/lessons/circular_current_loop.json --snapshot output/loop-3d-new
 ```
 
-Output directories **must be new**. The headless command does not claim to render. Interactive keys: `1` positive-at-centre, `2` reversed-at-centre, `3` doubled-radius-at-centre; each hides numerical values until `V` reveals. `N` reverses current, `K` sets it to zero, `P` restores the positive authored magnitude, `0` resets, and mouse orbit rotates the 3D view. Sliders change radius and on-axis probe position; the second slider measures z in units of the *authored initial* radius, even if radius subsequently changes.
+Output directories **must be new**. The headless command does not claim to render. Interactive keys: `1` positive-at-centre, `2` reversed-at-centre, `3` doubled-radius-at-centre; each hides numerical values until `V` reveals. `N` reverses current, `K` sets it to zero, `P` restores the positive authored magnitude, `0` resets, and mouse orbit rotates the 3D view. Sliders are visibly retained in the lower-right information pane across every redraw, including offscreen screenshots; tests assert actual slider pixels instead of relying only on native VTK event dispatch. They change radius and on-axis probe position; the second slider measures z in units of the *authored initial* radius, even if radius subsequently changes.
 
 ## Interpretation limits
 
