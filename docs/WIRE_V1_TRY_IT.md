@@ -12,7 +12,7 @@ You can orbit/zoom with the mouse, move the **Ampère loop radius** slider, and 
 
 **2. Radius (key 2):** Before revealing, predict B and the signed Ampère circulation when the physical loop radius doubles at fixed I. **Expected:** B magnitude halves; the loop circumference doubles, so the exact signed circulation remains \(\mu_0 I\). The blue loop's displayed size remains constant, so read the actual metre value on the right.
 
-**3. Reverse current (key 3 or N):** Predict how arrow directions and signed circulation change. **Expected:** Both reverse, B magnitude unchanged. At I=0 (key 4), B and circulation vanish, without a fictitious magnetic direction arrow.
+**3. Reverse current (key 3 or N):** Predict how arrow directions and signed circulation change. **Expected:** The **orange signed-current arrow and green B arrows reverse**, and the **signed circulation changes sign**; the blue **positive Ampère traversal arrow stays fixed**. B magnitude is unchanged. At I=0 (key 4), B and circulation vanish, green B arrows disappear, and the fixed blue traversal arrow still shows the chosen positive path.
 
 **4. Distinguish representations:** Blue is the oriented circle, green arrows are *direction-only* B glyphs, and orange is signed wire current. The dark wire is a **schematic truncated segment** of an ideal infinite wire. Do not treat glyph lengths as tesla, nor compute an Ampère integral from the drawn arrows. The model does not compute near-wire material effects, finite-wire ends, magnetic force, induction or solenoids.
 
