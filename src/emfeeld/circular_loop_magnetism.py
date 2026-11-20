@@ -115,13 +115,28 @@ def from_dict(obj):
                              samples_per_loop=obj["samples_per_loop"])
 
 
-def load_lesson(path):
-    obj = json.loads(Path(path).read_text(encoding="utf-8"),
+def lesson_from_bytes(source_bytes: bytes):
+    """Validate the EXACT original UTF-8 JSON bytes, with load_lesson rules.
+
+    This is also the snapshot input-provenance preflight; never trust a caller's
+    separately supplied state or a SHA-256 digest in place of strict parsing.
+    """
+    if type(source_bytes) is not bytes:
+        raise ValueError("circular-loop source must be raw UTF-8 bytes")
+    try:
+        source_text = source_bytes.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise ValueError("circular-loop source must be valid UTF-8") from exc
+    obj = json.loads(source_text,
                      parse_float=_float_token,
                      parse_int=_float_or_integer_token,
                      parse_constant=lambda x: (_ for _ in ()).throw(ValueError("nonfinite JSON: " + x)),
                      object_pairs_hook=_pairs)
     return from_dict(obj)
+
+
+def load_lesson(path):
+    return lesson_from_bytes(Path(path).read_bytes())
 
 
 def _float_or_integer_token(token):
@@ -197,19 +212,46 @@ def _cartesian_probe(point_m):
 
 
 def field_at_point(state: CircularLoopState, point_m):
+    """Only on-axis Cartesian probes; no off-axis field approximation.
+
+    For rotated normals, a point constructed as centre+z*u may have unavoidable
+    floating-point rounding. Admit such a point ONLY when it can be recreated
+    from an axial coordinate to within two float64 ULPs per coordinate.
+    Coordinates perpendicular to an EXACTLY axis-aligned normal must match the
+    centre exactly (zero tolerance), even if their difference is very small.
+    This is a tight representation boundary, not a physical off-axis region.
+    Prefer axis_field(state, z) with explicit axial z when that is available.
+    """
     point = _cartesian_probe(point_m)
     centre = np.asarray(state.centre_m, dtype=float)
     u = np.asarray(state.normal_direction, dtype=float)
     displacement = point - centre
-    z = float(np.dot(displacement, u))
-    transverse = displacement - z * u
-    # Only accept points whose radial displacement is numerically unresolved;
-    # this tolerance is NOT an off-axis physical model.
-    tolerance = 64 * np.finfo(float).eps * (
-        np.linalg.norm(point) + np.linalg.norm(centre) + np.linalg.norm(displacement))
-    if np.linalg.norm(transverse) > tolerance:
+
+    fixed = (u == 0.)
+    if np.any(point[fixed] != centre[fixed]):
         raise ValueError("off-axis circular-loop field not implemented")
-    return axis_field(state, z)
+
+    candidates = []
+    for i in range(3):
+        if fixed[i]:
+            continue
+        z = float(displacement[i] / u[i])
+        if not math.isfinite(z) or abs(z) > 100.0:
+            continue
+        predicted = centre + z*u
+        scale = np.maximum(np.maximum(np.abs(point), np.abs(centre)), np.abs(z*u))
+        allowed = 2.0*np.spacing(scale)
+        allowed[fixed] = 0.0
+        delta = np.abs(predicted - point)
+        if np.all(delta <= allowed):
+            # Prefer the best-resolved axial coordinate; this avoids dividing
+            # by a nearly-zero component of an oblique normal.
+            resolution = abs(displacement[i]) / max(math.ulp(max(abs(float(point[i])),
+                        abs(float(centre[i])), abs(float(z*u[i])))), math.ulp(0.0))
+            candidates.append((resolution, z))
+    if not candidates:
+        raise ValueError("off-axis circular-loop field not implemented")
+    return axis_field(state, max(candidates)[1])
 
 
 def measure(state: CircularLoopState):

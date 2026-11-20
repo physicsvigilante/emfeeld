@@ -177,3 +177,25 @@ def test_headless_snapshot_from_case_without_pyvista(tmp_path):
     assert report["current_state"]["probe_z_m"] == 0.0
     assert report["physics"]["centre_signed_B_T"] < 0
     assert not (tmp_path/"headless"/"view.png").exists()
+
+
+def test_review_f1_live_lesson_initial_must_match_authored_before_writes(tmp_path):
+    initial = CircularLoopState(current_A=5)
+    contradict = CircularLoopState(current_A=-5)
+    view = CircularLoopLesson(initial, off_screen=True, window_size=(840, 580))
+    try:
+        bad_raw = json.dumps(contradict.to_dict()).encode()
+        with pytest.raises(ValueError, match="source bytes"):
+            save_snapshot(initial, tmp_path/"wrong_original", lesson=view,
+                          source_bytes=bad_raw)
+        assert not (tmp_path/"wrong_original").exists()
+        with pytest.raises(ValueError, match="initial state"):
+            save_snapshot(contradict, tmp_path/"wrong_authored", lesson=view,
+                          source_bytes=bad_raw)
+        assert not (tmp_path/"wrong_authored").exists()
+        with pytest.raises(ValueError, match="conflicts"):
+            save_snapshot(initial, tmp_path/"wrong_live_current", lesson=view,
+                          current_state=contradict)
+        assert not (tmp_path/"wrong_live_current").exists()
+    finally:
+        view.plot.close()

@@ -14,7 +14,7 @@ from pathlib import Path
 
 import numpy as np
 
-from .circular_loop_magnetism import CircularLoopState, load_lesson, teaching_case
+from .circular_loop_magnetism import CircularLoopState, lesson_from_bytes, load_lesson, teaching_case
 from .circular_loop_presentation import prepare
 from .output_safety import protect_saved_evidence
 
@@ -322,16 +322,30 @@ def save_snapshot(authored: CircularLoopState, destination, *, lesson=None,
     if not isinstance(authored, CircularLoopState):
         raise ValueError("requires authored CircularLoopState")
     protect_saved_evidence(destination, new_directory=True)
+    # Validate the original source BEFORE making even the started.json record.
+    # A correct hash of unrelated bytes is not an authentic source/state link.
+    raw = source_bytes if source_bytes is not None else (
+        json.dumps(authored.to_dict(), sort_keys=True, allow_nan=False).encode("utf-8"))
+    parsed_authored = lesson_from_bytes(raw)
+    if parsed_authored != authored:
+        raise ValueError("source bytes do not match the authored circular-loop state")
+    if lesson is not None:
+        if not isinstance(lesson, CircularLoopLesson) or lesson.initial != authored:
+            raise ValueError("lesson initial state does not match authored circular-loop state")
+        if current_state is not None and current_state != lesson.state:
+            raise ValueError("explicit current_state conflicts with live lesson state")
+        state, data = lesson.state, lesson.prepared
+        if data.state != state:
+            raise ValueError("prepared lesson data do not match current physical state")
+    else:
+        state = authored if current_state is None else current_state
+        if not isinstance(state, CircularLoopState):
+            raise ValueError("requires validated current CircularLoopState")
+        data = prepare(state)
     root = Path(destination)
     root.mkdir(parents=True, exist_ok=False)
     _write_json(root/"started.json", {"completed": False, "lesson": "circular_loop_axis_v1"})
     try:
-        state = lesson.state if lesson is not None else (current_state or authored)
-        if not isinstance(state, CircularLoopState):
-            raise ValueError("requires validated current CircularLoopState")
-        data = lesson.prepared if lesson is not None else prepare(state)
-        raw = source_bytes if source_bytes is not None else (
-            json.dumps(authored.to_dict(), sort_keys=True, allow_nan=False).encode("utf-8"))
         (root/"authored-input.json").write_bytes(raw)
         _write_json(root/"lesson.json", state.to_dict())
         np.savez_compressed(

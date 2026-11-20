@@ -134,3 +134,85 @@ def test_teacher_presets_ignore_initial_offset_and_keep_compared_centre():
     assert teaching_case(s, "3").probe_z_m == 0
     assert teaching_case(s, "2").current_A == -3
     assert teaching_case(s, "3").radius_m == 1.0
+
+
+def test_review_f2_exactly_representable_off_axis_at_translated_axis():
+    """Review 01 F2: seven float64 ULPs are NOT an axis point."""
+    for signed_current in (4, 0, -4):
+        state = CircularLoopState(centre_m=(100, 0, 0),
+                                  normal_direction=(0, 0, 1),
+                                  current_A=signed_current)
+        for offset in (math.ulp(100.0), 1e-13, -1e-13):
+            with pytest.raises(ValueError, match="off-axis"):
+                field_at_point(state, (100+offset, 0, 0))
+        # No false refusal at a truly axial point, even away from the centre.
+        assert field_at_point(state, (100, 0, 0.2)) == pytest.approx(
+            axis_field(state, .2), rel=2e-14, abs=1e-20)
+
+
+def test_review_f2_rotated_roundoff_is_bounded_not_an_off_axis_solver():
+    from emfeeld.circular_loop_magnetism import basis
+    rng = np.random.default_rng(24681357)
+    for _ in range(500):
+        centre = tuple(map(float, rng.uniform(-100, 100, 3)))
+        normal = tuple(map(float, rng.normal(size=3)))
+        z = float(rng.uniform(-100, 100))
+        state = CircularLoopState(centre_m=centre, normal_direction=normal)
+        # A constructed oblique-axis point can accumulate at most a few ULPs.
+        point = np.asarray(centre) + z*np.asarray(state.normal_direction)
+        assert field_at_point(state, tuple(point)) == pytest.approx(
+            axis_field(state, z), rel=3e-12, abs=2e-20)
+        _, e1, _ = basis(state)
+        # This separate physical radial displacement is RESOLVED and rejected.
+        independent_off_axis = tuple(point + 1e-8*e1)
+        with pytest.raises(ValueError, match="off-axis"):
+            field_at_point(state, independent_off_axis)
+
+
+def test_review_f1_snapshot_source_preflight_strict_and_no_output(tmp_path):
+    from emfeeld.circular_loop_view import save_snapshot
+    plus = CircularLoopState(current_A=5)
+    minus = CircularLoopState(current_A=-5)
+    valid_wrong = json.dumps(minus.to_dict()).encode("utf-8")
+    valid_plus = json.dumps(plus.to_dict(), indent=3).encode("utf-8")
+    bad_sources = (
+        valid_wrong,
+        b"not json",
+        b"{\"lesson_version\":1}",
+        valid_plus[:-1] + b', "current_A": 6}',  # duplicate key
+        valid_plus.replace(b'"current_A": 5.0', b'"current_A": NaN'),
+        valid_plus.replace(b'"current_A": 5.0', b'"current_A": 1e-9999'),
+        valid_plus.replace(b'"current_A": 5.0', b'"current_A": true'),
+        b"\xff"  # invalid UTF-8
+    )
+    for i, raw in enumerate(bad_sources):
+        target = tmp_path/f"reject_{i}"
+        with pytest.raises(ValueError):
+            save_snapshot(plus, target, source_bytes=raw)
+        assert not target.exists(), "preflight must run before the first output write"
+
+    good_dir = tmp_path/"valid"
+    report = save_snapshot(plus, good_dir, source_bytes=valid_plus)
+    assert report["authored_state"] == plus.to_dict()
+    assert (good_dir/"authored-input.json").read_bytes() == valid_plus
+    assert json.loads((good_dir/"outcome.json").read_text())["completed"] is True
+    with pytest.raises(ValueError):
+        save_snapshot(plus, tmp_path/"wrong_type", source_bytes=valid_plus.decode())
+    assert not (tmp_path/"wrong_type").exists()
+
+
+def test_load_lesson_and_source_bytes_apply_identical_strict_rules(tmp_path):
+    from emfeeld.circular_loop_magnetism import lesson_from_bytes
+    source = CircularLoopState(current_A=3).to_dict()
+    raw = json.dumps(source, sort_keys=True, indent=3).encode()
+    path = tmp_path/"source.json"
+    path.write_bytes(raw)
+    assert lesson_from_bytes(raw) == load_lesson(path)
+    for bad in (raw.replace(b'"current_A": 3.0', b'"current_A": false'),
+                raw.replace(b'"current_A": 3.0', b'"current_A": Infinity'),
+                raw.replace(b'"current_A": 3.0', b'"current_A": 1e309')):
+        path.write_bytes(bad)
+        with pytest.raises(ValueError):
+            lesson_from_bytes(bad)
+        with pytest.raises(ValueError):
+            load_lesson(path)
