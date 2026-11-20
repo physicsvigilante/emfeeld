@@ -142,6 +142,11 @@ def test_real_screenshot_native_physics_and_integrity(tmp_path, sign):
         from PIL import Image
         img = np.asarray(Image.open(dest/"view.png"))
         assert img.shape[:2] == (620, 940) and img.std() > 12
+        # A native EndInteraction test alone can pass with *invisible* sliders.
+        # Both must actually render in the lower-right information pane.
+        h, w = img.shape[:2]
+        controls = img[int(.60*h):int(.95*h), int(.64*w):int(.97*w), :3]
+        assert np.count_nonzero(controls.mean(axis=2) < 150) > 250
         assert report["renderer"] == "PyVista real screenshot"
         assert report["physics"]["current_A"] == sign*7
         assert report["original_input_sha256"] == hashlib.sha256(raw).hexdigest()
