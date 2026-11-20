@@ -236,7 +236,7 @@ def measure(state: RectangularLoopState):
             "field_B_xyz_T": arrays["field_B_T"].tolist(),
             "moment_xyz_A_m2": arrays["moment_A_m2"].tolist(),
             "torque_xyz_N_m": arrays["torque_N_m"].tolist(),
-            "torque_magnitude_N_m": float(np.linalg.norm(arrays["torque_N_m"])),
+            "torque_magnitude_N_m": math.hypot(*arrays["torque_N_m"]),
             "orientation_potential_J": U,
             "net_force_xyz_N": arrays["net_force_N"].tolist(),
             "segment_torque_xyz_N_m": arrays["segment_torque_N_m"].tolist(),
