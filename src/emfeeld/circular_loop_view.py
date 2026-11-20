@@ -50,7 +50,9 @@ class CircularLoopLesson:
         self.plot.set_background("#ffffff", all_renderers=False)
         self.plot.subplot(0, 1)
         self.plot.set_background("#eef4f8", all_renderers=False)
-        self.plot.subplot(0, 0)
+        # Keep both VTK slider widgets in the information pane. Redraw clears
+        # the 3D renderer, so attaching controls there silently removes them
+        # from real screenshots and makes them unusable after first redraw.
         self._building = True
         self._info_actor = None
         self._warning_actor = None
