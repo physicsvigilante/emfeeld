@@ -1,6 +1,6 @@
-# Circular current loop, on-axis magnetic field — candidate V1 (Issue #62)
+# Circular current loop, on-axis magnetic field — released V1
 
-**Development only.** This document describes draft [PR #63](https://github.com/physicsvigilante/emfeeld/pull/63); it does not certify a release, an independent review, a human GUI trial, or classroom usefulness.
+**Technically released:** [PR #63](https://github.com/physicsvigilante/emfeeld/pull/63) merged on 20 November 2026 at actual-main commit `cf884b6d91cb685993e07a1c65236b65d185e521`; the [independent R2 review](https://github.com/physicsvigilante/review_sandbox/blob/main/projects/emfeeld/pr-63/reviews/review-02-chat-b.md) passed its bounded source and native graphics scope, and [Issue #62](https://github.com/physicsvigilante/emfeeld/issues/62) is closed after original dual-OS archives passed. Human GUI usability, learner understanding and classroom effectiveness **remain unassessed**; see [the prediction-first JEE pilot](JEE_3D_PILOT_V1.md).
 
 ## Analytic physics and visible JEE questions
 
@@ -53,6 +53,6 @@ Output directories **must be new**. The headless command does not claim to rende
 
 Blue +normal arrow is a **fixed convention**, not the magnetic field. Orange current circulation changes sign with I (absent at zero current). Green B arrows reverse or disappear with I. For very distant axial probes the numeric SI value remains valid but the marker is omitted from the finite schematic camera window, with an explicit panel note. Off-axis B, magnetic forces, time variation, multiple coils, materials and induction are unsupported.
 
-## Required gates
+## Technical evidence and remaining educational trial
 
-Before merge: independently check analytic identities against a separately authored reference; negative and adversarial JSON cases; real PyVista native keys/sliders/screenshots; original archive CRC/source integrity; all relevant Linux and Windows regressions; exact-head independent scoped physics + viewer review. After a permitted exact-head guarded merge, qualify actual merged `main` independently on both OSs and audit its genuine original artifacts. Human classroom acceptance is separate.
+The scoped independent R2 physics + native PyVista review passed, and the [post-merge audit](https://github.com/physicsvigilante/review_sandbox/blob/main/projects/emfeeld/pr-63/MERGE-REPORT.md) qualified actual merged `main` on both Linux and Windows, including original source/archive integrity. This is **not** a learner/teacher trial. Use the [short three-lesson pilot](JEE_3D_PILOT_V1.md) and an [empty observation record](../pilots/jee3d_v1/SESSION_TEMPLATE.md) to evaluate actual student predictions and desktop usability without changing the physics.
