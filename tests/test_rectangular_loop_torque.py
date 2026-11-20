@@ -34,8 +34,9 @@ def test_independent_segment_lorentz_force_and_torque_axis():
     d, _ = calculate(s)
     # At theta=90 e1=+y, e2=+z and B=+z. Opposite +-y segments
     # experience opposing +-x forces. Axial +-z segments get no force.
-    assert d["forces_N"] == pytest.approx([
-        [.36, 0, 0], [0, 0, 0], [-.36, 0, 0], [0, 0, 0]], abs=1e-15)
+    np.testing.assert_allclose(d["forces_N"], np.asarray([
+        [.36, 0, 0], [0, 0, 0], [-.36, 0, 0], [0, 0, 0]]),
+        rtol=0, atol=1e-15)
     assert d["net_force_N"] == pytest.approx([0, 0, 0], abs=1e-15)
     assert d["segment_torque_N_m"] == pytest.approx([0, -.144, 0], abs=1e-15)
     assert d["torque_N_m"] == pytest.approx([0, -.144, 0], abs=1e-15)
