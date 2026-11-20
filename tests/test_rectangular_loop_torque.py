@@ -1,6 +1,7 @@
 """Independent analytic checks: rectangular current-loop forces, torque and U."""
 import json
 import math
+import sys
 
 import numpy as np
 import pytest
@@ -161,8 +162,62 @@ def test_near_parallel_resolvable_torque_magnitude_not_squared_to_zero():
     d, _ = calculate(s)
     expected = abs(3*.6*.4*.2*math.sin(math.radians(1e-200)))
     assert expected > 0
-    assert math.hypot(*d["torque_N_m"]) == pytest.approx(expected, rel=1e-13)
-    assert measure(s)["torque_magnitude_N_m"] == pytest.approx(expected, rel=1e-13)
+    assert math.hypot(*d["torque_N_m"]) == pytest.approx(expected, rel=1e-13, abs=0)
+    assert measure(s)["torque_magnitude_N_m"] == pytest.approx(expected, rel=1e-13, abs=0)
+
+
+@pytest.mark.parametrize("angle", [1e-320, 1e-322])
+def test_subnormal_orientation_rejected_at_state_and_source_boundary(angle):
+    source = RectangularLoopState(current_A=1e4, width_m=10, height_m=10,
+                                  field_strength_T=10).to_dict()
+    source["tilt_deg"] = angle
+    with pytest.raises(ValueError, match="tilt_deg"):
+        RectangularLoopState(current_A=1e4, width_m=10, height_m=10,
+                             field_strength_T=10, tilt_deg=angle)
+    with pytest.raises(ValueError, match="tilt_deg"):
+        lesson_from_bytes(json.dumps(source).encode())
+
+
+@pytest.mark.parametrize("current,field", [(1e4, 10), (-1e4, 10), (1e4, -10)])
+@pytest.mark.parametrize("angle", [0., 1e-200, math.nextafter(180., 0.), 180.])
+def test_endpoint_signed_torque_and_force_couple(angle, current, field):
+    state = RectangularLoopState(current_A=current, field_strength_T=field,
+                                 width_m=10, height_m=10, tilt_deg=angle)
+    # sin(delta) equals delta to binary64 precision at these distances.
+    delta = min(angle, 180. - angle)
+    signed_y = -(current * 100 * field * math.pi / 180.) * delta
+    result = measure(state)
+    for key in ("torque_xyz_N_m", "segment_torque_xyz_N_m"):
+        assert result[key] == pytest.approx([0., signed_y, 0.], rel=2e-15, abs=0)
+    assert result["torque_magnitude_N_m"] == pytest.approx(abs(signed_y), rel=2e-15, abs=0)
+
+
+def test_first_normal_radian_and_adjacent_smaller_tilt():
+    angle = math.degrees(sys.float_info.min)
+    smaller = math.nextafter(angle, 0.)
+    while math.radians(smaller) >= sys.float_info.min:
+        angle = smaller
+        smaller = math.nextafter(angle, 0.)
+    assert math.radians(smaller) < sys.float_info.min <= math.radians(angle)
+    with pytest.raises(ValueError, match="tilt_deg"):
+        RectangularLoopState(tilt_deg=smaller)
+    result = measure(RectangularLoopState(tilt_deg=angle, width_m=10, height_m=10,
+                                          current_A=1e4, field_strength_T=10))
+    assert result["torque_magnitude_N_m"] == pytest.approx(
+        sys.float_info.min * 1e7, rel=2e-15, abs=0)
+
+
+def test_tilt_lost_in_oblique_frame_is_explicitly_unavailable():
+    state = RectangularLoopState(tilt_deg=1e-200, field_direction=(1, 2, 3))
+    with pytest.raises(ValueError, match="world-coordinate normal"):
+        measure(state)
+
+
+def test_torque_below_binary64_range_is_explicitly_unavailable():
+    state = RectangularLoopState(tilt_deg=2e-305, width_m=.001, height_m=.001,
+                                 current_A=1e-6, field_strength_T=1e-6)
+    with pytest.raises(ValueError, match="world-coordinate torque"):
+        measure(state)
 
 
 def test_teaching_presets_select_geometry_and_explicit_zero():

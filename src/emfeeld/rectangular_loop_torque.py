@@ -10,11 +10,15 @@ from decimal import Decimal
 import json
 import math
 from pathlib import Path
+import sys
 
 import numpy as np
 
 VERSION = 1
 TYPE = "ideal_rectangular_current_loop_uniform_B"
+# Relative resolution required of the tilt-dependent part of the frame and
+# of the two independently evaluated torque vectors.
+_TILT_RTOL = 1e-10
 _KEYS = {"lesson_version", "lesson_type", "centre_m", "field_direction",
          "field_strength_T", "width_m", "height_m", "current_A", "tilt_deg"}
 
@@ -102,6 +106,8 @@ class RectangularLoopState:
         tilt = _number(self.tilt_deg, "tilt_deg")
         if not 0 <= tilt <= 180:
             raise ValueError("tilt_deg must be in 0..180 degrees")
+        if tilt > 0 and math.radians(tilt) < sys.float_info.min:
+            raise ValueError("tilt_deg is too small for a normal binary64 angle in radians")
         object.__setattr__(self, "centre_m", centre)
         object.__setattr__(self, "field_direction", direction)
         object.__setattr__(self, "field_strength_T", field)
@@ -152,6 +158,16 @@ def load_lesson(path) -> RectangularLoopState:
     return lesson_from_bytes(Path(path).read_bytes())
 
 
+def _tilt_components(theta):
+    if theta == 90:
+        return 1.0, 0.0
+    # Near 180 degrees, converting the full angle first loses significant
+    # bits in its distance from pi. Subtraction in degrees is exact here.
+    radians = math.radians(min(theta, 180.0 - theta))
+    cosine = math.cos(radians)
+    return math.sin(radians), -cosine if theta > 90 else cosine
+
+
 def orientation(state: RectangularLoopState):
     """Return (u,e1,e2) where e1 x e2 = u and u tilts from +field direction.
 
@@ -165,16 +181,12 @@ def orientation(state: RectangularLoopState):
     swing = swing / np.linalg.norm(swing)
     e1 = np.cross(d, swing)
     e1 = e1 / np.linalg.norm(e1)
-    theta = state.tilt_deg
-    if theta == 0:
-        sine, cosine = 0.0, 1.0
-    elif theta == 90:
-        sine, cosine = 1.0, 0.0
-    elif theta == 180:
-        sine, cosine = 0.0, -1.0
-    else:
-        sine, cosine = math.sin(math.radians(theta)), math.cos(math.radians(theta))
-    u = cosine * d + sine * swing
+    sine, cosine = _tilt_components(state.tilt_deg)
+    axial = cosine * d
+    transverse = sine * swing
+    u = axial + transverse
+    if math.hypot(*((u - axial) - transverse)) > _TILT_RTOL * sine:
+        raise ValueError("tilt_deg cannot be resolved in the world-coordinate normal")
     e2 = np.cross(u, e1)
     return u, e1, e2
 
@@ -210,6 +222,16 @@ def calculate(state: RectangularLoopState):
     forces = I * np.cross(edge_vectors, B)
     net_force = np.sum(forces, axis=0)
     segment_torque = np.sum(np.cross(rel_midpoints, forces), axis=0)
+    if 0 < state.tilt_deg < 180 and I != 0 and state.field_strength_T != 0:
+        # Even a resolvable normal can lose the tilt when scaled into a
+        # moment, or when subtracting nearly equal terms in a world-frame cross.
+        sine, _ = _tilt_components(state.tilt_deg)
+        signed_scale = (I * a * b * state.field_strength_T) * sine
+        expected = -signed_scale * e1
+        tolerance = _TILT_RTOL * abs(signed_scale)
+        if signed_scale == 0 or any(math.hypot(*(v - expected)) > tolerance
+                                    for v in (tau, segment_torque)):
+            raise ValueError("tilt_deg cannot be resolved in the world-coordinate torque")
     arrays = dict(normal_unit=u, width_unit=e1, height_unit=e2,
                   loop_corners_m=corners, side_midpoints_m=midpoints,
                   edge_vectors_m=edge_vectors, field_B_T=B,

@@ -24,6 +24,10 @@ At exactly zero current, magnetic moment, forces and torque vanish; an external 
 
 All physical quantities use SI; only forces on prescribed current segments are evaluated. No dynamics, moving loop, Lorentz test-particle trajectories, induced emf, self-field, field lines, materials, heat or battery work are calculated. Normal, current, external field, magnetic moment, force and torque *display arrows are direction-only schematic*, never tesla/ampere/N·m-proportional physical lengths. The view draws one representative filament; it does not depict a multi-turn winding.
 
+### Angle and torque representability
+
+The binary64 model evaluates acute and obtuse tilts using their distance in degrees from the nearer aligned endpoint. A positive tilt whose radian value falls below the smallest normal binary64 number is rejected during state construction. For other tilts, the orientation calculation requires the transverse part of the normal to survive addition in world coordinates to relative precision `1e-10`. At nonzero current and field, an interior angle must also yield a nonzero torque scale, and both the moment cross product and the sum of the segment torques must agree with the signed analytic torque vector to that relative precision. Unresolved configurations raise a domain error. These checks preserve exact zero torque at 0° and 180°.
+
 ## How to launch in your already installed Conda environment
 
 From the repository root, after this feature is released and the branch installed in the *same* existing `emfeeld[view]` environment:
