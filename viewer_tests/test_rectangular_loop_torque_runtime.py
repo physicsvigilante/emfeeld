@@ -92,6 +92,9 @@ def test_native_sliders_and_display_only_cache(monkeypatch):
     view=TorqueLesson(s,off_screen=True,window_size=(1000,660))
     try:
         view.plot.show(auto_close=False,interactive=False)
+        assert not any("|" in row for row in view.info_lines)
+        assert any("Moment magnitude" in row for row in view.info_lines)
+        assert any("Torque magnitude" in row for row in view.info_lines)
         before=view.preparation_count
         assert slider(view.angle_slider,90)==pytest.approx(90)
         assert view.state.tilt_deg==pytest.approx(90)
