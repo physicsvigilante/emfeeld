@@ -41,6 +41,8 @@ def qualify(target):
                 (root/label/"integrity.json").read_text())["files"].items():
             assert hashlib.sha256((root/label/file_name).read_bytes()).hexdigest() == expected
         assert report["physics"]["current_A"] == view.state.current_A
+        assert "display_reference_radius_m" not in report["physics"]
+        assert "display_reference_radius_m" in report["display"]
         assert report["current_state"] == view.state.to_dict()
         independent = mu_0 * view.state.current_A * view.state.radius_m**2 / (
             2 * math.hypot(view.state.radius_m, view.state.probe_z_m)**3)
@@ -59,7 +61,7 @@ def qualify(target):
             assert view.state == teaching_case(initial, key)
             assert view.state.probe_z_m == 0
             assert not view.show_values
-            assert view.prepared.report["loop_radius_display_reference_units"] == (
+            assert view.prepared.loop_radius_display_reference_units == (
                 2.0 if key == "3" else 1.0)
             capture(label+"_prediction")
             _key(view, "v")

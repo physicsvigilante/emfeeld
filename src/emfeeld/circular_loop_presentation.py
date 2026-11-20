@@ -24,6 +24,8 @@ class CircularLoopPresentation:
     probe_display_xyz: np.ndarray
     current_arrow_display_xyz: np.ndarray
     field_arrow_display_xyz: np.ndarray
+    display_reference_radius_m: float
+    loop_radius_display_reference_units: float
     report: object
 
 
@@ -52,7 +54,4 @@ def prepare(state: CircularLoopState, *, display_reference_radius_m=None) -> Cir
         _readonly(probe_field), _readonly(centre_field),
         _readonly(circle*scale), _readonly(probe_display),
         _readonly(current_arrow), _readonly(field_arrow),
-        MappingProxyType({**measure(state),
-                          "display_arrows_are_schematic": True,
-                          "display_reference_radius_m": float(reference),
-                          "loop_radius_display_reference_units": float(scale)}))
+        float(reference), float(scale), MappingProxyType(measure(state)))

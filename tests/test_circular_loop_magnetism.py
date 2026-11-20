@@ -42,7 +42,8 @@ def test_radius_and_current_changes():
     scaled = prepare(doubled, display_reference_radius_m=original.radius_m)
     assert np.linalg.norm(scaled.loop_display_xyz, axis=1) == pytest.approx(
         np.full(doubled.samples_per_loop, 2.0))
-    assert scaled.report["loop_radius_display_reference_units"] == pytest.approx(2.0)
+    assert scaled.loop_radius_display_reference_units == pytest.approx(2.0)
+    assert "loop_radius_display_reference_units" not in scaled.report
     assert np.linalg.norm(scaled.current_arrow_display_xyz) == pytest.approx(.5)
     assert axis_field(reversed_state)[2] == pytest.approx(-axis_field(original)[2])
     # At fixed SI z != 0, the ratio is not generally 1/2.

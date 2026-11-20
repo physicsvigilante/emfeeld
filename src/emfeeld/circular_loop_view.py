@@ -299,8 +299,10 @@ class CircularLoopLesson:
             "radius_slider_value": self.radius_slider.GetRepresentation().GetValue(),
             "probe_slider_value": self.z_slider.GetRepresentation().GetValue(),
             "probe_visible": self.probe_visible,
+            "display_reference_radius_m": float(
+                self.prepared.display_reference_radius_m),
             "rendered_loop_radius_initial_R_units": float(
-                self.prepared.report["loop_radius_display_reference_units"]),
+                self.prepared.loop_radius_display_reference_units),
             "positive_normal_arrow_direction": self.positive_normal_arrow_direction.tolist(),
             "current_arrow_direction": self.current_arrow_direction.tolist(),
             "field_arrow_direction": self.field_arrow_direction.tolist(),
@@ -347,7 +349,9 @@ def save_snapshot(authored: CircularLoopState, destination, *, lesson=None,
             "authored_state": authored.to_dict(),
             "current_state": state.to_dict(), "physics": dict(data.report),
             "display": lesson.display_state() if lesson is not None else {
-                "rendered": False, "schematic": True},
+                "rendered": False, "schematic": True,
+                "display_reference_radius_m": data.display_reference_radius_m,
+                "rendered_loop_radius_initial_R_units": data.loop_radius_display_reference_units},
             "renderer": "PyVista real screenshot" if lesson is not None else "none (headless)",
         }
         _write_json(root/"report.json", report)
