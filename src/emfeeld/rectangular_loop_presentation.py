@@ -6,6 +6,7 @@ No glyph scale, camera location or mesh geometry contributes to SI quantities.
 from __future__ import annotations
 
 from dataclasses import dataclass
+import math
 from types import MappingProxyType
 
 import numpy as np
@@ -19,7 +20,7 @@ def _readonly(value):
 
 
 def _direction_glyph(v, length, *, threshold=0.0):
-    mag = float(np.linalg.norm(v))
+    mag = math.hypot(*v)
     if mag <= threshold:
         return np.zeros(3, dtype=float)
     return length * np.asarray(v) / mag
