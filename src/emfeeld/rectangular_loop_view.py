@@ -124,8 +124,15 @@ class TorqueLesson:
     def set_field_ratio(self, ratio):
         if not math.isfinite(ratio):
             raise ValueError("field ratio must be finite")
-        self._apply(replace(self.state,
-                            field_strength_T=self.initial.field_strength_T*ratio))
+        if ratio < 0:
+            raise ValueError("field magnitude ratio cannot be negative")
+        # Reversing B with key B changes the physical sign; adjusting the
+        # magnitude slider must not silently undo that reversal.
+        sign_source = (self.state.field_strength_T if self.state.field_strength_T
+                       else self.initial.field_strength_T)
+        strength = math.copysign(abs(self.initial.field_strength_T)*ratio,
+                                 sign_source if sign_source else 1.0)
+        self._apply(replace(self.state, field_strength_T=strength))
 
     def reverse_current(self):
         self._apply(replace(self.state, current_A=-self.state.current_A))
