@@ -1,0 +1,19 @@
+{
+  "lesson_version": 1,
+  "lesson_type": "ideal_rectangular_current_loop_uniform_B",
+  "centre_m": [
+    0,
+    0,
+    0
+  ],
+  "field_direction": [
+    0,
+    0,
+    1
+  ],
+  "field_strength_T": 0.2,
+  "width_m": 0.6,
+  "height_m": 0.4,
+  "current_A": 3,
+  "tilt_deg": 45
+}
