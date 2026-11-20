@@ -155,6 +155,16 @@ def test_strict_json_and_canonical_rotated_direction_roundtrip(tmp_path):
         from_dict({**s.to_dict(), "field_strength_T": "0.2"})
 
 
+def test_near_parallel_resolvable_torque_magnitude_not_squared_to_zero():
+    s = RectangularLoopState(tilt_deg=1e-200, current_A=3,
+                             width_m=.6, height_m=.4, field_strength_T=.2)
+    d, _ = calculate(s)
+    expected = abs(3*.6*.4*.2*math.sin(math.radians(1e-200)))
+    assert expected > 0
+    assert math.hypot(*d["torque_N_m"]) == pytest.approx(expected, rel=1e-13)
+    assert measure(s)["torque_magnitude_N_m"] == pytest.approx(expected, rel=1e-13)
+
+
 def test_teaching_presets_select_geometry_and_explicit_zero():
     initial = RectangularLoopState(tilt_deg=40, current_A=5, field_strength_T=.1)
     assert [teaching_case(initial, str(i)).tilt_deg for i in range(1, 7)] == [
