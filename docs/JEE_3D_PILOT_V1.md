@@ -4,7 +4,7 @@
 
 ## How to use
 
-Start in an **existing** Conda/venv environment where `emfeeld[view]` already works. From the repository root, open one viewer at a time using the commands below. No reinstallation is needed for each lesson. A facilitator can start each window, but you should operate at least one key or slider in each.
+Start in an **existing** Conda/venv environment where `emfeeld[view]` already works. From the repository root, open one viewer at a time using the commands below. All three commands use **`--case 1` to open in prediction mode with the numerical answers hidden**, before the learner sees the screen. No reinstallation is needed for each lesson. A facilitator can start each window, but you should operate at least one key or slider in each.
 
 **Before pressing `V`**, say or write a prediction and an explanation. A numbered preset generally hides the numeric answer; `V` reveals it. When changing a scenario, hide the answer again before the next prediction if necessary. If a control is missing, unreadable or unresponsive, record what happened rather than quietly skipping it. Orbiting the camera changes the view, not the physical model.
 
@@ -13,7 +13,7 @@ Suggested time: **1 minute setup, 4 minutes circular loop, 4 minutes straight wi
 ## A. Magnetic field of a circular current loop (4 minutes)
 
 ```sh
-python -m emfeeld.circular_loop_view examples/lessons/circular_current_loop.json
+python -m emfeeld.circular_loop_view examples/lessons/circular_current_loop.json --case 1
 ```
 
 **A1 — Right-hand direction.** Press `1` (positive current, probe at centre). In the drawing, what are the roles of the **orange**, **green**, and **blue** arrows? Which of the three should change direction when the current reverses? Predict first, then press `2` and `V` to check.
@@ -27,7 +27,7 @@ Optional: press `K` for zero current and predict what should remain visible; `0`
 ## B. Magnetic field of an ideal straight wire (4 minutes)
 
 ```sh
-python -m emfeeld.wire_view examples/lessons/straight_current_wire.json
+python -m emfeeld.wire_view examples/lessons/straight_current_wire.json --case 1
 ```
 
 **B1 — Direction.** Press `1` (positive current along +z). At a point on the +x side of the wire, predict whether B points along +y or −y. Point out what **orange**, **green** and **blue** mean here. Check by rotating the view and pressing `V` for numeric information.
@@ -41,7 +41,7 @@ Optional: press `4` for zero current; predict whether the fixed blue traversal m
 ## C. Ideal parallel-plate capacitor (4 minutes)
 
 ```sh
-python -m emfeeld.capacitor_view examples/lessons/parallel_plate_capacitor.json
+python -m emfeeld.capacitor_view examples/lessons/parallel_plate_capacitor.json --case 1
 ```
 
 **C1 — Add a dielectric while isolated.** Press `1` (vacuum, isolated **fixed free Q**), then `2` (dielectric filling the gap, `κ = 4`, still fixed Q). Predict the factors by which **capacitance C, free Q, voltage V, electric field E and stored energy U** change. Explain which quantity is held fixed. Press `V` to reveal.
