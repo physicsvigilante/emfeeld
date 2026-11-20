@@ -199,10 +199,11 @@ def measure(state: CircularLoopState):
 
 
 def teaching_case(initial: CircularLoopState, key):
+    """Three teacher cases compare fields at the CENTRE, independent of probe."""
     if key == "1":
-        return initial
+        return replace(initial, probe_z_m=0.0)
     if key == "2":
-        return replace(initial, current_A=-initial.current_A)
+        return replace(initial, probe_z_m=0.0, current_A=-initial.current_A)
     if key == "3":
-        return replace(initial, radius_m=2 * initial.radius_m)
+        return replace(initial, probe_z_m=0.0, radius_m=2 * initial.radius_m)
     raise ValueError("circular-loop case must be 1, 2 or 3")
