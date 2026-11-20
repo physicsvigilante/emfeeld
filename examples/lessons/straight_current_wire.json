@@ -1,0 +1,9 @@
+{
+  "lesson_version": 1,
+  "lesson_type": "ideal_infinite_straight_current_wire",
+  "origin_m": [0.0, 0.0, 0.0],
+  "axis_direction": [0.0, 0.0, 1.0],
+  "current_A": 5.0,
+  "loop_radius_m": 0.20,
+  "samples_per_loop": 48
+}
