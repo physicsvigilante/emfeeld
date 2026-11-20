@@ -13,7 +13,7 @@ def test_readonly_fields_and_deep_immutable_report():
             "normal_unit", "field_B_T", "magnetic_moment_A_m2",
             "torque_N_m", "segment_forces_N", "loop_display_xyz",
             "side_force_vectors_display_xyz", "field_B_direction_display_xyz",
-            "moment_display_xyz", "torque_direction_display_xyz")
+            "magnetic_moment_display_xyz", "torque_direction_display_xyz")
     for name in fields:
         arr=getattr(p,name)
         assert not arr.flags.writeable
@@ -41,7 +41,7 @@ def test_distinct_display_reference_not_used_for_si_forces():
     assert p.reference_length_m==pytest.approx(.4)
     assert q.reference_length_m==pytest.approx(1.)
     assert np.linalg.norm(p.field_B_direction_display_xyz)==pytest.approx(.85)
-    assert np.linalg.norm(p.moment_display_xyz)==pytest.approx(.68)
+    assert np.linalg.norm(p.magnetic_moment_display_xyz)==pytest.approx(.68)
     assert np.linalg.norm(p.torque_direction_display_xyz)==pytest.approx(.73)
 
 
@@ -55,12 +55,12 @@ def test_signed_glyphs_reversal_zero_and_fixed_positive_normal():
                           reverse_B.positive_normal_display_xyz)
     assert negative.current_direction_display_xyz==pytest.approx(
         -positive.current_direction_display_xyz)
-    assert negative.moment_display_xyz==pytest.approx(-positive.moment_display_xyz)
+    assert negative.magnetic_moment_display_xyz==pytest.approx(-positive.magnetic_moment_display_xyz)
     assert negative.torque_direction_display_xyz==pytest.approx(
         -positive.torque_direction_display_xyz)
     assert reverse_B.field_B_direction_display_xyz==pytest.approx(
         -positive.field_B_direction_display_xyz)
-    assert reverse_B.moment_display_xyz==pytest.approx(positive.moment_display_xyz)
+    assert reverse_B.magnetic_moment_display_xyz==pytest.approx(positive.magnetic_moment_display_xyz)
     assert reverse_B.torque_direction_display_xyz==pytest.approx(
         -positive.torque_direction_display_xyz)
     for state in (RectangularLoopState(current_A=0),
@@ -68,11 +68,16 @@ def test_signed_glyphs_reversal_zero_and_fixed_positive_normal():
         p=prepare(state)
         assert not np.any(p.torque_direction_display_xyz)
         assert not np.any(p.side_force_vectors_display_xyz)
-    assert not np.any(prepare(RectangularLoopState(current_A=0)).moment_display_xyz)
+    assert not np.any(prepare(RectangularLoopState(current_A=0)).magnetic_moment_display_xyz)
     assert not np.any(prepare(RectangularLoopState(field_strength_T=0)).field_B_direction_display_xyz)
 
 
-@pytest.mark.parametrize("bad",[True,"1",None,-1,0.00001,1000,float("inf")])
+@pytest.mark.parametrize("bad",[True,"1",-1,0.00001,1000,float("inf")])
 def test_invalid_display_reference_refused(bad):
     with pytest.raises(ValueError):
         prepare(RectangularLoopState(),reference_length_m=bad)
+
+
+def test_default_reference_is_valid_and_derived_from_initial_dimensions():
+    s=RectangularLoopState(width_m=.6,height_m=.4)
+    assert prepare(s,reference_length_m=None).reference_length_m==pytest.approx(.6)
