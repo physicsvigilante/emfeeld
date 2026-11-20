@@ -59,6 +59,8 @@ def qualify(target):
             assert view.state == teaching_case(initial, key)
             assert view.state.probe_z_m == 0
             assert not view.show_values
+            assert view.prepared.report["loop_radius_display_reference_units"] == (
+                2.0 if key == "3" else 1.0)
             capture(label+"_prediction")
             _key(view, "v")
             assert view.show_values
