@@ -96,3 +96,31 @@ def test_immutable_buffers_detached():
     with pytest.raises(TypeError):
         p.report["extra"] = 1
     assert from_dict(state.to_dict()) == state
+
+
+def test_direct_cartesian_axis_probe_numpy_vectors_and_mixed_bool_refusals():
+    s = CircularLoopState(centre_m=(100, 0, 0), normal_direction=(1, 0, 0),
+                          current_A=4, radius_m=.2)
+    point = np.array([150, 0, 0], dtype=float)
+    assert field_at_point(s, point) == pytest.approx(axis_field(s, 50))
+    assert field_at_point(s, [150, 0, 0]) == pytest.approx(axis_field(s, 50))
+    assert field_at_point(s, point.astype(int)) == pytest.approx(axis_field(s, 50))
+    for bad in ([True, 0, 0], [0, np.bool_(True), 0],
+                np.array([True, 0, 0], dtype=object),
+                np.array([1, 2, 3], dtype=object),
+                np.array([1.0, np.nan, 0.0]),
+                np.array([[150.0, 0, 0]]), (201.0, 0, 0)):
+        with pytest.raises(ValueError):
+            field_at_point(s, bad)
+    for current in (4, 0):
+        with pytest.raises(ValueError, match="off-axis"):
+            field_at_point(CircularLoopState(current_A=current), (0.02, 0, 0))
+
+
+def test_teacher_presets_ignore_initial_offset_and_keep_compared_centre():
+    s = CircularLoopState(radius_m=.5, current_A=3, probe_z_m=-.4)
+    assert teaching_case(s, "1").probe_z_m == 0
+    assert teaching_case(s, "2").probe_z_m == 0
+    assert teaching_case(s, "3").probe_z_m == 0
+    assert teaching_case(s, "2").current_A == -3
+    assert teaching_case(s, "3").radius_m == 1.0
