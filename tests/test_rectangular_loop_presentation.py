@@ -78,6 +78,13 @@ def test_invalid_display_reference_refused(bad):
         prepare(RectangularLoopState(),reference_length_m=bad)
 
 
+def test_tiny_nonzero_torque_direction_does_not_numerically_underflow():
+    s=RectangularLoopState(tilt_deg=1e-200, current_A=3, field_strength_T=.2)
+    p=prepare(s)
+    assert p.report["torque_magnitude_N_m"]>0
+    assert np.linalg.norm(p.torque_direction_display_xyz)==pytest.approx(.73)
+
+
 def test_default_reference_is_valid_and_derived_from_initial_dimensions():
     s=RectangularLoopState(width_m=.6,height_m=.4)
     assert prepare(s,reference_length_m=None).reference_length_m==pytest.approx(.6)
