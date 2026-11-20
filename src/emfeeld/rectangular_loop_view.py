@@ -224,7 +224,7 @@ class TorqueLesson:
         self.moment_glyph = np.asarray(data.magnetic_moment_display_xyz).copy()
         self.normal_glyph = np.asarray(data.positive_normal_display_xyz).copy()
         self.current_glyph = np.asarray(data.current_direction_display_xyz).copy()
-        plot.add_text("CURRENT LOOP  |  UNIFORM MAGNETIC FIELD",
+        plot.add_text("CURRENT LOOP - UNIFORM MAGNETIC FIELD",
                       position="upper_left", font_size=12, color="#19374f")
         plot.add_text(
             "Green: external B    Pink: moment    Purple: torque\n"
@@ -253,7 +253,7 @@ class TorqueLesson:
             "5": "ZERO CURRENT", "6": "ZERO EXTERNAL FIELD"
         }
         lines = [
-            "JEE MAGNETISM 3D | TORQUE",
+            "JEE MAGNETISM 3D - TORQUE",
             "", "One rigid, ideal rectangular loop",
             "Uniform EXTERNAL B, one turn",
             f"Case: {case_names.get(self.case_label, 'CUSTOM')}",
@@ -265,8 +265,8 @@ class TorqueLesson:
         ]
         if self.show_values:
             lines.extend((
-                f"|magnetic moment| = {float(np.linalg.norm(data.magnetic_moment_A_m2)):.6g} A m^2",
-                f"|torque| = {m['torque_magnitude_N_m']:.6g} N m",
+                f"Moment magnitude = {float(np.linalg.norm(data.magnetic_moment_A_m2)):.6g} A m^2",
+                f"Torque magnitude = {m['torque_magnitude_N_m']:.6g} N m",
                 f"U orientation = {m['orientation_potential_J']:.6g} J",
                 "Forces add to zero; couple yields torque."
             ))
@@ -287,6 +287,7 @@ class TorqueLesson:
             "", "STATIC configurations; no spin in time,",
             "induction, self-field, or material effects."
         ))
+        self.info_lines = tuple(lines)
         self._info_actor = plot.add_text(
             "\n".join(lines), position="upper_left", font_size=10,
             color="#193f58")
