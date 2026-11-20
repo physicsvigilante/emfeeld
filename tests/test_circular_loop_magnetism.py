@@ -216,3 +216,17 @@ def test_load_lesson_and_source_bytes_apply_identical_strict_rules(tmp_path):
             lesson_from_bytes(bad)
         with pytest.raises(ValueError):
             load_lesson(path)
+
+
+def test_canonical_generated_snapshot_rotated_unit_normal_round_trip(tmp_path):
+    from emfeeld.circular_loop_view import save_snapshot
+    from emfeeld.circular_loop_magnetism import lesson_from_bytes
+    for index, normal in enumerate(((1, 1, 1), (.3, .4, .5))):
+        state = CircularLoopState(normal_direction=normal)
+        serialized = json.dumps(state.to_dict(), sort_keys=True).encode()
+        assert lesson_from_bytes(serialized) == state
+        target = tmp_path/f"canonical_{index}"
+        save_snapshot(state, target)
+        raw = (target/"authored-input.json").read_bytes()
+        assert lesson_from_bytes(raw) == state
+        assert json.loads((target/"report.json").read_bytes())["authored_state"] == state.to_dict()

@@ -72,7 +72,12 @@ class CircularLoopState:
         length = math.hypot(*normal)
         if not 1e-8 <= length <= 100.0:
             raise ValueError("normal_direction must resolve to nonzero direction")
-        normal = tuple(x / length for x in normal)
+        # A previously normalized binary64 direction can have computed norm
+        # 1 +/- one ULP. Do not re-normalize it and drift its source identity.
+        # This maintains canonical authored-JSON round trips without changing
+        # the intended unit direction beyond floating-point resolution.
+        if abs(length - 1.0) > math.ulp(1.0):
+            normal = tuple(x / length for x in normal)
         if not all(math.isfinite(x) for x in normal):
             raise ValueError("normal_direction not representable")
         current = _number(self.current_A, "current_A")
