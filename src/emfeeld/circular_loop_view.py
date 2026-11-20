@@ -38,7 +38,7 @@ class CircularLoopLesson:
         import pyvista as pv
         self.pv = pv
         self.initial = self.state = state
-        self.prepared = prepare(state)
+        self.prepared = prepare(state, display_reference_radius_m=state.radius_m)
         self.preparation_count = 1
         self.show_values = True
         self.case_label = None
@@ -99,7 +99,7 @@ class CircularLoopLesson:
 
     def _apply(self, state, *, case=None, reveal=None):
         if state != self.state:
-            prepared = prepare(state)
+            prepared = prepare(state, display_reference_radius_m=self.initial.radius_m)
             self.state = state
             self.prepared = prepared
             self.preparation_count += 1
@@ -198,7 +198,7 @@ class CircularLoopLesson:
         self.field_arrow_direction = B_arrow.copy()
         self.field_arrow_actor = None
         self.probe_field_arrow_actor = None
-        self.probe_visible = abs(self.state.probe_z_m/self.state.radius_m) <= 2.3
+        self.probe_visible = abs(self.state.probe_z_m/self.initial.radius_m) <= 2.3
         if np.linalg.norm(B_arrow) > 0:
             self.field_arrow_actor = plot.add_mesh(
                 pv.Arrow(start=(0., 0., 0.), direction=B_arrow,
@@ -229,7 +229,7 @@ class CircularLoopLesson:
         if previous_camera is None:
             plot.camera_position = [(3.6, -4.5, 3.5), (0., 0., 0.), (0., 0., 1.)]
             plot.camera.parallel_projection = True
-            plot.camera.parallel_scale = 2.7
+            plot.camera.parallel_scale = 3.35
         else:
             plot.camera_position = previous_camera
 
@@ -299,6 +299,8 @@ class CircularLoopLesson:
             "radius_slider_value": self.radius_slider.GetRepresentation().GetValue(),
             "probe_slider_value": self.z_slider.GetRepresentation().GetValue(),
             "probe_visible": self.probe_visible,
+            "rendered_loop_radius_initial_R_units": float(
+                self.prepared.report["loop_radius_display_reference_units"]),
             "positive_normal_arrow_direction": self.positive_normal_arrow_direction.tolist(),
             "current_arrow_direction": self.current_arrow_direction.tolist(),
             "field_arrow_direction": self.field_arrow_direction.tolist(),
