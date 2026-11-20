@@ -37,6 +37,14 @@ def qualify(target):
         report = save_snapshot(authored, root/label, lesson=view, source_bytes=source_bytes)
         png = root/label/"view.png"
         assert png.is_file() and png.stat().st_size > 3000
+        # Inspect the genuine rendered pixels, not only widget enable flags.
+        # This catches attaching sliders to the 3D renderer that is cleared.
+        from PIL import Image
+        image = np.asarray(Image.open(png).convert("RGB"))
+        h, w = image.shape[:2]
+        right_lower = image[int(.60*h):int(.95*h), int(.64*w):int(.97*w)]
+        assert np.count_nonzero(right_lower.mean(axis=2) < 150) > 250, (
+            "native radius/probe sliders absent from right information pane")
         for file_name, expected in json.loads(
                 (root/label/"integrity.json").read_text())["files"].items():
             assert hashlib.sha256((root/label/file_name).read_bytes()).hexdigest() == expected
