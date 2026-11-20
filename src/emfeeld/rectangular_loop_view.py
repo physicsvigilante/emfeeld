@@ -274,7 +274,7 @@ class TorqueLesson:
             lines.extend((
                 "Torque zero at 0 and 180 degrees?",
                 "Which alignment is lower energy?",
-                "Where is |torque| largest?",
+                "At which angle is torque largest?",
                 "Numerical answers are hidden."
             ))
         lines.extend((
