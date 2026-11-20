@@ -177,7 +177,17 @@ def _cartesian_probe(point_m):
             raise ValueError("point_m must contain three real non-Boolean numbers")
         point = np.asarray(point_m, dtype=float)
     elif type(point_m) in (list, tuple) and len(point_m) == 3:
-        point = np.asarray([_number(v, "point_m") for v in point_m], dtype=float)
+        # A computed physical point often carries np.float64 or np.int64
+        # coordinates. They are valid real probes, unlike strict JSON state
+        # values; test raw Booleans BEFORE array coercion.
+        if any(isinstance(v, (bool, np.bool_)) or
+               not isinstance(v, (int, float, np.integer, np.floating))
+               for v in point_m):
+            raise ValueError("point_m must contain three real non-Boolean numbers")
+        try:
+            point = np.asarray(point_m, dtype=float)
+        except (TypeError, ValueError, OverflowError) as exc:
+            raise ValueError("point_m components not representable") from exc
     else:
         raise ValueError("point_m must contain three real non-Boolean numbers")
     # A valid centre and axial displacement may each reach +/-100 m.
