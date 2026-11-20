@@ -39,6 +39,11 @@ def test_radius_and_current_changes():
     doubled = teaching_case(original, "3")
     reversed_state = teaching_case(original, "2")
     assert axis_field(doubled, 0)[2] / axis_field(original, 0)[2] == pytest.approx(.5)
+    scaled = prepare(doubled, display_reference_radius_m=original.radius_m)
+    assert np.linalg.norm(scaled.loop_display_xyz, axis=1) == pytest.approx(
+        np.full(doubled.samples_per_loop, 2.0))
+    assert scaled.report["loop_radius_display_reference_units"] == pytest.approx(2.0)
+    assert np.linalg.norm(scaled.current_arrow_display_xyz) == pytest.approx(.5)
     assert axis_field(reversed_state)[2] == pytest.approx(-axis_field(original)[2])
     # At fixed SI z != 0, the ratio is not generally 1/2.
     assert axis_field(doubled, .2)[2] / axis_field(original, .2)[2] != pytest.approx(.5)
