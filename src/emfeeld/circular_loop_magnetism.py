@@ -170,8 +170,24 @@ def axis_field(state: CircularLoopState, z_m=None):
     return field
 
 
+def _cartesian_probe(point_m):
+    """Strict public Cartesian probe; reject bool/object before NumPy coercion."""
+    if isinstance(point_m, np.ndarray):
+        if point_m.shape != (3,) or point_m.dtype.kind not in "fiu":
+            raise ValueError("point_m must contain three real non-Boolean numbers")
+        point = np.asarray(point_m, dtype=float)
+    elif type(point_m) in (list, tuple) and len(point_m) == 3:
+        point = np.asarray([_number(v, "point_m") for v in point_m], dtype=float)
+    else:
+        raise ValueError("point_m must contain three real non-Boolean numbers")
+    # A valid centre and axial displacement may each reach +/-100 m.
+    if not np.isfinite(point).all() or np.any(np.abs(point) > 200.0):
+        raise ValueError("point_m outside finite Cartesian lesson domain")
+    return point
+
+
 def field_at_point(state: CircularLoopState, point_m):
-    point = np.asarray(_vector(point_m, "point_m"), dtype=float)
+    point = _cartesian_probe(point_m)
     centre = np.asarray(state.centre_m, dtype=float)
     u = np.asarray(state.normal_direction, dtype=float)
     displacement = point - centre
