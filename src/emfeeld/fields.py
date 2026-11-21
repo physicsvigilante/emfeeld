@@ -88,7 +88,7 @@ def _sphere_potential_coefficient(kind, strength, distance, *, interior_factor=N
     return np.ldexp(fraction, coefficient_e + strength_e - distance_e)
 
 
-def _sphere_radial_field(kind, strength, displacement, distance):
+def _radial_field(kind, strength, displacement, distance):
     """Stable k*q*d/r^3 or -G*m*d/r^3, for a positive physical scale r.
 
     In particular, directly cubing a subnormal/small metre scale underflows
@@ -148,13 +148,13 @@ class PointSource(Source):
         return self.coefficient / r
 
     def field(self, points):
-        d = self.displacement(points)
-        r = np.linalg.norm(d, axis=-1)
         if not self.strength:
-            return np.zeros_like(d)
+            return np.zeros_like(positions(points))
+        d = self.displacement(points)
+        r = np.hypot.reduce(d, axis=-1)
         if np.any(r == 0):
             raise DomainError("point-source field is singular at its center")
-        return self.coefficient * d / r[..., None] ** 3
+        return _radial_field(self.kind, self.strength, d, r)
 
 
 @dataclass(frozen=True)
@@ -190,7 +190,7 @@ class SolidSphere(Source):
         if not self.strength:
             return np.zeros_like(d)
         r = np.hypot.reduce(d, axis=-1)
-        return _sphere_radial_field(self.kind, self.strength, d,
+        return _radial_field(self.kind, self.strength, d,
                                     np.maximum(r, self.radius))
 
 
@@ -219,7 +219,7 @@ class SphericalShell(SolidSphere):
         outside = r > self.radius
         result = np.zeros_like(d)
         if np.any(outside):
-            result[outside] = _sphere_radial_field(self.kind, self.strength,
+            result[outside] = _radial_field(self.kind, self.strength,
                                                     d[outside], r[outside])
         return result
 

@@ -70,3 +70,19 @@ def test_schema_refusals(change):
     change(model)
     with pytest.raises(ValueError):
         run(model)
+
+
+@pytest.mark.parametrize("charge, center", [
+    (0.0, [1e200, 0, 0]),
+    (1e-9, [1, 1e-200, 0]),
+])
+def test_point_field_with_mixed_coordinate_scales(charge, center):
+    model = packet()
+    model["electric_sources"] = [dict(id="point", type="point", center_m=center, charge_C=charge)]
+    report = run(model)
+    assert report["status"] == "ok"
+    expected = [-charge / (4 * math.pi * epsilon_0) * x for x in center]
+    assert report["electric_probes"][0]["total_E_N_C"] == pytest.approx(expected, rel=2e-15, abs=0)
+    if charge == 0:
+        for row in report["force_observations"]:
+            assert row["force_N"] == row["magnetic"]["force_N"]
