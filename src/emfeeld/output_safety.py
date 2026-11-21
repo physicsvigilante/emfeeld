@@ -15,6 +15,15 @@ def protect_saved_evidence(output: str | Path, *, new_directory: bool = False) -
     overwrite checks. Existing ordinary report files outside evidence remain
     governed by that caller's established replacement policy.
     """
+    _protect(output, new_directory=new_directory)
+
+
+def protect_revision_output(output: Path, store: Path) -> None:
+    """Admit the owning store while checking every evidence marker."""
+    _protect(output, owning_store=store.resolve())
+
+
+def _protect(output, *, new_directory=False, owning_store=None):
     path = Path(output)
     if new_directory and (path.exists() or path.is_symlink()):
         raise FileExistsError('output must be a new directory; previous evidence is never overwritten')
@@ -32,5 +41,5 @@ def protect_saved_evidence(output: str | Path, *, new_directory: bool = False) -
                   and (root / 'summary.json').is_file())
         attempt = ((root / 'started.json').is_file()
                    and (root / 'outcome.json').is_file())
-        if sealed or store or question or study or replay or attempt:
+        if sealed or (store and root != owning_store) or question or study or replay or attempt:
             raise ValueError('output must be outside existing saved evidence and model stores')

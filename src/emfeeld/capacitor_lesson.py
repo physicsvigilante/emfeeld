@@ -192,6 +192,10 @@ def from_dict(data):
 
 
 def load_lesson(path):
+    return parse_lesson(Path(path).read_bytes())
+
+
+def parse_lesson(raw):
     def unique(pairs):
         d={}
         for k,v in pairs:
@@ -200,7 +204,7 @@ def load_lesson(path):
         return d
     def nonfinite(value):
         raise ValueError('nonfinite JSON capacitor number: '+value)
-    data=json.loads(Path(path).read_text(encoding='utf-8'),object_pairs_hook=unique,
+    data=json.loads(raw.decode('utf-8'),object_pairs_hook=unique,
                     parse_constant=nonfinite, parse_float=_json_float)
     return from_dict(data)
 

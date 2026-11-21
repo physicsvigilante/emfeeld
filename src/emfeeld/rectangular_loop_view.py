@@ -109,7 +109,8 @@ class TorqueLesson:
             self.redraw()
 
     def _apply(self, new_state, *, case=None, reveal=None):
-        if new_state != self.state:
+        if (new_state != self.state or math.copysign(1, new_state.field_strength_T)
+                != math.copysign(1, self.state.field_strength_T)):
             data = prepare(new_state, reference_length_m=self.reference_length_m)
             self.state = new_state
             self.prepared = data
@@ -131,10 +132,8 @@ class TorqueLesson:
             raise ValueError("field magnitude ratio cannot be negative")
         # Reversing B with key B changes the physical sign; adjusting the
         # magnitude slider must not silently undo that reversal.
-        sign_source = (self.state.field_strength_T if self.state.field_strength_T
-                       else self.initial.field_strength_T)
         strength = math.copysign(abs(self.initial.field_strength_T)*ratio,
-                                 sign_source if sign_source else 1.0)
+                                 self.state.field_strength_T)
         self._apply(replace(self.state, field_strength_T=strength))
 
     def reverse_current(self):

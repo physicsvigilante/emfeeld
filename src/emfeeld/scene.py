@@ -1,6 +1,7 @@
 """Strict JSON authoring: data only, no eval/import/executable expressions."""
 from dataclasses import dataclass
 import json
+from .numeric_tokens import finite_float
 import math
 from pathlib import Path
 import numpy as np
@@ -161,7 +162,7 @@ def scene_from_json(text):
                 raise ValueError(f"duplicate JSON key: {key}")
             result[key] = value
         return result
-    return scene_from_dict(json.loads(text, object_pairs_hook=no_duplicates))
+    return scene_from_dict(json.loads(text, parse_float=finite_float, object_pairs_hook=no_duplicates))
 
 
 def load_scene(path):

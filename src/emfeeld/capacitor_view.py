@@ -15,7 +15,7 @@ import math
 
 import numpy as np
 
-from .capacitor_lesson import CapacitorState, measure, load_lesson, teaching_case
+from .capacitor_lesson import CapacitorState, measure, load_lesson, parse_lesson, teaching_case
 from .capacitor_presentation import prepare
 from .output_safety import protect_saved_evidence
 
@@ -228,6 +228,7 @@ class CapacitorLesson:
 def save_snapshot(state,output,*,lesson=None,source_bytes=None):
     """Save actual current model, SI arrays, graphics receipt; never overwrite."""
     protect_saved_evidence(output,new_directory=True)
+    original = parse_lesson(source_bytes) if source_bytes is not None else None
     if lesson is not None:state=lesson.state
     d=lesson.prepared if lesson is not None else prepare(state)
     output=Path(output)
@@ -243,7 +244,7 @@ def save_snapshot(state,output,*,lesson=None,source_bytes=None):
                 'model':'ideal_parallel_plate_no_fringing',
                 'schematic_gap_factor':d.display_gap_exaggeration,
                 'source_sha256':_sha(source_bytes) if source_bytes is not None else None,
-                'input_equals_current':json.loads(source_bytes)==state.to_dict() if source_bytes else None,
+                'input_equals_current':original == state if original is not None else None,
                 'screenshot':None,'teacher_usefulness':'not_evaluated',
                 'original_exam_question':'not_claimed',
                 'code_sha256':{name:_sha((Path(__file__).parent/name).read_bytes())

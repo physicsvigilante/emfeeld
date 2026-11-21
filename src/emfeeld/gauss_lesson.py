@@ -9,6 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import math
 import json
+from .numeric_tokens import finite_float
 from pathlib import Path
 
 import numpy as np
@@ -358,7 +359,7 @@ def parse_lesson(raw):
                 raise ValueError(f"duplicate JSON key: {key}")
             result[key] = value
         return result
-    return from_dict(json.loads(raw, object_pairs_hook=unique))
+    return from_dict(json.loads(raw, parse_float=finite_float, object_pairs_hook=unique))
 
 
 def load_lesson(path):

@@ -447,3 +447,16 @@ def test_cmp01_distinct_event_times_are_not_subtracted(tmp_path):
     assert row['comparison']=='separate_event_states_not_equal_times'
     assert row['baseline']['time_s']==pytest.approx(np.sqrt(2),abs=1e-7)
     assert row['variant']['time_s']==pytest.approx(1,abs=1e-7)
+
+
+def test_revision_preflight_preserves_enclosing_seal(tmp_path):
+    archive = tmp_path / 'archive'
+    archive.mkdir()
+    store, reference = imported(archive)
+    inventory = {str(p.relative_to(archive)): sha256(p.read_bytes())
+                 for p in archive.rglob('*') if p.is_file()}
+    write(archive / 'integrity.json', {'files': inventory})
+    before = {p: p.read_bytes() for p in archive.rglob('*') if p.is_file()}
+    with pytest.raises(ValueError, match='outside existing saved evidence'):
+        revise(tmp_path, store, proposal(reference))
+    assert before == {p: p.read_bytes() for p in archive.rglob('*') if p.is_file()}

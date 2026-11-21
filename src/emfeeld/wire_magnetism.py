@@ -129,7 +129,11 @@ def from_dict(data):
 
 
 def load_lesson(path):
-    obj = json.loads(Path(path).read_text(encoding='utf-8'),
+    return parse_lesson(Path(path).read_bytes())
+
+
+def parse_lesson(raw):
+    obj = json.loads(raw.decode('utf-8'),
                      parse_float=_float_token,
                      parse_constant=lambda x: (_ for _ in ()).throw(ValueError('nonfinite JSON: ' + x)),
                      object_pairs_hook=_no_duplicate_pairs)
