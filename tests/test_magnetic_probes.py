@@ -73,11 +73,12 @@ def test_translated_tilted_wire_with_uniform_field():
         [1e-6, -2e-6 + .8 * scale, 3e-6 - .6 * scale], rel=3e-15, abs=0)
 
 
-def test_resolved_wire_offset_with_subnormal_squared_distance():
+@pytest.mark.parametrize("offset", [4e-162, 1e-163, 1e-300])
+def test_resolved_tiny_wire_offset(offset):
     packet = model()
     packet["sources"] = [dict(packet["sources"][0], origin_m=[0, 0, 0])]
-    packet["probes"] = [dict(id="near", position_m=[4e-162, 0, 0])]
-    expected = 5 * mu_0 / (2 * math.pi * 4e-162)
+    packet["probes"] = [dict(id="near", position_m=[offset, 0, 0])]
+    expected = (5 * mu_0 / (2 * math.pi)) / offset
     assert run(packet)["probes"][0]["total_B_T"] == pytest.approx([0, expected, 0], rel=2e-15, abs=0)
 
 
@@ -120,11 +121,25 @@ def test_invalid_model_refused(change):
         run(packet)
 
 
-@pytest.mark.parametrize("token", ["1e-9999", "1e999", "NaN", "Infinity", '5,"current_A":4'])
+@pytest.mark.parametrize("token", ["1e-9999", "1e-99999999999999999999", "1e999",
+                                   "NaN", "Infinity", '5,"current_A":4'])
 def test_invalid_numeric_tokens_and_duplicate_keys(token):
     raw = EXAMPLE.read_text().replace('"current_A": 5', '"current_A": ' + token)
     with pytest.raises(ValueError):
         evaluate(raw.encode())
+
+
+def test_extreme_exponent_cli_refusal_and_exact_zero(tmp_path, capsys):
+    src = tmp_path / "model.json"
+    for significand, code in (("1", 2), ("0", 0)):
+        src.write_text(EXAMPLE.read_text().replace('"current_A": 5',
+            f'"current_A": {significand}e-99999999999999999999'))
+        assert main(["magnetic-field", str(src)]) == code
+        result = capsys.readouterr()
+        if code == 2:
+            assert not result.out and "not representable" in result.err
+        else:
+            assert json.loads(result.out)["status"] == "ok"
 
 
 def test_invalid_input_and_protected_outputs(tmp_path):

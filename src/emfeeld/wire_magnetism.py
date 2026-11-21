@@ -6,7 +6,6 @@ field, Lorentz dynamics, magnetic material, induced currents, or scalar potentia
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
-from decimal import Decimal
 import json
 import math
 from pathlib import Path
@@ -22,7 +21,10 @@ _KEYS = {'lesson_version', 'lesson_type', 'origin_m', 'axis_direction',
 
 def _float_token(token: str) -> float:
     val = float(token)
-    if not math.isfinite(val) or (val == 0 and Decimal(token) != 0):
+    # JSON has already validated the grammar. Inspect the significand rather
+    # than parsing an exponent that may exceed even Decimal's range.
+    if not math.isfinite(val) or (val == 0 and any(
+            c in '123456789' for c in token.lower().partition('e')[0])):
         raise ValueError('magnetic wire JSON number not representable as float64: ' + token)
     return val
 
@@ -178,21 +180,26 @@ def magnetic_field(state: InfiniteStraightWire, points_m):
     u = np.asarray(state.axis_direction, dtype=float)
     origin = np.asarray(state.origin_m, dtype=float)
     d = points - origin
-    rho = d - np.sum(d * u, axis=-1)[..., None] * u
-    r2 = np.sum(rho * rho, axis=-1)
-    r = np.sqrt(r2)
-    # Relative to represented coordinates; NO arbitrary fixed metre cutoff.
-    error = 64 * np.finfo(float).eps * (
-        np.linalg.norm(points, axis=-1) + np.linalg.norm(origin))
-    if np.any(r <= error) or np.any(r == 0):
+    distance_scale = np.max(np.abs(d), axis=-1)
+    if np.any(distance_scale == 0):
         raise WireAxisError('magnetic field undefined on or numerically unresolved near ideal wire axis')
-    if np.any(r2 < np.finfo(float).tiny):
-        # Squaring a resolvable offset can discard most of its precision.
-        r = np.hypot.reduce(rho, axis=-1)
-        scale = (mu_0 * state.current_A / (2 * math.pi)) / r
-        return scale[..., None] * np.cross(u, rho / r[..., None])
-    field = (mu_0 * state.current_A / (2 * math.pi)) * np.cross(u, rho) / r2[..., None]
-    if not np.isfinite(field).all() or np.any(np.linalg.norm(field, axis=-1) == 0):
+    # Work in units of the displacement scale: a resolved offset may have
+    # a squared SI length that rounds to zero. u x d already removes the
+    # axial component and points in the positive-current field direction.
+    tangent = np.cross(u, d / distance_scale[..., None])
+    radius = np.hypot.reduce(tangent, axis=-1)
+    with np.errstate(over='ignore'):
+        uncertainty = 64 * np.finfo(float).eps * (
+            np.hypot.reduce(points, axis=-1) / distance_scale
+            + math.hypot(*origin) / distance_scale)
+    if np.any(radius <= uncertainty):
+        raise WireAxisError('magnetic field undefined on or numerically unresolved near ideal wire axis')
+    direction = tangent / radius[..., None]
+    mantissa, exponent = np.frexp(distance_scale)
+    coefficient = (mu_0 * state.current_A / (2 * math.pi)) / (radius * mantissa)
+    with np.errstate(over='ignore', under='ignore'):
+        field = np.ldexp(coefficient[..., None] * direction, -exponent[..., None])
+    if not np.isfinite(field).all() or np.any(np.all(field == 0, axis=-1)):
         raise ValueError('nonzero magnetic field underflow or nonrepresentable')
     return field
 
