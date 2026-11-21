@@ -194,6 +194,12 @@ def get_capabilities() -> dict:
         },
         'static_magnetic_field': {
             'model_version': 1, 'required': ['model_version', 'kind', 'sources', 'probes'],
+            'version_4': {'kind': 'static_magnetic_field',
+                          'required': ['model_version', 'kind', 'sources', 'wire_force_observations'],
+                          'wire_force_observation': ['id', 'wire_id', 'axis_distance_m'],
+                          'quantity': 'instantaneous local magnetic force per unit length in N/m on a named prescribed straight wire, excluding only its own field by source id',
+                          'units': 'N/m',
+                          'example': 'examples/magnetic/parallel_wires_force.json'},
             'version_3': {'kind': 'static_electromagnetic_field',
                           'additional_required_over_v2': ['electric_sources'],
                           'electric_source_types': list(source_types),

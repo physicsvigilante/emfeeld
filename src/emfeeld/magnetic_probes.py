@@ -92,6 +92,9 @@ def _probe(ident, position, sources, *, electric=False):
     failures = {c["status"] for c in contributions if c["status"] != "ok"}
     if failures:
         row["status"] = "domain_error" if "domain_error" in failures else "numerical_error"
+    elif not vectors:
+        row[total_key] = [0.0, 0.0, 0.0]
+        row["status"] = "ok"
     else:
         try:
             row[total_key] = [_component_sum(component) for component in zip(*vectors)]
@@ -110,15 +113,40 @@ def _magnetic_force(field, charge, velocity):
     return [Fraction(charge) * x for x in cross]
 
 
-def _force_result(components):
+def _force_result(components, *, key="force_N", reason="unrepresentable_force"):
     try:
         values = [float(x) for x in components]
     except OverflowError:
-        return dict(force_N=None, status="numerical_error", reason="unrepresentable_force")
+        return {key: None, "status": "numerical_error", "reason": reason}
     tolerance = Fraction(8 * math.ulp(1.))
     if any(abs(Fraction(v) - x) > abs(x) * tolerance for x, v in zip(components, values)):
-        return dict(force_N=None, status="numerical_error", reason="unrepresentable_force")
-    return dict(status="ok", force_N=values)
+        return {key: None, "status": "numerical_error", "reason": reason}
+    return {"status": "ok", key: values}
+
+
+def _wire_force_observation(ident, wire_id, wire, distance_m, position, external_sources):
+    external = _probe(ident, position, external_sources)
+    row = dict(
+        id=ident,
+        wire_id=wire_id,
+        axis_distance_m=distance_m,
+        position_m=list(position),
+        tangent=list(wire.axis_direction),
+        current_A=wire.current_A,
+        excluded_source_id=wire_id,
+        external_contributions=external["contributions"],
+        external_B_T=external["total_B_T"],
+        external_B_status=external["status"],
+    )
+    field = external["total_B_T"]
+    if field is None:
+        reason = external.get("reason", "unavailable_external_field")
+        if reason == "unrepresentable_total_field":
+            reason = "unrepresentable_external_field"
+        return dict(row, status=external["status"], force_per_length_N_per_m=None, reason=reason)
+    components = _magnetic_force(field, wire.current_A, wire.axis_direction)
+    return dict(row, **_force_result(components, key="force_per_length_N_per_m",
+                                     reason="unrepresentable_force_per_length"))
 
 
 def _force_observation(ident, probe, charge, velocity, electric=None):
@@ -145,13 +173,16 @@ def evaluate(raw: bytes):
     model = json.loads(raw.decode("utf-8"), object_pairs_hook=_no_duplicate_pairs,
                        parse_float=_float_token, parse_constant=_float_token)
     version = model.get("model_version") if isinstance(model, dict) else None
-    if type(version) is not int or version not in (1, 2, 3):
+    if type(version) is not int or version not in (1, 2, 3, 4):
         raise ValueError("unsupported magnetic model_version")
-    keys = ("model_version", "kind", "sources", "probes")
-    if version >= 2:
-        keys += ("force_observations",)
-    if version == 3:
-        keys += ("electric_sources",)
+    if version == 4:
+        keys = ("model_version", "kind", "sources", "wire_force_observations")
+    else:
+        keys = ("model_version", "kind", "sources", "probes")
+        if version >= 2:
+            keys += ("force_observations",)
+        if version == 3:
+            keys += ("electric_sources",)
     _keys(model, keys, "field model")
     kind_name = "static_electromagnetic_field" if version == 3 else "static_magnetic_field"
     if model["kind"] != kind_name:
@@ -164,6 +195,41 @@ def evaluate(raw: bytes):
         factory, params = SOURCE_TYPES[kind]
         _keys(record, ("id", "type", *params), ident)
         sources.append((ident, factory(**{k: record[k] for k in params})))
+    if version == 4:
+        sources_by_id = dict(sources)
+        wire_requests = []
+        for ident, record in _records(model, "wire_force_observations"):
+            _keys(record, ("id", "wire_id", "axis_distance_m"), ident)
+            wire_id = record["wire_id"]
+            if not isinstance(wire_id, str) or wire_id not in sources_by_id:
+                raise ValueError(f"unknown wire_id in {ident}")
+            wire = sources_by_id[wire_id]
+            if not isinstance(wire, InfiniteStraightWire):
+                raise ValueError(f"wire_id in {ident} must reference an infinite_straight_wire source")
+            distance = _number(record["axis_distance_m"], "axis_distance_m")
+            if abs(distance) > 1e5:
+                raise ValueError("axis_distance_m outside bounded coordinate range")
+            position = tuple(float(Fraction(o) + Fraction(distance) * Fraction(t))
+                             for o, t in zip(wire.origin_m, wire.axis_direction))
+            if any(not math.isfinite(x) or abs(x) > 1e5 for x in position):
+                raise ValueError("wire observation position_m outside bounded coordinate range")
+            wire_requests.append((ident, wire_id, wire, distance, position))
+        wire_rows = [
+            _wire_force_observation(
+                ident, wire_id, wire, distance, position,
+                [(sid, src) for sid, src in sources if sid != wire_id],
+            )
+            for ident, wire_id, wire, distance, position in wire_requests
+        ]
+        good = sum(row["status"] == "ok" for row in wire_rows)
+        return dict(
+            report_version=version,
+            kind=model["kind"],
+            input_sha256=hashlib.sha256(raw).hexdigest(),
+            mu_0_T_m_per_A=mu_0,
+            wire_force_observations=wire_rows,
+            status="ok" if good == len(wire_rows) else ("partial" if good else "failed"),
+        )
     electric_sources = []
     if version == 3:
         magnetic_ids = {ident for ident, _ in sources}

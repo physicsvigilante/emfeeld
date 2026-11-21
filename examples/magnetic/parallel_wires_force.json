@@ -1,0 +1,32 @@
+{
+  "model_version": 4,
+  "kind": "static_magnetic_field",
+  "sources": [
+    {
+      "id": "wire_left",
+      "type": "infinite_straight_wire",
+      "origin_m": [-1, 0, 0],
+      "axis_direction": [0, 0, 1],
+      "current_A": 5
+    },
+    {
+      "id": "wire_right",
+      "type": "infinite_straight_wire",
+      "origin_m": [1, 0, 0],
+      "axis_direction": [0, 0, 1],
+      "current_A": 5
+    }
+  ],
+  "wire_force_observations": [
+    {
+      "id": "force_on_left",
+      "wire_id": "wire_left",
+      "axis_distance_m": 0
+    },
+    {
+      "id": "force_on_right",
+      "wire_id": "wire_right",
+      "axis_distance_m": 0
+    }
+  ]
+}
