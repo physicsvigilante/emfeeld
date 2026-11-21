@@ -194,6 +194,11 @@ def get_capabilities() -> dict:
         },
         'static_magnetic_field': {
             'model_version': 1, 'required': ['model_version', 'kind', 'sources', 'probes'],
+            'version_3': {'kind': 'static_electromagnetic_field',
+                          'additional_required_over_v2': ['electric_sources'],
+                          'electric_source_types': list(source_types),
+                          'electric_units': 'N/C', 'magnetic_units': 'T', 'force_units': 'N',
+                          'example': 'examples/magnetic/velocity_selector.json'},
             'version_2': {'additional_required': ['force_observations'],
                           'force_observation': ['id', 'probe_id', 'charge_C', 'velocity_m_s'],
                           'quantity': 'instantaneous magnetic force in N at the referenced field probe',

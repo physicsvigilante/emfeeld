@@ -1,0 +1,88 @@
+{
+  "model_version": 3,
+  "kind": "static_electromagnetic_field",
+  "sources": [
+    {
+      "id": "magnet",
+      "type": "uniform_magnetic_field",
+      "B_T": [
+        0,
+        0,
+        0.5
+      ]
+    }
+  ],
+  "electric_sources": [
+    {
+      "id": "plates",
+      "type": "uniform",
+      "field_N_C": [
+        0,
+        2,
+        0
+      ]
+    }
+  ],
+  "probes": [
+    {
+      "id": "gap",
+      "position_m": [
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "force_observations": [
+    {
+      "id": "slow",
+      "probe_id": "gap",
+      "charge_C": 1e-06,
+      "velocity_m_s": [
+        2,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "selected",
+      "probe_id": "gap",
+      "charge_C": 1e-06,
+      "velocity_m_s": [
+        4,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "fast",
+      "probe_id": "gap",
+      "charge_C": 1e-06,
+      "velocity_m_s": [
+        6,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "negative",
+      "probe_id": "gap",
+      "charge_C": -1e-06,
+      "velocity_m_s": [
+        4,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "parallel_component",
+      "probe_id": "gap",
+      "charge_C": 1e-06,
+      "velocity_m_s": [
+        4,
+        0,
+        3
+      ]
+    }
+  ]
+}
