@@ -83,9 +83,9 @@ def main(argv=None):
         return model_main(argv[1:])
     parser = argparse.ArgumentParser(description=__doc__,
         epilog="Named models: python -m emfeeld model --help")
-    parser.add_argument("command", choices=("validate", "run", "view", "capabilities"))
+    parser.add_argument("command", choices=("validate", "run", "view", "capabilities", "magnetic-field"))
     parser.add_argument("scene", type=Path, nargs="?")
-    parser.add_argument("--output", type=Path, help="run: NPZ output; capabilities: generated JSON output")
+    parser.add_argument("--output", type=Path, help="NPZ for run, JSON for capabilities or magnetic-field")
     parser.add_argument("--screenshot", type=Path, help="view only: offscreen PNG instead of desktop window")
     args = parser.parse_args(argv)
     if args.command == "capabilities":
@@ -94,9 +94,9 @@ def main(argv=None):
         from .capabilities import main as capabilities_main
         return capabilities_main(["--output", str(args.output)] if args.output is not None else [])
     if args.scene is None:
-        parser.error("a scene is required for validate, run and view")
-    if args.output and args.command != "run":
-        parser.error("--output is only valid with run")
+        parser.error("a scene or model file is required")
+    if args.output and args.command not in ("run", "magnetic-field"):
+        parser.error("--output requires run, magnetic-field or capabilities")
     if args.screenshot and args.command != "view":
         parser.error("--screenshot is only valid with view")
     try:
@@ -107,6 +107,24 @@ def main(argv=None):
             args.screenshot = args.screenshot.with_suffix(".png")
         _protect_input(args.scene, args.output)
         _protect_input(args.scene, args.screenshot)
+        if args.command == "magnetic-field":
+            from .magnetic_probes import evaluate
+            if args.output and (args.output.exists() or args.output.is_symlink()):
+                raise FileExistsError("magnetic report requires a fresh output file")
+            report = evaluate(args.scene.read_bytes())
+            text = json.dumps(report, indent=2, allow_nan=False) + "\n"
+            if args.output:
+                args.output.parent.mkdir(parents=True, exist_ok=True)
+                with args.output.open("x", encoding="utf-8") as out:
+                    try:
+                        out.write(text)
+                        out.flush()
+                    except OSError:
+                        out.close()
+                        args.output.unlink()
+                        raise
+            print(text, end="")
+            return 0 if report["status"] == "ok" else 1
         scene_document = args.scene.read_text(encoding="utf-8")
         scene = scene_from_json(scene_document)
         if args.command == "validate":

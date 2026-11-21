@@ -1,0 +1,13 @@
+{
+  "model_version": 1,
+  "kind": "static_magnetic_field",
+  "sources": [
+    {"id": "left", "type": "infinite_straight_wire", "origin_m": [-1, 0, 0], "axis_direction": [0, 0, 1], "current_A": 5},
+    {"id": "right", "type": "infinite_straight_wire", "origin_m": [1, 0, 0], "axis_direction": [0, 0, 1], "current_A": 5}
+  ],
+  "probes": [
+    {"id": "midpoint", "position_m": [0, 0, 0]},
+    {"id": "outside", "position_m": [3, 0, 0]},
+    {"id": "on_left", "position_m": [-1, 0, 0]}
+  ]
+}

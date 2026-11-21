@@ -57,13 +57,15 @@ def _no_duplicate_pairs(pairs):
     return result
 
 
+class WireAxisError(ValueError):
+    """The ideal current-bearing wire has no resolved field at this point."""
+
+
 @dataclass(frozen=True)
-class WireState:
+class InfiniteStraightWire:
     origin_m: tuple = (0.0, 0.0, 0.0)
     axis_direction: tuple = (0.0, 0.0, 1.0)
     current_A: float = 5.0
-    loop_radius_m: float = 0.2
-    samples_per_loop: int = 48
 
     def __post_init__(self):
         origin = _vec(self.origin_m, 'origin_m', 100.0)
@@ -75,14 +77,26 @@ class WireState:
         I = _number(self.current_A, 'current_A')
         if abs(I) > 1e4 or (I != 0 and abs(I) < 1e-6):
             raise ValueError('current_A must be zero or 1e-6..1e4 A in magnitude')
+        object.__setattr__(self, 'origin_m', origin)
+        object.__setattr__(self, 'axis_direction', axis)
+        object.__setattr__(self, 'current_A', I)
+
+    def field_at(self, position_m):
+        return magnetic_field(self, position_m)
+
+
+@dataclass(frozen=True)
+class WireState(InfiniteStraightWire):
+    loop_radius_m: float = 0.2
+    samples_per_loop: int = 48
+
+    def __post_init__(self):
+        super().__post_init__()
         R = _number(self.loop_radius_m, 'loop_radius_m')
         if not 1e-3 <= R <= 100.0:
             raise ValueError('loop_radius_m must be 1e-3..100 m')
         if type(self.samples_per_loop) is not int or not 12 <= self.samples_per_loop <= 192:
             raise ValueError('samples_per_loop must be an integer in 12..192')
-        object.__setattr__(self, 'origin_m', origin)
-        object.__setattr__(self, 'axis_direction', axis)
-        object.__setattr__(self, 'current_A', I)
         object.__setattr__(self, 'loop_radius_m', R)
 
     def to_dict(self):
@@ -143,7 +157,7 @@ def _contains_raw_bool(value):
     return False
 
 
-def magnetic_field(state: WireState, points_m):
+def magnetic_field(state: InfiniteStraightWire, points_m):
     """Field B in tesla at physical points, not a visualization arrow.
 
     Singular at current-bearing ideal wire axis, including numerically
@@ -171,7 +185,12 @@ def magnetic_field(state: WireState, points_m):
     error = 64 * np.finfo(float).eps * (
         np.linalg.norm(points, axis=-1) + np.linalg.norm(origin))
     if np.any(r <= error) or np.any(r == 0):
-        raise ValueError('magnetic field undefined on or numerically unresolved near ideal wire axis')
+        raise WireAxisError('magnetic field undefined on or numerically unresolved near ideal wire axis')
+    if np.any(r2 < np.finfo(float).tiny):
+        # Squaring a resolvable offset can discard most of its precision.
+        r = np.hypot.reduce(rho, axis=-1)
+        scale = (mu_0 * state.current_A / (2 * math.pi)) / r
+        return scale[..., None] * np.cross(u, rho / r[..., None])
     field = (mu_0 * state.current_A / (2 * math.pi)) * np.cross(u, rho) / r2[..., None]
     if not np.isfinite(field).all() or np.any(np.linalg.norm(field, axis=-1) == 0):
         raise ValueError('nonzero magnetic field underflow or nonrepresentable')
