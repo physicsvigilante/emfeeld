@@ -76,7 +76,9 @@ class InfiniteStraightWire:
         length = math.hypot(*axis)
         if not 1e-8 <= length <= 100.0:
             raise ValueError('axis_direction must be a resolved nonzero vector')
-        normalized = tuple(v / length for v in axis)
+        # A normalized binary64 vector can have a norm one ulp from unity.
+        # Preserve that representation when reloading a serialized state.
+        normalized = axis if abs(length - 1.) <= math.ulp(1.) else tuple(v / length for v in axis)
         if any(v and abs(n) < np.finfo(float).tiny and
                abs(n / v * length - 1.) > 8 * np.finfo(float).eps
                for v, n in zip(axis, normalized)):
@@ -187,7 +189,7 @@ def magnetic_field(state: InfiniteStraightWire, points_m):
         raise ValueError('magnetic probe outside bounded coordinate range')
     if state.current_A == 0:
         return np.zeros(points.shape, dtype=float)
-    # B = (mu0 I / 2pi) |u| (u x d) / |u x d|². Keep the determinants
+    # B = (mu0 I / 2pi) |u| (u x d) / |u x d|Â². Keep the determinants
     # and division exact for the represented coordinates: components smaller
     # than intermediate float64 range can survive in the final SI vector.
     ux, uy, uz = map(Fraction, state.axis_direction)

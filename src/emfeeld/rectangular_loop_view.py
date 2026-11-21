@@ -76,7 +76,7 @@ class TorqueLesson:
         self.angle_slider.GetRepresentation().ShowSliderLabelOff()
         self.field_slider = self.plot.add_slider_widget(
             lambda value: self._event(lambda: self.set_field_ratio(float(value))),
-            (0., 2.), value=1., title="Signed field / initial strength",
+            (0., 2.), value=1., title="Field magnitude / initial magnitude",
             pointa=(.12, .26), pointb=(.88, .26), title_height=.018,
             interaction_event="end", color="#148e78",
             slider_width=.020, tube_width=.005)
@@ -285,7 +285,7 @@ class TorqueLesson:
             "N reverse I   B reverse field",
             "F show/hide forces   V predict/reveal",
             "0 reset   mouse orbit/zoom",
-            "Sliders: tilt and signed field magnitude",
+            "Sliders: tilt and field magnitude",
             "", "STATIC configurations; no spin in time,",
             "induction, self-field, or material effects."
         ))

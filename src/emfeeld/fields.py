@@ -71,7 +71,7 @@ class Field(Protocol):
     def potential(self, points): ...
 
 
-def _potential_coefficient(kind, strength, distance, *, interior_factor=None):
+def _potential_coefficient(kind, strength, distance, *, interior_factor=None, distance_exponent=0):
     """Evaluate +/-G*m/d or k*q/d without spurious intermediate underflow.
 
     Float64 source strengths, the physical constant and the distance are all
@@ -86,7 +86,7 @@ def _potential_coefficient(kind, strength, distance, *, interior_factor=None):
     fraction = coefficient_m * strength_m / distance_m
     if interior_factor is not None:
         fraction = fraction * interior_factor
-    return np.ldexp(fraction, coefficient_e + strength_e - distance_e)
+    return np.ldexp(fraction, coefficient_e + strength_e - distance_e - distance_exponent)
 
 
 def _radial_field(kind, strength, displacement, distance):
@@ -142,10 +142,26 @@ class PointSource(Source):
     def potential(self, points):
         if not self.strength:
             return np.zeros(positions(points).shape[:-1])
-        r = np.hypot.reduce(self.displacement(points), axis=-1)
+        p = positions(points)
+        with np.errstate(over="ignore", under="ignore"):
+            delta = p - self.center
+            r = np.hypot.reduce(delta, axis=-1)
         if np.any(r == 0):
             raise DomainError("point-source potential is singular at its center")
-        return _potential_coefficient(self.kind, self.strength, r)
+        oversized = np.isinf(r)
+        subnormal = r < np.finfo(float).tiny
+        if not np.any(oversized | subnormal):
+            return _potential_coefficient(self.kind, self.strength, r)
+        # Divide coordinates by four before subtraction. Even the diagonal
+        # between opposite corners of the binary64 cube fits at this scale.
+        with np.errstate(under="ignore"):
+            scaled = p[oversized] * 0.25 - np.asarray(self.center) * 0.25
+        r = np.array(r, copy=True)
+        r[oversized] = np.hypot.reduce(scaled, axis=-1)
+        if np.any(subnormal):
+            r[subnormal] = np.hypot.reduce(np.ldexp(delta[subnormal], 1022), axis=-1)
+        return _potential_coefficient(self.kind, self.strength, r,
+                                      distance_exponent=2 * oversized - 1022 * subnormal)
 
     def field(self, points):
         if not self.strength:

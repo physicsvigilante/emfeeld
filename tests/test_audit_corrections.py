@@ -59,3 +59,27 @@ def test_finite_point_potential(charge, distance, ratio):
     with np.errstate(all="raise"):
         value = PointSource("electric", charge).potential([distance, 0, 0])
     assert value == pytest.approx(K * ratio, rel=2e-15, abs=0)
+
+
+def test_oblique_wire_snapshot_round_trip(tmp_path):
+    from emfeeld.wire_magnetism import load_lesson
+    state = WireState(axis_direction=(1, 1, 0))
+    wire_view.save_snapshot(state, tmp_path / "output", source_bytes=json.dumps(state.to_dict()).encode())
+    assert load_lesson(tmp_path / "output" / "authored-input.json") == state
+
+
+def test_point_potential_with_distance_larger_than_float64():
+    source = PointSource("electric", 1, center=(-1e308, 0, 0))
+    with np.errstate(all="raise"):
+        result = source.potential([[1e308, 0, 0], [0, 0, 0]])
+        diagonal = PointSource("electric", 1).potential([1.5e308] * 3)
+    assert result == pytest.approx([K / 1e308 / 2, K / 1e308], rel=2e-15, abs=0)
+    assert diagonal == pytest.approx(K / 1.5e308 / np.sqrt(3), rel=2e-15, abs=0)
+
+
+def test_point_potential_preserves_subnormal_diagonal():
+    tiny = float.fromhex("0x0.0000000000001p-1022")
+    source = PointSource("electric", tiny)
+    with np.errstate(all="raise"):
+        voltage = source.potential([tiny, tiny, 0])
+    assert voltage == pytest.approx(K / np.sqrt(2), rel=2e-15)
