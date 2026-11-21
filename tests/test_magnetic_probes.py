@@ -91,6 +91,27 @@ def test_cli_success_and_all_probes_undefined(tmp_path, capsys):
         assert json.loads(capsys.readouterr().out)["status"] == status
 
 
+def test_tiny_wire_axis_component_survives_cancellation_of_large_fields():
+    packet = model()
+    for wire, sign in zip(packet["sources"], [1, -1]):
+        wire.update(origin_m=[0, 0, 0], axis_direction=[sign, 1e-315, 0], current_A=1e-6)
+    packet["probes"] = [dict(id="close", position_m=[0, 0, 1e-320])]
+    result = run(packet)["probes"][0]
+    # Both fields have +x components; the opposite y components cancel.
+    expected_x = (1e-315 / 1e-320) * (mu_0 * 1e-6 / math.pi)
+    assert result["total_B_T"] == pytest.approx([expected_x, 0, 0], rel=3e-15, abs=0)
+
+
+def test_tiny_determinant_survives_rescaling_to_tesla():
+    packet = model()
+    for wire, sign in zip(packet["sources"], [1, -1]):
+        wire.update(origin_m=[0, 0, 0], axis_direction=[sign, 0, 1e-180], current_A=1)
+    packet["probes"] = [dict(id="p", position_m=[0, 1e-308, 1e-154])]
+    # |u x d|² rounds to (1e-154)² at the precision of this check.
+    expected_x = -(mu_0 / math.pi) * (1e-308 / 1e-154 / 1e-154) * 1e-180
+    assert run(packet)["probes"][0]["total_B_T"] == pytest.approx([expected_x, 0, 0], rel=3e-15, abs=0)
+
+
 def test_component_sum_recovers_cancellation_and_reports_true_overflow():
     packet = model()
     m = sys.float_info.max

@@ -20,6 +20,8 @@ Use exactly the four top-level keys in the example, with at least one source and
 
 ## Report and failure behavior
 
+The shared wire evaluator forms cross products and squared distances using exact fractions of the represented coordinates before converting each SI field component to binary64. A direction component must survive normalization. A subnormal direction or field component whose relative rounding error exceeds eight binary64 epsilons is refused. The near-axis resolution test remains separate from these representability checks.
+
 The JSON report includes the input byte SHA-256, the runtime value of μ₀ in T m/A, a status and the probe results in authored order. For each probe it records every source ID, contribution status and `B_T`, followed by the componentwise sum `total_B_T`. A failed contribution retains its reason and has a null field. Any failed contribution or unrepresentable total makes the total null. Other probes still run.
 
 Exit 0 means all probes succeeded. Exit 1 accompanies a report marked `partial` (some probes succeeded) or `failed` (none succeeded). Exit 2 means invalid input or an I/O failure. Optional `--output NEW_REPORT.json` also writes the report to a fresh file outside protected evidence. Use `python -m emfeeld capabilities` to discover the model and command.

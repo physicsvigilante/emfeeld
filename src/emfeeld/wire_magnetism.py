@@ -6,6 +6,7 @@ field, Lorentz dynamics, magnetic material, induced currents, or scalar potentia
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
+from fractions import Fraction
 import json
 import math
 from pathlib import Path
@@ -75,7 +76,12 @@ class InfiniteStraightWire:
         length = math.hypot(*axis)
         if not 1e-8 <= length <= 100.0:
             raise ValueError('axis_direction must be a resolved nonzero vector')
-        axis = tuple(v / length for v in axis)
+        normalized = tuple(v / length for v in axis)
+        if any(v and abs(n) < np.finfo(float).tiny and
+               abs(n / v * length - 1.) > 8 * np.finfo(float).eps
+               for v, n in zip(axis, normalized)):
+            raise ValueError('axis_direction component cannot be resolved after normalization')
+        axis = normalized
         I = _number(self.current_A, 'current_A')
         if abs(I) > 1e4 or (I != 0 and abs(I) < 1e-6):
             raise ValueError('current_A must be zero or 1e-6..1e4 A in magnitude')
@@ -177,30 +183,33 @@ def magnetic_field(state: InfiniteStraightWire, points_m):
         raise ValueError('magnetic probe outside bounded coordinate range')
     if state.current_A == 0:
         return np.zeros(points.shape, dtype=float)
-    u = np.asarray(state.axis_direction, dtype=float)
-    origin = np.asarray(state.origin_m, dtype=float)
-    d = points - origin
-    distance_scale = np.max(np.abs(d), axis=-1)
-    if np.any(distance_scale == 0):
-        raise WireAxisError('magnetic field undefined on or numerically unresolved near ideal wire axis')
-    # Work in units of the displacement scale: a resolved offset may have
-    # a squared SI length that rounds to zero. u x d already removes the
-    # axial component and points in the positive-current field direction.
-    tangent = np.cross(u, d / distance_scale[..., None])
-    radius = np.hypot.reduce(tangent, axis=-1)
-    with np.errstate(over='ignore'):
-        uncertainty = 64 * np.finfo(float).eps * (
-            np.hypot.reduce(points, axis=-1) / distance_scale
-            + math.hypot(*origin) / distance_scale)
-    if np.any(radius <= uncertainty):
-        raise WireAxisError('magnetic field undefined on or numerically unresolved near ideal wire axis')
-    direction = tangent / radius[..., None]
-    mantissa, exponent = np.frexp(distance_scale)
-    coefficient = (mu_0 * state.current_A / (2 * math.pi)) / (radius * mantissa)
-    with np.errstate(over='ignore', under='ignore'):
-        field = np.ldexp(coefficient[..., None] * direction, -exponent[..., None])
-    if not np.isfinite(field).all() or np.any(np.all(field == 0, axis=-1)):
-        raise ValueError('nonzero magnetic field underflow or nonrepresentable')
+    # B = (mu0 I / 2pi) |u| (u x d) / |u x d|². Keep the determinants
+    # and division exact for the represented coordinates: components smaller
+    # than intermediate float64 range can survive in the final SI vector.
+    ux, uy, uz = map(Fraction, state.axis_direction)
+    origin = tuple(map(Fraction, state.origin_m))
+    origin_norm = Fraction(math.hypot(*state.origin_m))
+    axis_norm = Fraction(math.hypot(*state.axis_direction))
+    coefficient = Fraction(mu_0 * state.current_A / (2 * math.pi)) * axis_norm
+    resolution = Fraction(64 * math.ulp(1.0)) * axis_norm
+    field = np.empty(points.shape, dtype=float)
+    for point, vector in zip(points.reshape(-1, 3), field.reshape(-1, 3)):
+        dx, dy, dz = (Fraction(float(x)) - o for x, o in zip(point, origin))
+        cross = (uy*dz - uz*dy, uz*dx - ux*dz, ux*dy - uy*dx)
+        squared = sum(x*x for x in cross)
+        uncertainty = resolution * (Fraction(math.hypot(*point)) + origin_norm)
+        if squared <= uncertainty**2:
+            raise WireAxisError('magnetic field undefined on or numerically unresolved near ideal wire axis')
+        try:
+            for index, x in enumerate(cross):
+                component = coefficient * x / squared
+                value = float(component)
+                if component and abs(value) < np.finfo(float).tiny and abs(
+                        Fraction(value) / component - 1) > 8 * math.ulp(1.0):
+                    raise ValueError('nonzero magnetic field component lost precision')
+                vector[index] = value
+        except OverflowError as exc:
+            raise ValueError('nonrepresentable magnetic field') from exc
     return field
 
 
