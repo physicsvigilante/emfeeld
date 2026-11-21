@@ -153,6 +153,50 @@ def _visible_slider_rails(image):
     return len(bands)>=2 and bands[-1][0]-bands[0][-1]>15
 
 
+def test_tilt_readout_distinguishes_both_neighbors_of_perpendicular():
+    view = TorqueLesson(RectangularLoopState(), off_screen=True)
+    try:
+        for angle in (np.nextafter(90., 0.), 90., np.nextafter(90., 180.)):
+            view.set_angle(float(angle))
+            line = next(row for row in view.info_lines if row.startswith("Positive-normal tilt"))
+            assert float(line.split("=")[1].split()[0]) == angle
+    finally:
+        view.plot.close()
+
+
+def test_reveals_preserve_camera_and_both_sliders_keep_force_meshes_visible():
+    view = TorqueLesson(RectangularLoopState(), off_screen=True)
+    try:
+        view.plot.show(auto_close=False, interactive=False)
+        camera = view.plot.camera
+        camera.azimuth += 5
+        camera.zoom(1.05)
+        position = tuple(map(tuple, view.plot.camera_position))
+        scale = camera.parallel_scale
+        for digit in "123456":
+            key(view, digit)
+            key(view, "v")
+        key(view, "0")
+        slider(view.angle_slider, 65.)
+        slider(view.field_slider, 1.4)
+        assert tuple(map(tuple, view.plot.camera_position)) == position
+        assert camera.parallel_scale == scale
+        renderer = view.plot.renderer
+        x0, y0 = renderer.GetOrigin()
+        width, height = renderer.GetSize()
+        assert len(view.force_actors) == 4
+        for actor in view.force_actors:
+            for point in actor.mapper.dataset.points:
+                renderer.SetWorldPoint(*point, 1.)
+                renderer.WorldToDisplay()
+                x, y, depth = renderer.GetDisplayPoint()
+                assert x0 + 4 < x < x0 + width - 4
+                assert y0 + 4 < y < y0 + height - 4
+                assert 0 < depth < 1
+    finally:
+        view.plot.close()
+
+
 @pytest.mark.parametrize("case",("1","2","3","4","5","6"))
 def test_real_screenshots_source_identity_physics_and_slider_visibility(tmp_path,case):
     initial=RectangularLoopState(centre_m=(.17,-.3,.21),

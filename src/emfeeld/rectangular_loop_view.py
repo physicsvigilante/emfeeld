@@ -91,6 +91,9 @@ class TorqueLesson:
             "0": self.reset
         }
         for key, fn in callbacks.items():
+            # PyVista's default V binding also resets the camera to an
+            # isometric fit. Each lesson control should have one action.
+            self.plot.clear_events_for_key(key)
             self.plot.add_key_event(key, lambda callback=fn: self._event(callback))
         self._building = False
         self.redraw(reset_camera=True)
@@ -260,7 +263,7 @@ class TorqueLesson:
             f"I = {self.state.current_A:.5g} A",
             f"B signed = {self.state.field_strength_T:.5g} T",
             f"Width x height = {self.state.width_m:.4g} x {self.state.height_m:.4g} m",
-            f"Positive-normal tilt = {self.state.tilt_deg:.4g} degrees",
+            f"Positive-normal tilt = {self.state.tilt_deg} deg",
             "", "PREDICT BEFORE V REVEAL:"
         ]
         if self.show_values:
