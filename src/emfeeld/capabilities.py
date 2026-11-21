@@ -16,6 +16,7 @@ from .output_safety import protect_saved_evidence
 from .fields import KINDS
 from .scene import REGISTRY, SCENE_REQUIRED, SCENE_OPTIONAL, source_keys, source_from_dict
 from .observations import TYPES, ID_PATTERN
+from .magnetic_probes import SOURCE_TYPES as MAGNETIC_SOURCE_TYPES
 from .trajectory_samples import QUANTITIES, SOLVER_SETTINGS
 from .plane_events import DIRECTIONS
 from .radial_events import DIRECTIONS as RADIAL_DIRECTIONS
@@ -182,6 +183,7 @@ def get_capabilities() -> dict:
         'format': 'emfeeld.capability_catalogue; descriptive discovery data, not JSON Schema',
         'authority': 'Runtime validation is authoritative. Source keys and observation enums are shared; observation structures and restrictions are checked against it by tests.',
         'commands': {
+            'magnetic_field': 'python -m emfeeld magnetic-field MODEL.json [--output NEW_REPORT.json]',
             'catalogue': 'python -m emfeeld capabilities',
             'save_catalogue': 'python -m emfeeld capabilities --output capabilities.json',
             'validate_packet': 'python -m emfeeld.observations PACKET.json --validate-only',
@@ -189,6 +191,13 @@ def get_capabilities() -> dict:
             'view_scene': 'python -m emfeeld view SCENE.json',
             'view_packet_note': 'Extract packet.scene as a standalone scene first; view does not accept observation packets.',
             'verify': 'python tools/replay_packets.py MANIFEST.json --output NEW_OUTPUT_DIRECTORY',
+        },
+        'static_magnetic_field': {
+            'model_version': 1, 'required': ['model_version', 'kind', 'sources', 'probes'],
+            'sources': {kind: ['id', 'type', *keys] for kind, (_, keys) in MAGNETIC_SOURCE_TYPES.items()},
+            'probe': ['id', 'position_m'], 'positions': 'world Cartesian metres',
+            'output': 'per-source and total magnetic field vectors in tesla; unavailable totals are null',
+            'example': 'examples/magnetic/two_wires.json',
         },
         'packet': {'observation_schema_version': 1,
                    'required': ['observation_schema_version', 'scene', 'observations'], 'optional': ['notes'],

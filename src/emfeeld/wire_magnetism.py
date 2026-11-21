@@ -6,7 +6,7 @@ field, Lorentz dynamics, magnetic material, induced currents, or scalar potentia
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
-from decimal import Decimal
+from fractions import Fraction
 import json
 import math
 from pathlib import Path
@@ -22,7 +22,10 @@ _KEYS = {'lesson_version', 'lesson_type', 'origin_m', 'axis_direction',
 
 def _float_token(token: str) -> float:
     val = float(token)
-    if not math.isfinite(val) or (val == 0 and Decimal(token) != 0):
+    # JSON has already validated the grammar. Inspect the significand rather
+    # than parsing an exponent that may exceed even Decimal's range.
+    if not math.isfinite(val) or (val == 0 and any(
+            c in '123456789' for c in token.lower().partition('e')[0])):
         raise ValueError('magnetic wire JSON number not representable as float64: ' + token)
     return val
 
@@ -57,13 +60,15 @@ def _no_duplicate_pairs(pairs):
     return result
 
 
+class WireAxisError(ValueError):
+    """The ideal current-bearing wire has no resolved field at this point."""
+
+
 @dataclass(frozen=True)
-class WireState:
+class InfiniteStraightWire:
     origin_m: tuple = (0.0, 0.0, 0.0)
     axis_direction: tuple = (0.0, 0.0, 1.0)
     current_A: float = 5.0
-    loop_radius_m: float = 0.2
-    samples_per_loop: int = 48
 
     def __post_init__(self):
         origin = _vec(self.origin_m, 'origin_m', 100.0)
@@ -71,18 +76,35 @@ class WireState:
         length = math.hypot(*axis)
         if not 1e-8 <= length <= 100.0:
             raise ValueError('axis_direction must be a resolved nonzero vector')
-        axis = tuple(v / length for v in axis)
+        normalized = tuple(v / length for v in axis)
+        if any(v and abs(n) < np.finfo(float).tiny and
+               abs(n / v * length - 1.) > 8 * np.finfo(float).eps
+               for v, n in zip(axis, normalized)):
+            raise ValueError('axis_direction component cannot be resolved after normalization')
+        axis = normalized
         I = _number(self.current_A, 'current_A')
         if abs(I) > 1e4 or (I != 0 and abs(I) < 1e-6):
             raise ValueError('current_A must be zero or 1e-6..1e4 A in magnitude')
+        object.__setattr__(self, 'origin_m', origin)
+        object.__setattr__(self, 'axis_direction', axis)
+        object.__setattr__(self, 'current_A', I)
+
+    def field_at(self, position_m):
+        return magnetic_field(self, position_m)
+
+
+@dataclass(frozen=True)
+class WireState(InfiniteStraightWire):
+    loop_radius_m: float = 0.2
+    samples_per_loop: int = 48
+
+    def __post_init__(self):
+        super().__post_init__()
         R = _number(self.loop_radius_m, 'loop_radius_m')
         if not 1e-3 <= R <= 100.0:
             raise ValueError('loop_radius_m must be 1e-3..100 m')
         if type(self.samples_per_loop) is not int or not 12 <= self.samples_per_loop <= 192:
             raise ValueError('samples_per_loop must be an integer in 12..192')
-        object.__setattr__(self, 'origin_m', origin)
-        object.__setattr__(self, 'axis_direction', axis)
-        object.__setattr__(self, 'current_A', I)
         object.__setattr__(self, 'loop_radius_m', R)
 
     def to_dict(self):
@@ -143,7 +165,7 @@ def _contains_raw_bool(value):
     return False
 
 
-def magnetic_field(state: WireState, points_m):
+def magnetic_field(state: InfiniteStraightWire, points_m):
     """Field B in tesla at physical points, not a visualization arrow.
 
     Singular at current-bearing ideal wire axis, including numerically
@@ -161,20 +183,33 @@ def magnetic_field(state: WireState, points_m):
         raise ValueError('magnetic probe outside bounded coordinate range')
     if state.current_A == 0:
         return np.zeros(points.shape, dtype=float)
-    u = np.asarray(state.axis_direction, dtype=float)
-    origin = np.asarray(state.origin_m, dtype=float)
-    d = points - origin
-    rho = d - np.sum(d * u, axis=-1)[..., None] * u
-    r2 = np.sum(rho * rho, axis=-1)
-    r = np.sqrt(r2)
-    # Relative to represented coordinates; NO arbitrary fixed metre cutoff.
-    error = 64 * np.finfo(float).eps * (
-        np.linalg.norm(points, axis=-1) + np.linalg.norm(origin))
-    if np.any(r <= error) or np.any(r == 0):
-        raise ValueError('magnetic field undefined on or numerically unresolved near ideal wire axis')
-    field = (mu_0 * state.current_A / (2 * math.pi)) * np.cross(u, rho) / r2[..., None]
-    if not np.isfinite(field).all() or np.any(np.linalg.norm(field, axis=-1) == 0):
-        raise ValueError('nonzero magnetic field underflow or nonrepresentable')
+    # B = (mu0 I / 2pi) |u| (u x d) / |u x d|². Keep the determinants
+    # and division exact for the represented coordinates: components smaller
+    # than intermediate float64 range can survive in the final SI vector.
+    ux, uy, uz = map(Fraction, state.axis_direction)
+    origin = tuple(map(Fraction, state.origin_m))
+    origin_norm = Fraction(math.hypot(*state.origin_m))
+    axis_norm = Fraction(math.hypot(*state.axis_direction))
+    coefficient = Fraction(mu_0 * state.current_A / (2 * math.pi)) * axis_norm
+    resolution = Fraction(64 * math.ulp(1.0)) * axis_norm
+    field = np.empty(points.shape, dtype=float)
+    for point, vector in zip(points.reshape(-1, 3), field.reshape(-1, 3)):
+        dx, dy, dz = (Fraction(float(x)) - o for x, o in zip(point, origin))
+        cross = (uy*dz - uz*dy, uz*dx - ux*dz, ux*dy - uy*dx)
+        squared = sum(x*x for x in cross)
+        uncertainty = resolution * (Fraction(math.hypot(*point)) + origin_norm)
+        if squared <= uncertainty**2:
+            raise WireAxisError('magnetic field undefined on or numerically unresolved near ideal wire axis')
+        try:
+            for index, x in enumerate(cross):
+                component = coefficient * x / squared
+                value = float(component)
+                if component and abs(value) < np.finfo(float).tiny and abs(
+                        Fraction(value) / component - 1) > 8 * math.ulp(1.0):
+                    raise ValueError('nonzero magnetic field component lost precision')
+                vector[index] = value
+        except OverflowError as exc:
+            raise ValueError('nonrepresentable magnetic field') from exc
     return field
 
 
