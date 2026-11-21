@@ -11,7 +11,7 @@ import json
 from pathlib import Path
 import re
 from typing import Any
-from .output_safety import protect_saved_evidence
+from .output_safety import protect_saved_evidence, protect_revision_output
 
 from .observations import ID_PATTERN, packet_from_dict
 from .scene import scene_from_dict, source_keys, strict_keys
@@ -394,6 +394,8 @@ class ModelStore:
             raise ValueError('proposal must be a JSON object')
         identifier(proposal.get('proposal_id'))
         directory = self.path / 'proposals' / sha256(proposal['proposal_id'].encode())
+        protect_revision_output(directory, self.path)
+        protect_revision_output(self.path / "revisions", self.path)
         directory.mkdir()  # retain accepted and rejected well-formed attempts
         put(directory / 'proposal.json', raw)
         decision = {'proposal_id': proposal['proposal_id'], 'proposal_sha256': sha256(raw),

@@ -14,7 +14,7 @@ from pathlib import Path
 
 import numpy as np
 
-from .wire_magnetism import WireState, load_lesson, teaching_case
+from .wire_magnetism import WireState, load_lesson, parse_lesson, teaching_case
 from .wire_presentation import prepare
 from .output_safety import protect_saved_evidence
 
@@ -214,6 +214,13 @@ def save_snapshot(authored: WireState, destination, *, lesson=None, current_stat
     """Create a *new* snapshot with original/current physical state provenance."""
     if not isinstance(authored,WireState):raise ValueError('requires authored WireState')
     protect_saved_evidence(destination,new_directory=True)
+    if source_bytes is not None and parse_lesson(source_bytes) != authored:
+        raise ValueError("original input differs from authored wire state")
+    if lesson is not None:
+        if lesson.initial != authored or (current_state is not None and current_state != lesson.state):
+            raise ValueError("live wire lesson conflicts with snapshot state")
+        if lesson.prepared.state != lesson.state:
+            raise ValueError("prepared wire data differs from current state")
     dest=Path(destination)
     dest.mkdir(parents=True,exist_ok=False)
     _json(dest/'started.json',{'completed':False,'lesson':'wire_magnetism_v1'})

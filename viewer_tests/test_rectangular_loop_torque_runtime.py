@@ -260,3 +260,18 @@ def test_headless_cli_snapshot_uses_original_and_current_state(tmp_path):
     assert report["current_state"]["tilt_deg"]==90
     assert report["physics"]["orientation_potential_J"]==0
     assert not (tmp_path/"headless"/"view.png").exists()
+
+
+def test_magnitude_slider_preserves_reversal_across_zero():
+    view = TorqueLesson(RectangularLoopState(field_strength_T=0.2), off_screen=True)
+    try:
+        view.reverse_field()
+        view.set_field_ratio(0)
+        view.set_field_ratio(0.5)
+        assert view.state.field_strength_T == -0.1
+        view.set_field_ratio(0)
+        view.reverse_field()
+        view.set_field_ratio(0.5)
+        assert view.state.field_strength_T == 0.1
+    finally:
+        view.plot.close()

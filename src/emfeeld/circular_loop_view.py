@@ -241,7 +241,7 @@ class CircularLoopLesson:
         if self._warning_actor is not None:
             plot.remove_actor(self._warning_actor, reset_camera=False)
             self._warning_actor = None
-        names = {"1": "POSITIVE CURRENT AT CENTRE",
+        names = {"1": "AUTHORED CURRENT AT CENTRE",
                  "2": "REVERSED CURRENT AT CENTRE",
                  "3": "DOUBLE RADIUS AT CENTRE"}
         case = names.get(self.case_label, "CUSTOM / AXIAL PROBE")

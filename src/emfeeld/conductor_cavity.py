@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import json
+from .numeric_tokens import finite_float
 import math
 from pathlib import Path
 
@@ -209,7 +210,7 @@ def load_lesson(path):
     raw = Path(path).read_bytes()
     if len(raw) > 65536:
         raise ValueError('lesson input exceeds 64 KiB')
-    return from_dict(json.loads(raw.decode('utf-8'), object_pairs_hook=pairs))
+    return from_dict(json.loads(raw.decode('utf-8'), parse_float=finite_float, object_pairs_hook=pairs))
 
 
 def spherical_quadrature(model, order=32):

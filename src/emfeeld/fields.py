@@ -1,6 +1,7 @@
 """Static prescribed sources. SI everywhere; field = -gradient(potential)."""
 from dataclasses import dataclass
 import math
+from fractions import Fraction
 from typing import Protocol
 import numpy as np
 from scipy.constants import G, epsilon_0
@@ -70,7 +71,7 @@ class Field(Protocol):
     def potential(self, points): ...
 
 
-def _sphere_potential_coefficient(kind, strength, distance, *, interior_factor=None):
+def _potential_coefficient(kind, strength, distance, *, interior_factor=None, distance_exponent=0):
     """Evaluate +/-G*m/d or k*q/d without spurious intermediate underflow.
 
     Float64 source strengths, the physical constant and the distance are all
@@ -85,7 +86,7 @@ def _sphere_potential_coefficient(kind, strength, distance, *, interior_factor=N
     fraction = coefficient_m * strength_m / distance_m
     if interior_factor is not None:
         fraction = fraction * interior_factor
-    return np.ldexp(fraction, coefficient_e + strength_e - distance_e)
+    return np.ldexp(fraction, coefficient_e + strength_e - distance_e - distance_exponent)
 
 
 def _radial_field(kind, strength, displacement, distance):
@@ -139,13 +140,28 @@ class Source:
 @dataclass(frozen=True)
 class PointSource(Source):
     def potential(self, points):
-        d = self.displacement(points)
-        r = np.linalg.norm(d, axis=-1)
         if not self.strength:
-            return np.zeros_like(r)
+            return np.zeros(positions(points).shape[:-1])
+        p = positions(points)
+        with np.errstate(over="ignore", under="ignore"):
+            delta = p - self.center
+            r = np.hypot.reduce(delta, axis=-1)
         if np.any(r == 0):
             raise DomainError("point-source potential is singular at its center")
-        return self.coefficient / r
+        oversized = np.isinf(r)
+        subnormal = r < np.finfo(float).tiny
+        if not np.any(oversized | subnormal):
+            return _potential_coefficient(self.kind, self.strength, r)
+        # Divide coordinates by four before subtraction. Even the diagonal
+        # between opposite corners of the binary64 cube fits at this scale.
+        with np.errstate(under="ignore"):
+            scaled = p[oversized] * 0.25 - np.asarray(self.center) * 0.25
+        r = np.array(r, copy=True)
+        r[oversized] = np.hypot.reduce(scaled, axis=-1)
+        if np.any(subnormal):
+            r[subnormal] = np.hypot.reduce(np.ldexp(delta[subnormal], 1022), axis=-1)
+        return _potential_coefficient(self.kind, self.strength, r,
+                                      distance_exponent=2 * oversized - 1022 * subnormal)
 
     def field(self, points):
         if not self.strength:
@@ -178,10 +194,10 @@ class SolidSphere(Source):
         if np.any(inside):
             ratio = r[inside] / self.radius
             weight = (3 - ratio * ratio) / 2
-            result[inside] = _sphere_potential_coefficient(
+            result[inside] = _potential_coefficient(
                 self.kind, self.strength, self.radius, interior_factor=weight)
         if np.any(~inside):
-            result[~inside] = _sphere_potential_coefficient(
+            result[~inside] = _potential_coefficient(
                 self.kind, self.strength, r[~inside])
         return result
 
@@ -203,7 +219,7 @@ class SphericalShell(SolidSphere):
         r = np.hypot.reduce(self.displacement(points), axis=-1)
         if not self.strength:
             return np.zeros_like(r)
-        return _sphere_potential_coefficient(self.kind, self.strength,
+        return _potential_coefficient(self.kind, self.strength,
                                               np.maximum(r, self.radius))
 
     def field(self, points):
@@ -322,6 +338,24 @@ class UniformField:
         return -np.sum((positions(points) - self.origin) * self.value, axis=-1)
 
 
+def _sum_samples(samples):
+    if len(samples) == 1:
+        return samples[0]
+    values = np.stack(samples)
+    result = np.empty(values.shape[1:])
+    for index, terms in enumerate(values.reshape(len(samples), result.size).T):
+        try:
+            total = math.fsum(terms)
+        except OverflowError:
+            total = sum(map(Fraction.from_float, terms))
+            try:
+                total = float(total)
+            except OverflowError:
+                total = math.inf if total > 0 else -math.inf
+        result.flat[index] = total
+    return result
+
+
 @dataclass(frozen=True)
 class Superposition:
     """No apparatus profiles: compose any nonempty collection of one physical kind."""
@@ -346,11 +380,11 @@ class Superposition:
 
     def field(self, points):
         p = positions(points)
-        return sum((s.field(p) for s in self.sources), np.zeros_like(p))
+        return _sum_samples([s.field(p) for s in iter_sources(self)])
 
     def potential(self, points):
         p = positions(points)
-        return sum((s.potential(p) for s in self.sources), np.zeros(p.shape[:-1]))
+        return _sum_samples([s.potential(p) for s in iter_sources(self)])
 
 
 def iter_sources(model):

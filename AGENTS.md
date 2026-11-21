@@ -4,7 +4,7 @@
 A new arrangement of supported sources must be a model-authoring task, not a change to engine dispatch or a new apparatus profile. Build a small composable physics core with separate visualization and evidence. Teaching/exploration, not an exam-answer formatter, is the primary goal.
 
 ## Current source and historical records
-The released baseline through PR #38 is main commit `066c94e4953c3ef29302c0bb6d0ee2f6cb8b8ca0`. Named revisions, structural/atomic proposals, sweeps, derived observations, sealed comparisons/ensembles, readouts/tables and source-first trials are implemented, not still stacked unmerged on PR #2. The current project-audit changes are a separate candidate; see `docs/PROJECT_AUDIT_2026_11_17.md` for its actual qualification state.
+The merged baseline through PR #71 includes named revisions, sweeps, sealed comparisons and ensembles, static magnetic probes and composable electric and magnetic force observations. The [November 17 audit](docs/PROJECT_AUDIT_2026_11_17.md) records the state evaluated on that date.
 
 `docs/CHAT_WORKFLOW_DECISION.md` describes the original PR #1-only chat-review exception. It is a historical record, not standing permission to bypass independent R2 review. Dated validation reports preserve their original source, counts and caveats; never rewrite historical failures as successes. Current README and source contracts distinguish shipped capabilities from pending work.
 
