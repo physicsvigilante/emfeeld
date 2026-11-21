@@ -6,10 +6,10 @@ import json
 import math
 import re
 
-from scipy.constants import mu_0
+from scipy.constants import c, mu_0
 
 from .observations import ID_PATTERN
-from .wire_magnetism import InfiniteStraightWire, WireAxisError, _float_token, _no_duplicate_pairs, _vec
+from .wire_magnetism import InfiniteStraightWire, WireAxisError, _float_token, _no_duplicate_pairs, _number, _vec
 
 
 @dataclass(frozen=True)
@@ -85,13 +85,36 @@ def _probe(ident, position, sources):
     return row
 
 
+def _force_observation(ident, probe, charge, velocity):
+    row = dict(id=ident, probe_id=probe["probe_id"], charge_C=charge, velocity_m_s=velocity, force_N=None)
+    field = probe["total_B_T"]
+    if field is None:
+        return dict(row, status=probe["status"], reason="unavailable_probe_field")
+    # Use the recorded binary64 total as the input. Multiplying the charge
+    # after a rounded cross product can erase a finite final force component.
+    vx, vy, vz = map(Fraction, velocity)
+    bx, by, bz = map(Fraction, field)
+    cross = (vy*bz - vz*by, vz*bx - vx*bz, vx*by - vy*bx)
+    components = [Fraction(charge) * x for x in cross]
+    try:
+        values = [float(x) for x in components]
+    except OverflowError:
+        return dict(row, status="numerical_error", reason="unrepresentable_force")
+    tolerance = Fraction(8 * math.ulp(1.))
+    if any(abs(Fraction(v) - x) > abs(x) * tolerance for x, v in zip(components, values)):
+        return dict(row, status="numerical_error", reason="unrepresentable_force")
+    return dict(row, status="ok", force_N=values)
+
+
 def evaluate(raw: bytes):
     """Validate the complete authored model before evaluating any probe."""
     model = json.loads(raw.decode("utf-8"), object_pairs_hook=_no_duplicate_pairs,
                        parse_float=_float_token, parse_constant=_float_token)
-    _keys(model, ("model_version", "kind", "sources", "probes"), "magnetic model")
-    if type(model["model_version"]) is not int or model["model_version"] != 1:
+    version = model.get("model_version") if isinstance(model, dict) else None
+    if type(version) is not int or version not in (1, 2):
         raise ValueError("unsupported magnetic model_version")
+    keys = ("model_version", "kind", "sources", "probes")
+    _keys(model, (*keys, "force_observations") if version == 2 else keys, "magnetic model")
     if model["kind"] != "static_magnetic_field":
         raise ValueError("expected kind static_magnetic_field")
     sources = []
@@ -106,9 +129,28 @@ def evaluate(raw: bytes):
     for ident, record in _records(model, "probes"):
         _keys(record, ("id", "position_m"), ident)
         probes.append((ident, _vec(record["position_m"], "position_m", 1e5)))
+    requests = []
+    if version == 2:
+        probe_ids = {ident for ident, _ in probes}
+        for ident, record in _records(model, "force_observations"):
+            _keys(record, ("id", "probe_id", "charge_C", "velocity_m_s"), ident)
+            ref = record["probe_id"]
+            if not isinstance(ref, str) or ref not in probe_ids:
+                raise ValueError(f"unknown probe_id in {ident}")
+            charge = _number(record["charge_C"], "charge_C")
+            velocity = _vec(record["velocity_m_s"], "velocity_m_s", c)
+            if sum(Fraction(v)**2 for v in velocity) >= Fraction(c)**2:
+                raise ValueError("test charge speed must be below the speed of light")
+            requests.append((ident, ref, charge, velocity))
+
     rows = [_probe(ident, p, sources) for ident, p in probes]
-    good = sum(row["status"] == "ok" for row in rows)
-    status = "ok" if good == len(rows) else ("partial" if good else "failed")
-    return dict(report_version=1, kind=model["kind"], status=status,
-                input_sha256=hashlib.sha256(raw).hexdigest(),
-                mu_0_T_m_per_A=mu_0, probes=rows)
+    report = dict(report_version=version, kind=model["kind"], input_sha256=hashlib.sha256(raw).hexdigest(),
+                  mu_0_T_m_per_A=mu_0, probes=rows)
+    observations = []
+    if version == 2:
+        by_id = {row["probe_id"]: row for row in rows}
+        observations = [_force_observation(ident, by_id[ref], q, v) for ident, ref, q, v in requests]
+        report["force_observations"] = observations
+    good = sum(row["status"] == "ok" for row in (*rows, *observations))
+    report["status"] = "ok" if good == len(rows) + len(observations) else ("partial" if good else "failed")
+    return report
