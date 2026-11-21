@@ -78,3 +78,18 @@ def test_invalid_requests_are_rejected(change):
     change(packet)
     with pytest.raises(ValueError):
         run(packet)
+
+
+@pytest.mark.parametrize("velocity,accepted", [
+    ([math.nextafter(c, 0.), 5., 0.], True),
+    ([0., c, 0.], False),
+    ([math.nextafter(c, 0.), 6., 0.], False),
+])
+def test_speed_boundary_before_square_root_rounding(velocity, accepted):
+    packet = model()
+    packet["force_observations"][0]["velocity_m_s"] = velocity
+    if accepted:
+        assert run(packet)["status"] == "ok"
+    else:
+        with pytest.raises(ValueError, match="speed"):
+            run(packet)

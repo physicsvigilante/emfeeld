@@ -139,7 +139,7 @@ def evaluate(raw: bytes):
                 raise ValueError(f"unknown probe_id in {ident}")
             charge = _number(record["charge_C"], "charge_C")
             velocity = _vec(record["velocity_m_s"], "velocity_m_s", c)
-            if math.hypot(*velocity) >= c:
+            if sum(Fraction(v)**2 for v in velocity) >= Fraction(c)**2:
                 raise ValueError("test charge speed must be below the speed of light")
             requests.append((ident, ref, charge, velocity))
 
