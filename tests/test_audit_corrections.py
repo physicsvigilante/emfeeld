@@ -50,6 +50,9 @@ def test_field_and_potential_preserve_residual_for_every_order():
         model = Superposition(tuple(UniformField("electric", [x, 0, 0]) for x in order))
         np.testing.assert_array_equal(model.field(positions), [[1, 0, 0]] * 2)
         np.testing.assert_array_equal(model.potential(positions), [-1, -2])
+        nested = Superposition((Superposition(model.sources[:2]), model.sources[2]))
+        np.testing.assert_array_equal(nested.field(positions), model.field(positions))
+        np.testing.assert_array_equal(nested.potential(positions), model.potential(positions))
 
 
 @pytest.mark.parametrize("charge,distance,ratio", [

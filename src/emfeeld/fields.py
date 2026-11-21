@@ -380,11 +380,11 @@ class Superposition:
 
     def field(self, points):
         p = positions(points)
-        return _sum_samples([s.field(p) for s in self.sources])
+        return _sum_samples([s.field(p) for s in iter_sources(self)])
 
     def potential(self, points):
         p = positions(points)
-        return _sum_samples([s.potential(p) for s in self.sources])
+        return _sum_samples([s.potential(p) for s in iter_sources(self)])
 
 
 def iter_sources(model):
