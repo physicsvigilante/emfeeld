@@ -1,0 +1,13 @@
+{
+  "model_version": 2,
+  "kind": "static_magnetic_field",
+  "sources": [
+    {"id": "wire", "type": "infinite_straight_wire", "origin_m": [0, 0, 0], "axis_direction": [0, 0, 1], "current_A": 5},
+    {"id": "bias", "type": "uniform_magnetic_field", "B_T": [0, 0, 0.000002]}
+  ],
+  "probes": [{"id": "east", "position_m": [1, 0, 0]}],
+  "force_observations": [
+    {"id": "positive", "probe_id": "east", "charge_C": 0.000001, "velocity_m_s": [1000, 0, 0]},
+    {"id": "negative", "probe_id": "east", "charge_C": -0.000001, "velocity_m_s": [1000, 0, 0]}
+  ]
+}

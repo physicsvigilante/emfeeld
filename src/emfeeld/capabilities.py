@@ -194,6 +194,10 @@ def get_capabilities() -> dict:
         },
         'static_magnetic_field': {
             'model_version': 1, 'required': ['model_version', 'kind', 'sources', 'probes'],
+            'version_2': {'additional_required': ['force_observations'],
+                          'force_observation': ['id', 'probe_id', 'charge_C', 'velocity_m_s'],
+                          'quantity': 'instantaneous magnetic force in N at the referenced field probe',
+                          'example': 'examples/magnetic/test_charge_force.json'},
             'sources': {kind: ['id', 'type', *keys] for kind, (_, keys) in MAGNETIC_SOURCE_TYPES.items()},
             'probe': ['id', 'position_m'], 'positions': 'world Cartesian metres',
             'output': 'per-source and total magnetic field vectors in tesla; unavailable totals are null',
