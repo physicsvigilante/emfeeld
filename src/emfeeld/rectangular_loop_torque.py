@@ -164,8 +164,9 @@ def _tilt_components(theta):
     # Near 180 degrees, converting the full angle first loses significant
     # bits in its distance from pi. Subtraction in degrees is exact here.
     radians = math.radians(min(theta, 180.0 - theta))
-    cosine = math.cos(radians)
-    return math.sin(radians), -cosine if theta > 90 else cosine
+    # The cosine's zero is at 90 degrees. The signed degree offset preserves
+    # even the adjacent binary64 angles before conversion to radians.
+    return math.sin(radians), math.sin(math.radians(90.0 - theta))
 
 
 def orientation(state: RectangularLoopState):
@@ -216,21 +217,24 @@ def calculate(state: RectangularLoopState):
     # numerical cross-product residue at the endpoints.
     if state.tilt_deg in (0., 180.) or I == 0 or state.field_strength_T == 0:
         tau = np.zeros(3)
-    U = -float(np.dot(m, B))
-    if state.tilt_deg == 90 or I == 0 or state.field_strength_T == 0:
-        U = 0.0
+    sine, cosine = _tilt_components(state.tilt_deg)
+    amplitude = I * a * b * state.field_strength_T
+    U = -amplitude * cosine if amplitude and cosine else 0.0
     forces = I * np.cross(edge_vectors, B)
     net_force = np.sum(forces, axis=0)
     segment_torque = np.sum(np.cross(rel_midpoints, forces), axis=0)
     if 0 < state.tilt_deg < 180 and I != 0 and state.field_strength_T != 0:
         # Even a resolvable normal can lose the tilt when scaled into a
         # moment, or when subtracting nearly equal terms in a world-frame cross.
-        sine, _ = _tilt_components(state.tilt_deg)
-        signed_scale = (I * a * b * state.field_strength_T) * sine
-        expected = -signed_scale * e1
-        tolerance = _TILT_RTOL * abs(signed_scale)
-        if signed_scale == 0 or any(math.hypot(*(v - expected)) > tolerance
-                                    for v in (tau, segment_torque)):
+        # Compare after dividing the stored SI results by sin(theta). Forming
+        # the tiny reference torque first could round away the same components
+        # in the reference, and even round the comparison tolerance to zero.
+        expected = -amplitude * e1
+        tolerance = _TILT_RTOL * abs(amplitude)
+        magnitude_error = abs(math.hypot(*tau) / sine - abs(amplitude))
+        if magnitude_error > tolerance or any(
+            math.hypot(*(v / sine - expected)) > tolerance for v in (tau, segment_torque)
+        ):
             raise ValueError("tilt_deg cannot be resolved in the world-coordinate torque")
     arrays = dict(normal_unit=u, width_unit=e1, height_unit=e2,
                   loop_corners_m=corners, side_midpoints_m=midpoints,

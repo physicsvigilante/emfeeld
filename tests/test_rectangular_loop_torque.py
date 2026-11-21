@@ -229,3 +229,37 @@ def test_teaching_presets_select_geometry_and_explicit_zero():
     assert teaching_case(initial, "6").field_strength_T == 0
     with pytest.raises(ValueError):
         teaching_case(initial, "7")
+
+
+@pytest.mark.parametrize("angle,axis", [(5e-304, (0, 1, 4)), (7e-304, (0, 0, 1))])
+def test_quantized_torque_refused_before_snapshot(angle, axis, tmp_path):
+    from emfeeld.rectangular_loop_view import save_snapshot
+
+    state = RectangularLoopState(width_m=.001, height_m=.001, current_A=1e-6,
+                                 field_strength_T=1e-6, field_direction=axis, tilt_deg=angle)
+    with pytest.raises(ValueError, match="world-coordinate torque"):
+        measure(state)
+    dest = tmp_path / "snapshot"
+    with pytest.raises(ValueError, match="world-coordinate torque"):
+        save_snapshot(state, dest)
+    assert not dest.exists()
+
+
+def test_resolved_subnormal_torque_is_admitted():
+    state = RectangularLoopState(width_m=.001, height_m=.001, current_A=1e-6,
+                                 field_strength_T=1e-6, tilt_deg=1e-290)
+    result = measure(state)
+    # Scale the SI output up before comparing to retain relative precision.
+    assert result["torque_magnitude_N_m"] / 1e-308 == pytest.approx(
+        math.pi / 180, rel=1e-10, abs=0)
+
+
+@pytest.mark.parametrize("angle", [math.nextafter(90., 0.), 90., math.nextafter(90., 180.)])
+@pytest.mark.parametrize("axis", [(0, 0, 1), (6, -5, 3)])
+@pytest.mark.parametrize("current,field", [(1e4, 10), (-1e4, 10), (1e4, -10), (-1e4, -10)])
+def test_signed_energy_one_ulp_from_perpendicular(angle, axis, current, field):
+    state = RectangularLoopState(width_m=10, height_m=10, current_A=current,
+                                 field_strength_T=field, field_direction=axis, tilt_deg=angle)
+    # The cubic term in sin(delta) is below one ULP for these three angles.
+    expected = (angle - 90.) * (math.pi / 180.) * current * 100 * field
+    assert measure(state)["orientation_potential_J"] == pytest.approx(expected, rel=2e-15, abs=0)

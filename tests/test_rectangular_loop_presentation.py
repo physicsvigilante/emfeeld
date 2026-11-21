@@ -1,4 +1,6 @@
 """Read-only physical sample vectors and presentation arrow boundaries."""
+import math
+
 import numpy as np
 import pytest
 
@@ -88,3 +90,12 @@ def test_tiny_nonzero_torque_direction_does_not_numerically_underflow():
 def test_default_reference_is_valid_and_derived_from_initial_dimensions():
     s=RectangularLoopState(width_m=.6,height_m=.4)
     assert prepare(s,reference_length_m=None).reference_length_m==pytest.approx(.6)
+
+
+def test_resolved_two_quantum_torque_has_full_direction_glyph():
+    angle = math.degrees(2 * math.ulp(0.) / 1e-18)
+    state = RectangularLoopState(width_m=.001, height_m=.001, current_A=1e-6,
+                                 field_strength_T=1e-6, tilt_deg=angle)
+    p = prepare(state)
+    assert p.report["torque_magnitude_N_m"] == 2 * math.ulp(0.)
+    assert p.torque_direction_display_xyz == pytest.approx([0., -.73, 0.])

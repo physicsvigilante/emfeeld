@@ -28,6 +28,8 @@ All physical quantities use SI; only forces on prescribed current segments are e
 
 The binary64 model evaluates acute and obtuse tilts using their distance in degrees from the nearer aligned endpoint. A positive tilt whose radian value falls below the smallest normal binary64 number is rejected during state construction. For other tilts, the orientation calculation requires the transverse part of the normal to survive addition in world coordinates to relative precision `1e-10`. At nonzero current and field, an interior angle must also yield a nonzero torque scale, and both the moment cross product and the sum of the segment torques must agree with the signed analytic torque vector to that relative precision. Unresolved configurations raise a domain error. These checks preserve exact zero torque at 0° and 180°.
 
+The torque check divides the stored SI vectors and reported magnitude by the sine of the tilt before comparing them to the analytic reference. This keeps the comparison tolerance representable even for subnormal SI outputs. Orientation energy uses the authored angle with its signed degree offset from 90° so that perpendicular energy is exactly zero and its two neighboring angles retain opposite signs for nonzero current and field.
+
 ## How to launch in your already installed Conda environment
 
 From the repository root, after this feature is released and the branch installed in the *same* existing `emfeeld[view]` environment:

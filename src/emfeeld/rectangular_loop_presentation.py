@@ -23,7 +23,7 @@ def _direction_glyph(v, length, *, threshold=0.0):
     mag = math.hypot(*v)
     if mag <= threshold:
         return np.zeros(3, dtype=float)
-    return length * np.asarray(v) / mag
+    return (np.asarray(v) / mag) * length
 
 
 @dataclass(frozen=True)
